@@ -1,0 +1,36 @@
+{
+  "project": "brandcortex",
+  "updated": "2026-08-04",
+  "phase": "1 (MVP) — generation path working, persistence and channel I/O outstanding",
+  "tenant": "thaiswim",
+  "channel": "facebook",
+  "topics": [
+    "thaiswim card_renders seam",
+    "generation engine + numeric grounding",
+    "self-improving loop verification",
+    "meta page token"
+  ],
+  "tests": { "passed": 97, "skipped": 9 },
+  "blocked": [
+    {
+      "what": "facebook page access token",
+      "why": "Graph API Explorer caches invalid scope pages_read_user_content, killing the OAuth dialog; Meta reissues from the stale grant",
+      "have": ["app_id", "app_secret", "page_id", "fernet_key"],
+      "missing_scopes": ["pages_manage_posts", "pages_manage_engagement", "read_insights"],
+      "next": "System User token via business.facebook.com Business Settings (never expires, no OAuth dialog)",
+      "note": "user was heavily frustrated by this flow; approach gently and offer to park it"
+    }
+  ],
+  "next_actions": [
+    "real React dashboard OR orchestrator + DB persistence (user's call)",
+    "retry meta token via System User",
+    "alembic revision --autogenerate once Postgres is up"
+  ],
+  "do_not": [
+    "modify ThaiSwim card engines",
+    "write anything to the brand DB",
+    "put links in the post caption",
+    "let the learning loop propose voice.* rules",
+    "hardcode locale to th"
+  ]
+}

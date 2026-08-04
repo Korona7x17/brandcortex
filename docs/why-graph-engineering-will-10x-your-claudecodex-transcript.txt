@@ -1,0 +1,204 @@
+[0:00] 0 seconds I came on here to talk about a term I keep seeing going viral on Twitter. It's graph engineering. You've seen it. I've
+[0:07] 7 seconds seen it, too. And I'll be honest, the first time I saw it, my reaction was, "Okay, is this a real thing or did we
+[0:14] 14 seconds just invent another phrase to make everyone feel behind?" Because AI has this funny habit where every few weeks there's this new term that goes viral.
+[0:25] 25 seconds prop engine engineering, context engineering, agent engineering, vibe coding, uh loop engineering, and now
+[0:32] 32 seconds graph engineering. Some of these phrases are hype. Some of them are actually useful. And graph engineering is one of
+[0:39] 39 seconds the useful ones because it gives you a much better way to think about how AI actually gets done. So, in this episode,
+[0:47] 47 seconds I'm going to explain graph engineering in plain English. By the end of this episode, I want you to be able to take
+[0:55] 55 seconds one AI workflow you already run like customer research, support triage, content production, or startup idea
+[1:03] 1 minute, 3 seconds validation, and turn it into a simple map of steps, checks, handoffs, loops, and human approvals. So, we're going to
+[1:11] 1 minute, 11 seconds talk about all that and how you can do it. It's going to be clearly explained. So, let's get into it.
+[1:19] 1 minute, 19 seconds [music]
+[1:24] 1 minute, 24 seconds The simplest way to think about graph engineering is like this. Prompt engineering is how you ask the AI for a
+[1:33] 1 minute, 33 seconds better question. And context engineering is how you give AI better information.
+[1:39] 1 minute, 39 seconds But graph engineering is how you design the work around the AI so the whole thing stops living inside inside one
+[1:48] 1 minute, 48 seconds messy giant AI chat. I'll give you an example. Imagine you're researching a new startup idea. The normal way most
+[1:57] 1 minute, 57 seconds people use AI is they open up a chat and they say, "Should I build this idea?" The model will give you a confident answer. It probably sounds pretty smart.
+[2:08] 2 minutes, 8 seconds It might give you the market size, a few competitors, maybe a go to market plan, and you feel like you did the research.
+[2:15] 2 minutes, 15 seconds But if you actually slow down, you realize something a little uncomfortable happened. One model in one pass, decided
+[2:24] 2 minutes, 24 seconds what mattered, researched the market, interpreted the e evidence, wrote the recommendation, and graded it in its own
+[2:32] 2 minutes, 32 seconds confidence. That's a lot of trust to put into one blob of text. In some cases,
+[2:39] 2 minutes, 39 seconds you might spend years of your life based on this one question that you asked and you might be working on the wrong thing.
+[2:46] 2 minutes, 46 seconds The graph version looks a lot different.
+[2:51] 2 minutes, 51 seconds So, a planner first breaks the question into angles. One research, one researcher looks at the customer,
+[3:00] 3 minutes another looks at competitors, another looks at distribution, another looks at pricing, another looks at risks. Then a
+[3:07] 3 minutes, 7 seconds skeptic will try to kill the weak findings. Then a merger turns their surviving evidence into a one-page
+[3:14] 3 minutes, 14 seconds recommendation. And then you approve the decision before you act on it. The output might still be this written
+[3:21] 3 minutes, 21 seconds report, but the work behind it is just designed so much better. And that at its core is graph engineering. You're taking
+[3:29] 3 minutes, 29 seconds a messy AI task and turning it into a workflow that you can actually manage.
+[3:36] 3 minutes, 36 seconds Now, let's define the basic vocabulary without making this feel like a computer science lecture. By the way, I remember learning about one of my first classes
+[3:44] 3 minutes, 44 seconds in university was uh graph theory and and and so it's a real throwback for me.
+[3:50] 3 minutes, 50 seconds I will explain it to you in the clearest way possible. When people say graph, they basically mean jobs connected by
+[3:58] 3 minutes, 58 seconds arrows. Each job is a step in the workflow. The arrows show what happens next. And the share notes moving through
+[4:07] 4 minutes, 7 seconds the workflow are the state, which is just a fancy way of saying what does the system know so far. So that sounds
+[4:15] 4 minutes, 15 seconds technical for about 5 seconds and then you realize that's actually how work gets done in the real world in in in
+[4:22] 4 minutes, 22 seconds reality. You know, think about customer support. When a customer writes in, the work is rarely just answer the ticket.
+[4:30] 4 minutes, 30 seconds First, you need to understand what kind of issue it is. Then you need to check the customer's account history. Maybe you need to search for the docs for the right policy. Then you draft a response.
+[4:41] 4 minutes, 41 seconds Then you decide whether this is risky enough that a human should review it before going out. When you draw those
+[4:48] 4 minutes, 48 seconds steps out and connect them in an order, they actually depend on each other. And that is a graph. Take content for
+[4:55] 4 minutes, 55 seconds example. If I'm making a YouTube episode, the work isn't just write a script. A good episode might start with
+[5:03] 5 minutes, 3 seconds research, a thesis, examples, a hook, maybe a script. then title ideas, then
+[5:13] 5 minutes, 13 seconds thumbnail uh directions, then I you know an excalad draw, and then a final pass where I ask, "Does this sound like a human being or does this sound like
+[5:21] 5 minutes, 21 seconds someone trapped inside a SAS onboarding flow?" Some of those steps have to happen in order. Some of those steps h
+[5:29] 5 minutes, 29 seconds have to happen in order. You probably want the thesis before the script. You probably want the script before the excaladraw. But other pieces can happen
+[5:38] 5 minutes, 38 seconds at the same time. One re one researcher can look for examples while another looks for counterarguments. One could
+[5:46] 5 minutes, 46 seconds study the audience angle while another looks for practical workflows. Then those outputs merge back into the
+[5:54] 5 minutes, 54 seconds script. And that's where the graph starts paying because most people use AI in a straight line because chat makes
+[6:02] 6 minutes, 2 seconds everything kind of feel sequential. You ask for research, then you ask for summary, then you ask for a draft, and then you ask for edits, then you ask for
+[6:11] 6 minutes, 11 seconds titles. That works for really simple things, but when the work has multiple pieces, the straight line chat starts to
+[6:19] 6 minutes, 19 seconds get slow and fuzzy and actually hard to trust. What's cool about a graph is it lets you design the work more like a
+[6:28] 6 minutes, 28 seconds small team. One part plans, a few work in parallel, another checks the work,
+[6:34] 6 minutes, 34 seconds another merges it, and then the human approves the final step. And once that clicks in your head, uh, it just gets a
+[6:42] 6 minutes, 42 seconds lot less mysterious because there's two different things people mean when they say graph in AI. And this is actually where a lot of the confusion comes from.
+[6:53] 6 minutes, 53 seconds The first is what's called a knowledge graph. A knowledge graph helps AI reason over relationships over things. For
+[7:02] 7 minutes, 2 seconds example, this customer works at this company. This company uses this product.
+[7:07] 7 minutes, 7 seconds This product connects to this tool. This support issue relates to this feature. And this feature is owned by this team.
+[7:15] 7 minutes, 15 seconds Knowledge graphs help because AI reason across relationships and messy data.
+[7:22] 7 minutes, 22 seconds This matters because normal rag often retrieves chunks of text that look similar to the question, but it can
+[7:29] 7 minutes, 29 seconds struggle when the answer actually requires connecting different people across companies and topics and claims
+[7:37] 7 minutes, 37 seconds and events. You know, there's tools like you might have heard of Microsoft Graph Rag because sometimes you just need AI
+[7:44] 7 minutes, 44 seconds to understand relationships inside a body of knowledge, not just to retrieve the nearest paragraph. That is one
+[7:53] 7 minutes, 53 seconds version of graph engineering. The second version is what's called an agent graph. An agent graph is about how work moves.
+[8:01] 8 minutes, 1 second So, a planner hands work to researchers.
+[8:04] 8 minutes, 4 seconds The researchers work in parallel. A skeptic checks the findings. A synthesizer might merge the parts and a human will, you know, improve the final
+[8:13] 8 minutes, 13 seconds answer. This episode is mostly about agent graphs actually because that is the version you can start using today as
+[8:20] 8 minutes, 20 seconds a founder, as a creator, as an operator, as a small team. So, I figured I'd do an episode focusing on that. Um, the easiest way to remember the difference though is is kind of like this.
+[8:32] 8 minutes, 32 seconds Knowledge graphs help AI understand how information connects whereas agent
+[8:38] 8 minutes, 38 seconds graphs help AI understand how work should move and eventually the truth is
+[8:44] 8 minutes, 44 seconds the best systems use both. The AI will understand relationships inside your business and it will also know how to
+[8:53] 8 minutes, 53 seconds move through the right steps. Um but how can we make this tactical? When should you use graph engineering? Well, use it
+[9:00] 9 minutes when the work has multiple steps, multiple sources, maybe multiple paths, checks, risk, or approvals. Honestly, if
+[9:09] 9 minutes, 9 seconds you're asking AI to brainstorm 10 names for a new project, you probably don't need a graph. If you're asking AI to
+[9:16] 9 minutes, 16 seconds summarize a short email, you probably don't need a graph. But if you're using AI to do deep research, create a go to
+[9:25] 9 minutes, 25 seconds market plan, triage support tickets, review code, prepare for sales calls, synthesize customer feedback, or produce
+[9:33] 9 minutes, 33 seconds recurring content workflow. That's when graph thinking actually starts to matter a lot. And the rule is pretty simple.
+[9:41] 9 minutes, 41 seconds Use a graph when the work has multiple steps. Some steps can happen at the same time and the final output needs checking
+[9:50] 9 minutes, 50 seconds before it matters. A diamond starts with one question, splits into multiple parallel paths, checks the work, and
+[9:57] 9 minutes, 57 seconds then merges everything into back into one answer. So here's a here's the startup idea version. Let's say the
+[10:05] 10 minutes, 5 seconds question is, should I launch an AI bookkeeping product for Shopify merchants? The messy chat version is one
+[10:14] 10 minutes, 14 seconds big question and one big answer. The graph version starts with a planner. So the planner would say something like to
+[10:22] 10 minutes, 22 seconds answer this well we need to understand the customer pain, the competitive landscape, the go to market wedge, the
+[10:29] 10 minutes, 29 seconds pricing pressure and the risk and then the work splits. You have one researcher who studies Shopify merchants and tries
+[10:38] 10 minutes, 38 seconds to understand the bookkeeping pain. Are they using QuickBooks? Are they using spreadsheets? Are they hiring
+[10:45] 10 minutes, 45 seconds bookkeepers? Are they annoyed at tax time? Are they looking for automation?
+[10:50] 10 minutes, 50 seconds Or do they just want someone to clean up the mess once a month? You'll have another researcher who's studying
+[10:56] 10 minutes, 56 seconds competitors? Are there already Shopify bookkeeping tools? Are there accounting firms building this manually? Are app
+[11:04] 11 minutes, 4 seconds store products solving this at all? are freelancers on Upwork or Fiverr doing the work in a way that software could
+[11:11] 11 minutes, 11 seconds partially replace. Maybe you have another researcher who's studying the distribution. Where does Shopify merchants actually hang out? What
+[11:20] 11 minutes, 20 seconds newsletters do they read? What agencies already have trust with them? What Shopify app categories do they search?
+[11:27] 11 minutes, 27 seconds What search terms reveal buying intent?
+[11:30] 11 minutes, 30 seconds Those three jobs can happen at the same time because they don't depend on each other. Then comes the skeptic. The
+[11:39] 11 minutes, 39 seconds skeptic asks, "What claims are actually supported? Which evidence is stale because you're going to have data that is just old? Which competitors being
+[11:47] 11 minutes, 47 seconds ignored? Where are we confusing pain with willingness to pay? Where did the AI sound confident without proving
+[11:56] 11 minutes, 56 seconds anything? And this step matters more than people think. A lot of AI research fails because the same model that writes
+[12:05] 12 minutes, 5 seconds the answer also grades the answer. Th that is like asking someone to write
+[12:13] 12 minutes, 13 seconds their own performance review and then being shocked when they describe themselves as a vision a visionary. Come
+[12:20] 12 minutes, 20 seconds on. In a good graph checking is its own job. Then comes the merge. The merge
+[12:28] 12 minutes, 28 seconds step takes the surviving evidence and turns it into a recommendation. Should we pursue this? Should we pause it?
+[12:35] 12 minutes, 35 seconds Should we kill it? What is the wedge?
+[12:38] 12 minutes, 38 seconds Who's the first customer? What should we test this week? And what evidence would actually change our mind? And finally,
+[12:46] 12 minutes, 46 seconds you have the human gate. That's where you decide what to do next. You might decide to record a landing page tearown
+[12:53] 12 minutes, 53 seconds of a Shopify merchants. You might decide to interview 10 Shopify uh agency owners. You might decide to build a tiny
+[13:02] 13 minutes, 2 seconds calculator that estimates bookkeeping cleanup costs. Or hey, you might decide the idea is way too crowded and you just want to move on. But that is the point.
+[13:12] 13 minutes, 12 seconds Graph engineering does not magically make the decision for you. It gives you a better way to produce the evidence you
+[13:20] 13 minutes, 20 seconds use to make the decision. Now, this is where I think people get too fancy too quickly. I would start way simpler than
+[13:30] 13 minutes, 30 seconds you see on on Twitter people using Langraph. You see people using Autogen or some custom agent framework on day
+[13:37] 13 minutes, 37 seconds one. For your first graph, you can actually run it manually behind the scenes. I don't know why more people don't do this. I could show you exactly
+[13:46] 13 minutes, 46 seconds how to do it, but that just might be boring. The important thing is the structure. Give each job its own lane.
+[13:53] 13 minutes, 53 seconds One lane does customer research, another lane does competitor research, another lane does distribution research, then
+[14:01] 14 minutes, 1 second the checker lane attacks the evidence, then the merge lane turns a surviving evidence into a recommendation. That is
+[14:09] 14 minutes, 9 seconds a ready graph engineering. It's like level one of graph engineering. Yes, it's slower than a fully automated system, but it's way easier to
+[14:18] 14 minutes, 18 seconds understand. And if the manual version doesn't produce way better work, automating it, honestly, will just
+[14:24] 14 minutes, 24 seconds produce mediocre work way faster. The first rep is to draw the graph before
+[14:31] 14 minutes, 31 seconds you automate the graph. For me, I would do this with a blank Excala draw or TL draw, a TL draw board. I would write the
+[14:40] 14 minutes, 40 seconds final outcome at the top. Then I would draw the jobs. Planner, customer researcher,
+[14:48] 14 minutes, 48 seconds competitor, researcher, distribution researcher, skeptic, merge, human approval. Then I would draw the arrows.
+[14:58] 14 minutes, 58 seconds The planner feeds the three researchers.
+[15:00] 15 minutes The researchers feed the skeptic. The skeptic feeds the merge. The merge feeds the human decision.
+[15:08] 15 minutes, 8 seconds And that's enough.
+[15:11] 15 minutes, 11 seconds Now once that works three times manually then I would think about all the tools.
+[15:16] 15 minutes, 16 seconds The beginner version is a manual run with with separate lanes. But the intermediate version is cloud codecs or
+[15:24] 15 minutes, 24 seconds a repo where each step writes files. The planner writes plan.mmd.
+[15:30] 15 minutes, 30 seconds The researcher writes customer.md competitors.md and distribution.md.
+[15:37] 15 minutes, 37 seconds And the skeptic writes review.mmd. The merge step writes recommendation MD.
+[15:43] 15 minutes, 43 seconds What's cool about that is it leaves a paper trail. And that's that's really nice. You can see what happened. You can
+[15:50] 15 minutes, 50 seconds compare versions and you can actually and you can actually reuse the structure next week or a few weeks later. Now the advanced version is when you do use
+[15:58] 15 minutes, 58 seconds something like langraph autogen graph flow nadn make.com or your
+[16:06] 16 minutes, 6 seconds own small scripts to actually orchestrate the graph. So langraph is actually really useful when you want
+[16:13] 16 minutes, 13 seconds state checkpoints persistence human in the loop approvals and more reliable control over how an agent workflow runs.
+[16:22] 16 minutes, 22 seconds Then you have something like autogen graph flow and that's useful when you want directed workflow with sequential
+[16:30] 16 minutes, 30 seconds steps, parallel steps, conditional branches and loops. Tools like nannn, make.com are are useful when the graph
+[16:39] 16 minutes, 39 seconds touches everyday business systems like Slack, email, air table or your CRM.
+[16:46] 16 minutes, 46 seconds But again, the tool is not the point. Uh the tool should come after the workflow.
+[16:51] 16 minutes, 51 seconds If you automate a workflow, you do not understand you get a mess. If you understand the workflow first, automation then becomes super obvious.
+[17:00] 17 minutes And I can do a graph engineering advanced tutorial if people are interested uh using things like lang
+[17:07] 17 minutes, 7 seconds lang graph or cloud code. Uh but for the purpose of this episode, I think we just want to get to level one and level two.
+[17:14] 17 minutes, 14 seconds Okay. So you now hopefully understand what graph engineering is at a high level, but how can you actually
+[17:23] 17 minutes, 23 seconds integrate this into your startup into your business to start making more money or creating better products or just
+[17:31] 17 minutes, 31 seconds generating a lot of value. Uh the one that comes to mind uh first is customer
+[17:38] 17 minutes, 38 seconds support. So a simple support graph might start by classifying the issue. Is it billing? Is it product confusion? Maybe
+[17:46] 17 minutes, 46 seconds it's a bug or cancellation risk or maybe it's something else. Then the graph checks account context. So, is it a new
+[17:55] 17 minutes, 55 seconds customer? Are they high value? Have they written in before? Are they frustrated?
+[18:01] 18 minutes, 1 second Then it searches the docs or internal policies. You might have like a whole wiki for your company. Maybe a notion board. Maybe it goes and explores that.
+[18:10] 18 minutes, 10 seconds Then it drafts a reply. Then a checker reviews the reply for accuracy, tone, and risk. Then a human approves anything
+[18:20] 18 minutes, 20 seconds involving refunds, account changes, angry customers, legal risk, or promises that a company just might regret later.
+[18:29] 18 minutes, 29 seconds And that's the graph. And it's better than saying AI answer this support ticket because the support ticket is not the real workflow. The real workflow is
+[18:38] 18 minutes, 38 seconds understanding and researching and drafting and checking and approving. It's probably starting to click now.
+[18:45] 18 minutes, 45 seconds Content content creation is just another uh example that comes top of mind. A content graph might start with research.
+[18:54] 18 minutes, 54 seconds Then it creates a thesis. Then it finds examples. Then it writes a hook. Then it drafts a script. Then a checker asks whether the examples are specific,
+[19:02] 19 minutes, 2 seconds whether the pacing works, whether the hook earns intention based on what's you know formats that are working and
+[19:10] 19 minutes, 10 seconds whether the writing sounds like a p something like the person actually would say. Then the graph can branch into title ideas, thumbnail concepts,
+[19:18] 19 minutes, 18 seconds captions, b-roll, things like that. And that's also closer to how a content lead, a real content lead that you would hire to
+[19:27] 19 minutes, 27 seconds help you create content would actually do. Another great example is coding. A coding graph might start with a plan.
+[19:35] 19 minutes, 35 seconds Then one agent edits the code, another reviews the diff, another runs tests, another checks the UI in a browser,
+[19:43] 19 minutes, 43 seconds another looks for edge cases, and then you have a human being actually approving the final poll request. And that's basically where all these AI
+[19:51] 19 minutes, 51 seconds coding tools are going. The model writing the code is only one part of the workflow. And there's leverage in all the planning and testing and reviewing
+[20:00] 20 minutes and inspecting and deciding what is actually safe to ship. And that's actually an important point. Like a big
+[20:06] 20 minutes, 6 seconds reason why graph engineering matters is it makes quality less dependent on some
+[20:14] 20 minutes, 14 seconds someone remembering a perfect prompt to ask their LLM. It makes reviews way more consistent. It makes delegation in
+[20:22] 20 minutes, 22 seconds general way cleaner. It makes approval way more explicit. It gives you a place to add tools and memory and checks and
+[20:30] 20 minutes, 30 seconds permissions over time. And it turns AI work from just like chat into this operating system. And that that really
+[20:39] 20 minutes, 39 seconds does feel like you're living in the future once you get to that place. Now there is one mistake that I want to warn against which is more agents don't automatically mean better output.
+[20:51] 20 minutes, 51 seconds Sometimes actually more agents mean more noise. Sometimes it means five AI workers confidently repeating the same
+[21:00] 21 minutes wrong idea. Sometimes it means the system spends more time coordinating than thinking. So the goal is not to make the biggest graph possible. I've
+[21:09] 21 minutes, 9 seconds seen people on X, you know, go viral with these big big graphs, but that's not the goal. The goal is actually to make the smallest graph that improves
+[21:17] 21 minutes, 17 seconds the quality of work. And that's a really important distinction because a good graph should remove fake waiting. And it should separate workers from checkers.
+[21:27] 21 minutes, 27 seconds And really, it should put human approval where mistakes are expensive. And it should stop when the answer is good enough. Shouldn't shouldn't need to
+[21:36] 21 minutes, 36 seconds continue. And it should leave behind the useful state, the meaning notes, the evidence, the drafts, the sources, and the decision so that you can use it
+[21:45] 21 minutes, 45 seconds later. And the and by the way, the last point is underrated because the real compounding value of graph graph
+[21:52] 21 minutes, 52 seconds engineering isn't just that one task gets better. It's that your work starts producing memory. What do I mean by that? I mean that every customer
+[22:01] 22 minutes, 1 second research graph creates better customer notes. Every content graph creates better examples and audience insights.
+[22:08] 22 minutes, 8 seconds Every support graph creates better product feedback and that's where the context becomes the moat because the graph produces the work but it also
+[22:17] 22 minutes, 17 seconds produces the memory that makes the next graph smarter. So it becomes this like asset for you. So if you want to get into graph engineering and you're like
+[22:25] 22 minutes, 25 seconds how do I start? Here's here's a way to think about it. Um, I would pick one workflow I already run with AI every
+[22:33] 22 minutes, 33 seconds week. Maybe it's researching ideas or preparing podcast episodes, uh, reviewing landing pages, analyzing
+[22:41] 22 minutes, 41 seconds customer feedback. Then I would write the final output in one sentence. For example, I want a one-page recommendation on whether this startup
+[22:50] 22 minutes, 50 seconds idea is worth testing. And then I would list the jobs a great human would do.
+[22:57] 22 minutes, 57 seconds They would clarify the question. They would research customers. They would research competitors. They would look
+[23:04] 23 minutes, 4 seconds for distribution. They would look for risks. They would check the evidence.
+[23:09] 23 minutes, 9 seconds They would make the recommendation. And then I would draw arrows where the work actually depends on another step. So
+[23:17] 23 minutes, 17 seconds what do I mean by that? Customer customer research and competitor research could happen at the same time.
+[23:24] 23 minutes, 24 seconds The skeptic needs to research before it can check it. And the final recommendation needs the skeptic pass
+[23:31] 23 minutes, 31 seconds before it can merge the evidence. Then I would add one human gate before the expensive decision. If the output is a
+[23:39] 23 minutes, 39 seconds private memo, maybe the human gate is light. If the output is a customer email, a public post, code deploys, a
+[23:48] 23 minutes, 48 seconds refund, or anything touching production data, you got to have a human gate that's stricter. Then I would run it
+[23:54] 23 minutes, 54 seconds manually once. This is the whole first rep that we want to get good at. You don't have to create this giant
+[24:02] 24 minutes, 2 seconds automation project. Just create the jobs and the arrows. And after you do this once, you start seeing AI work
+[24:10] 24 minutes, 10 seconds differently because you're not thinking about like, okay, I need to do the most perfect prompt ever. What what is the what is the perfect prompt for this task
+[24:18] 24 minutes, 18 seconds I'm trying to do? you start thinking about okay what's the most perfect workflow for this and then uh you start
+[24:25] 24 minutes, 25 seconds designing a path that produces that answer and that's why I think graph engineering in general is a a concept
+[24:33] 24 minutes, 33 seconds that is worth paying uh attention to it's really like the next logical step after prompting and I think the people
+[24:40] 24 minutes, 40 seconds who get the most out of AI will be the people who know how to break down work into the right pieces give each piece
+[24:48] 24 minutes, 48 seconds the right context text check the output and keep the human in the right place.
+[24:53] 24 minutes, 53 seconds So now that you know we're towards the end of the episode, here's what I would do to try to learn this. I would pick one workflow you already run. Draw those
+[25:02] 25 minutes, 2 seconds jobs and arrows, delete the fake waiting, run the independent jobs in parallel, add a skeptic, merge the survivors, approve the final step
+[25:11] 25 minutes, 11 seconds yourself, and there you have it. That'll be your first graph. And once you have one graph that works, you're not just prompting AI anymore. or you're managing
+[25:19] 25 minutes, 19 seconds AI work. It's sort of this like next level in uh being an agent manager and and really just like stepping yourself
+[25:28] 25 minutes, 28 seconds into this new world uh deep into this new world where uh you're getting the most out of AI to build out your dreams
+[25:36] 25 minutes, 36 seconds to take ideas and put them out there and getting you know something I just think a lot about now is just like how do I get the most out of these platforms? Um,
+[25:45] 25 minutes, 45 seconds and graph engineering is just a concept that helps you think about that. So, there you have it, folks. Uh, graph
+[25:53] 25 minutes, 53 seconds engineering clearly explained. Um, hope that it got your creative juices flowing. Hope it's been helpful. Um, my
+[26:01] 26 minutes, 1 second name is Greg Eisenberg. I'm the host of the Startup Ideas podcast. For more, uh, you know, like, comment, and subscribe.
+[26:09] 26 minutes, 9 seconds Follow on on, uh, Spotify and Apple. And uh you know, I feel grateful that you're
+[26:16] 26 minutes, 16 seconds here. Um that I I'm able to teach you, give you these concepts. Um and I just can't wait to see what you build. I'm
+[26:25] 26 minutes, 25 seconds rooting for you. Have a creative day and I'll see you next

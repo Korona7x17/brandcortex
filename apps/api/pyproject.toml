@@ -1,0 +1,58 @@
+[project]
+name = "brandcortex"
+version = "0.1.0"
+description = "AI content engine that generates, publishes, and self-improves brand content across channels"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy>=2.0.36",
+    "alembic>=1.14",
+    "psycopg[binary]>=3.2",
+    "httpx>=0.27",
+    "boto3>=1.35",
+    "cryptography>=43.0",
+    "anthropic>=0.40",
+    "structlog>=24.4",
+    "tenacity>=9.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "respx>=0.21",
+    "ruff>=0.7",
+    "mypy>=1.13",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/brandcortex"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "TID"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+# The core must never learn brand or channel identity. Adapters are resolved at
+# runtime through adapters/registry.py, never imported by core modules.
+"brandcortex.adapters.source".msg = "core/ must not import adapters; use adapters.registry"
+"brandcortex.adapters.channel".msg = "core/ must not import adapters; use adapters.registry"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

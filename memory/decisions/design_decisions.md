@@ -219,3 +219,92 @@ workers keep the loud behaviour.
 **Status:** Accepted
 **Date:** 2026-08-05
 **Ref:** apps/api/src/brandcortex/main.py; adapters/registry.py@a30566
+
+## D-2026-08-05-10 — BrandCortex composes cards; ThaiSwim still renders them
+
+**Rationale:** The card routes are a public, deterministic API and the swimmer search is CORS-open,
+so composing needs no change to the card engines. Duplicating the renderer would fork the brand's
+visual identity into two definitions that drift silently — the caption's card and the studio's card
+would stop matching and nobody would notice until they were side by side.
+
+**Status:** Accepted
+**Date:** 2026-08-05
+**Ref:** apps/api/src/brandcortex/adapters/source/thaiswim/adapter.py; thaiswim@b9c14b2
+
+## D-2026-08-05-11 — Composed content ids are derived from the render params
+
+**Rationale:** A composed card has no `card_renders` row and BrandCortex never writes to the brand
+DB, so the id must come from somewhere. Deriving it from the params keeps `ingest` idempotent —
+composing the same board twice is one draft, not two — and the `bc-` prefix means a composed id is
+never mistaken for a brand cuid.
+
+**Status:** Accepted
+**Date:** 2026-08-05
+**Ref:** apps/api/src/brandcortex/adapters/source/thaiswim/adapter.py
+
+## D-2026-08-05-12 — The model writes captions; templates become the fallback
+
+**Rationale:** Six hand-written angles have a low ceiling and made the assistant the bottleneck on a
+Thai brand's voice — the wrong author for copy the owner should control. The guardrails that make an
+LLM safe here already existed and already run: numeric grounding, notation and voice checks are
+computations, and a person picks. Templates stay as the floor so a missing key or an outage degrades
+the copy rather than stopping the queue.
+
+**Status:** Accepted
+**Date:** 2026-08-05
+**Ref:** apps/api/src/brandcortex/core/generation/writer.py@7af7ff
+
+## D-2026-08-05-13 — Angles, notation and claim bindings are data, not code
+
+**Rationale:** The brand owner edits the voice without a code change, which is the whole point of
+`brand_config`. What is deliberately *not* editable is the hard rules — numbers must exist in the
+facts, no link in the caption, the emoji ceiling — because they run after the model answers. The
+brief is guidance; the validator is the guarantee.
+
+**Status:** Accepted
+**Date:** 2026-08-05
+**Ref:** apps/api/seeds/thaiswim.brand_config.json; apps/web/app/settings/voice/editor.tsx@3c5776
+
+## D-2026-08-05-14 — Claims are bound to the fact they must equal
+
+**Rationale:** "Every number exists in the facts" stops invention and not misattachment: with
+goldCount 3 and rankedCount 12, `อันดับ 1 ของประเทศ 12 รายการ` is false and every number in it is
+real. A phrase pattern now names the fact it must match. Brand-declared, so the core executes it
+without learning what a stroke is.
+
+**Status:** Accepted
+**Date:** 2026-08-05
+**Ref:** apps/api/src/brandcortex/core/generation/claims.py@5f2e3e
+
+## D-2026-08-05-15 — Brand notation is stripped before numbers are extracted
+
+**Rationale:** Fixes a check that rejected correct copy. `สระ 50 ม.` is a 50-metre pool, not a claim
+about the swim; on a 50m event it coincidentally matched and passed, and the first 100m event was
+refused for an invented "50". A check that rejects correct copy is worse than no check, because it
+teaches people to click through it.
+
+**Status:** Accepted
+**Date:** 2026-08-05
+**Ref:** apps/api/src/brandcortex/core/generation/claims.py@5f2e3e
+
+## D-2026-08-05-16 — BrandCortex holds the schedule; Meta's native scheduling is refused
+
+**Rationale:** `published=false` + `scheduled_publish_time` would show the post in Business Suite,
+but a comment cannot attach to a post that does not exist yet, so the link would depend on a second
+job firing later. A live card with no link is the single failure the design exists to prevent.
+Atomicity beats visibility, and the queue already shows what is scheduled.
+
+**Status:** Accepted
+**Date:** 2026-08-05
+**Ref:** apps/api/src/brandcortex/adapters/channel/facebook/adapter.py@fc6ba8; workers/publisher.py@f54b34
+
+## D-2026-08-05-17 — A failed publish records the live post id; a late slot is skipped, not published
+
+**Rationale:** Two failures that had to stay recoverable. If the photo lands and the comment does
+not, the id must be stored or nobody can find the card to fix or delete it. And a worker down
+overnight must not wake and publish yesterday's post into an audience that has moved on — those stay
+`scheduled` so a person picks the new moment.
+
+**Status:** Accepted
+**Date:** 2026-08-05
+**Ref:** apps/api/src/brandcortex/core/orchestrator.py; workers/publisher.py@f54b34

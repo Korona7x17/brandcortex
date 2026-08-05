@@ -5,7 +5,7 @@
   "tenant": "thaiswim",
   "channel": "facebook",
   "branch": "scaffold/thaiswim-facebook-mvp",
-  "head": "1ab1f4b",
+  "head": "ef105d9",
   "pushed": false,
   "topics": [
     "orchestrator + review API",
@@ -16,39 +16,37 @@
     "meta page token"
   ],
   "tests": {
-    "passed": 135,
+    "passed": 154,
     "skipped": 9
   },
   "working_end_to_end": [
-    "card_renders row -> content item -> checked Thai copy",
-    "draft persisted with captured card, frozen facts, UTM campaign, features",
-    "review API: queue, generated-vs-edited diff, card bytes, edit, approve, publish",
-    "alembic baseline applied and drift-free (SQLite only so far)"
+    "compose a card from the dashboard against production thaiswim.com",
+    "model writes 6 caption variants; each checked for grounded numbers, notation and voice",
+    "pick a variant, edit, or regenerate with a per-post steer",
+    "approve and schedule with a policy-aware suggested slot and its reasons",
+    "publish path fully implemented and tested against a fake Graph — untested against the real one"
   ],
   "still_stubs": [
-    "facebook adapter publish / fetch_insights",
-    "publisher and insights_fetcher workers",
+    "insights fetcher",
     "reflection agent",
-    "apps/web — the directory does not exist at all; no dashboard has ever been built"
+    "no auth on the dashboard"
   ],
   "blocked": [
     {
       "what": "facebook page access token",
-      "why": "Graph API Explorer caches invalid scope pages_read_user_content, killing the OAuth dialog; Meta reissues from the stale grant",
-      "have": [
-        "app_id",
-        "app_secret",
-        "page_id",
-        "fernet_key"
+      "why": "the login dialog rejects pages_read_user_content — a scope the app has never held and no request of ours sends, so it is injected by the app configuration",
+      "ruled_out": [
+        "hand-built OAuth URL with five explicit scopes",
+        "auth_type=rerequest",
+        "Login for Business config_id, system-user and user token types",
+        "publishing the app; privacy URL set and reachable",
+        "all five permissions Ready for testing in the use case"
       ],
-      "missing_scopes": [
-        "pages_manage_posts",
-        "pages_manage_engagement",
-        "read_insights"
+      "untried": [
+        "click + Add on pages_read_user_content so it is no longer invalid (already in FUTURE_PERMISSIONS)",
+        "drive the browser and read the actual request in the network tab"
       ],
-      "next": "System User token via business.facebook.com Business Settings (never expires, no OAuth dialog)",
-      "note": "user was heavily frustrated by this flow; approach gently and offer to park it",
-      "blocks": "only real publishing — the FB adapter itself is writable and testable offline against respx"
+      "note": "2026-08-05 burned hours sending the user round Meta's UI on wrong guesses. Do not send them again without driving the browser or having a verified answer."
     }
   ],
   "open_questions": [
@@ -72,10 +70,10 @@
     }
   ],
   "next_actions": [
-    "react dashboard (API now feeds it) OR facebook publish path against respx",
-    "retry meta token via System User",
-    "provision Postgres and apply the baseline there",
-    "settle the E501 question so ruff check is a real gate"
+    "resolve the scope injection, then token -> one published post",
+    "insights fetcher (Y data cannot be backfilled — every unpublished day is lost history)",
+    "editor-preference loop: variant picks and edit deltas, independent of Facebook entirely",
+    "Meta-independent: Clerk auth, Railway deploy, R2 for captured cards"
   ],
   "local_dev": {
     "migrate": "uv run alembic upgrade head",
@@ -89,7 +87,8 @@
     "put links in the post caption",
     "let the learning loop propose voice.* rules",
     "hardcode locale to th",
-    "declare a status column as String — it loads back a bare str and breaks every `is` comparison"
+    "declare a status column as String — it loads back a bare str and breaks every `is` comparison",
+    "duplicate the ThaiSwim card engines — two definitions of the card would drift"
   ],
   "credentials": {
     "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env.",

@@ -14,6 +14,7 @@ is comparison rather than reading:
 """
 
 import uuid
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import StreamingResponse
@@ -21,6 +22,8 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from brandcortex.core import brand_config as brand_config_store
+from brandcortex.core.learning import playbook
 from brandcortex.core.orchestrator import (
     EditRejected,
     InvalidTransition,
@@ -28,7 +31,8 @@ from brandcortex.core.orchestrator import (
     PostNotFound,
     PublishFailed,
 )
-from brandcortex.db.models import Post
+from brandcortex.core.scheduling.scheduler import Booked, Scheduler
+from brandcortex.db.models import Post, PostFeatures, PostStatus
 from brandcortex.db.session import get_session
 from brandcortex.services import assets
 
@@ -40,6 +44,18 @@ class PostEdit(BaseModel):
 
     post_text: str | None = None
     first_comment_text: str | None = None
+
+
+class RegenerateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    nudge: str | None = None
+
+
+class ScheduleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    when: datetime
 
 
 class ApproveRequest(BaseModel):
@@ -265,6 +281,83 @@ def choose_variant(post_id: str, angle: str, session: Session = Depends(get_sess
     """
     try:
         post = Orchestrator(session).choose_variant(_post_id(post_id), angle)
+    except PostNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except InvalidTransition as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return _serialize(post, detail=True)
+
+
+@router.post("/{post_id}/regenerate")
+def regenerate(
+    post_id: str,
+    payload: RegenerateRequest | None = None,
+    session: Session = Depends(get_session),
+) -> dict:
+    """Write a fresh set of angles, optionally with a steer for this post only."""
+    try:
+        post = Orchestrator(session).regenerate(
+            _post_id(post_id), nudge=payload.nudge if payload else None
+        )
+    except PostNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except InvalidTransition as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return _serialize(post, detail=True)
+
+
+@router.get("/{post_id}/suggested-slot")
+def suggested_slot(post_id: str, session: Session = Depends(get_session)) -> dict:
+    """When the scheduler would put this post, and why.
+
+    The reasons ship with the time on purpose. A bare "Thursday 19:00" invites an override on
+    instinct; "Wednesday is taken, and the last post was also a swimmer" can be disagreed with on
+    the merits, which is the difference between a suggestion and an instruction.
+    """
+    post = _load(session, post_id)
+    config = brand_config_store.load(session, post.brand)
+
+    booked = [
+        Booked(at=row.scheduled_for or row.published_at, source_type=source)
+        for row, source in session.execute(
+            select(Post, PostFeatures.source_type)
+            .join(PostFeatures, PostFeatures.post_id == Post.id, isouter=True)
+            .where(
+                Post.brand == post.brand,
+                Post.channel == post.channel,
+                Post.id != post.id,
+                Post.status.in_([PostStatus.SCHEDULED, PostStatus.PUBLISHED]),
+            )
+        ).all()
+        if (row.scheduled_for or row.published_at)
+    ]
+
+    scheduler = Scheduler(config, playbook.load_active(session, post.brand))
+    try:
+        slot = scheduler.next_slot(
+            booked=booked,
+            source_type=(post.features.source_type if post.features else "") or "",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+    return {
+        "at": slot.at,
+        "reasons": slot.reasons,
+        "relaxed": slot.relaxed,
+        "timezone": config.get("timezone"),
+        "booked": len(booked),
+    }
+
+
+@router.post("/{post_id}/schedule")
+def schedule_post(
+    post_id: str, payload: ScheduleRequest, session: Session = Depends(get_session)
+) -> dict:
+    """Assign a slot. The post publishes when the publisher worker reaches that time."""
+    when = payload.when if payload.when.tzinfo else payload.when.replace(tzinfo=UTC)
+    try:
+        post = Orchestrator(session).schedule(_post_id(post_id), when)
     except PostNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except InvalidTransition as exc:

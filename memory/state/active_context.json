@@ -15,7 +15,10 @@
     "self-improving loop verification",
     "meta page token"
   ],
-  "tests": { "passed": 135, "skipped": 9 },
+  "tests": {
+    "passed": 135,
+    "skipped": 9
+  },
   "working_end_to_end": [
     "card_renders row -> content item -> checked Thai copy",
     "draft persisted with captured card, frozen facts, UTM campaign, features",
@@ -32,8 +35,17 @@
     {
       "what": "facebook page access token",
       "why": "Graph API Explorer caches invalid scope pages_read_user_content, killing the OAuth dialog; Meta reissues from the stale grant",
-      "have": ["app_id", "app_secret", "page_id", "fernet_key"],
-      "missing_scopes": ["pages_manage_posts", "pages_manage_engagement", "read_insights"],
+      "have": [
+        "app_id",
+        "app_secret",
+        "page_id",
+        "fernet_key"
+      ],
+      "missing_scopes": [
+        "pages_manage_posts",
+        "pages_manage_engagement",
+        "read_insights"
+      ],
       "next": "System User token via business.facebook.com Business Settings (never expires, no OAuth dialog)",
       "note": "user was heavily frustrated by this flow; approach gently and offer to park it",
       "blocks": "only real publishing — the FB adapter itself is writable and testable offline against respx"
@@ -43,10 +55,21 @@
     {
       "what": "ruff line-length gate has never passed",
       "detail": "281 E501s, all docstring prose at 101-104 against a 100 limit, repo-wide and predating 2026-08-05",
-      "options": ["paragraph-level reflow", "raise line-length"],
+      "options": [
+        "paragraph-level reflow",
+        "raise line-length"
+      ],
       "do_not": "retry a line-by-line wrap — it orphans words; see R-2026-08-05-01"
     },
-    { "what": "no Postgres provisioned", "detail": "baseline has only ever been applied to SQLite" }
+    {
+      "what": "no Postgres provisioned",
+      "detail": "baseline has only ever been applied to SQLite"
+    },
+    {
+      "what": "anthropic account has no credit balance",
+      "detail": "the key authenticates but every request returns 400 'credit balance is too low', so the model writer falls back to templates on every draft",
+      "fix": "add credits at console.anthropic.com Plans & Billing"
+    }
   ],
   "next_actions": [
     "react dashboard (API now feeds it) OR facebook publish path against respx",
@@ -67,5 +90,15 @@
     "let the learning loop propose voice.* rules",
     "hardcode locale to th",
     "declare a status column as String — it loads back a bare str and breaks every `is` comparison"
-  ]
+  ],
+  "credentials": {
+    "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env.",
+    "anthropic_api_key": {
+      "added": "2026-08-05",
+      "expires": "2026-11-03",
+      "rotate_by": "2026-10-27",
+      "where": ".env ANTHROPIC_API_KEY (gitignored, mode 600)",
+      "on_expiry": "caption drafting falls back to templates; the queue keeps working, the copy gets plainer"
+    }
+  }
 }

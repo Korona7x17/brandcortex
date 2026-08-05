@@ -40,6 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <nav className="site-nav">
               <Link href="/">Queue</Link>
               {brand && <Link href="/new">New card</Link>}
+              {brand && <Link href="/settings/voice">Voice</Link>}
             </nav>
           </header>
           {children}

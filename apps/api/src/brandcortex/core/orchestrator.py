@@ -39,10 +39,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from brandcortex.adapters import registry
+from brandcortex.config import get_settings
 from brandcortex.core import brand_config as brand_config_store
 from brandcortex.core.analytics import utm
 from brandcortex.core.generation import claims, voice
-from brandcortex.core.generation.engine import DraftRejected, GenerationEngine
+from brandcortex.core.generation import writer as writer_module
+from brandcortex.core.generation.engine import GenerationEngine
 from brandcortex.core.learning import features as feature_capture
 from brandcortex.core.learning import playbook
 from brandcortex.db.models import IntroHistory, Post, PostFeatures, PostStatus, PostVariant
@@ -88,6 +90,7 @@ class Orchestrator:
         session: Session,
         *,
         capture: Callable[..., str] | None = None,
+        writer: writer_module.Writer | None = None,
         resolve_channel: Callable[[str], object] | None = None,
         now: Callable[[], datetime] | None = None,
     ) -> None:
@@ -95,6 +98,9 @@ class Orchestrator:
         # the real network call out of reach of a test that patches the module afterwards.
         self._session = session
         self._capture = capture or assets.capture
+        # Built once per orchestrator. Absent or unconfigured simply means the engine falls back to
+        # templates, which is why nothing here raises when there is no API key.
+        self._writer = writer or writer_module.from_settings(get_settings())
         self._resolve_channel = resolve_channel or registry.get_channel_adapter
         self._now = now or _utcnow
 
@@ -124,6 +130,7 @@ class Orchestrator:
             channel=channel,
             status=PostStatus.DRAFT,
             facts=dict(item.facts),
+            canonical_link=str(item.canonical_link),
             source_generated_at=item.generated_at,
         )
         self._session.add(post)
@@ -138,7 +145,9 @@ class Orchestrator:
             source_type=item.source_type,
         )
 
-        engine = GenerationEngine(config, playbook.load_active(self._session, item.brand))
+        engine = GenerationEngine(
+            config, playbook.load_active(self._session, item.brand), writer=self._writer
+        )
         try:
             variants = engine.draft_variants(
                 item,
@@ -258,6 +267,81 @@ class Orchestrator:
 
         self._session.commit()
         return post
+
+    def regenerate(self, post_id: uuid.UUID | str, *, nudge: str | None = None) -> Post:
+        """Write a fresh set of angles for a post already in the queue.
+
+        The reviewer's `nudge` steers this post only — "make it about her comeback", "shorter". It
+        cannot loosen a hard rule: every candidate is checked afterwards exactly as before, so the
+        nudge is direction, not permission.
+
+        A human edit is deliberately not preserved. Regenerating is asking for different copy, and
+        silently merging an old edit into new text would produce something nobody wrote.
+        """
+        post = self._get(post_id)
+        if post.status not in (PostStatus.DRAFT, PostStatus.FAILED, PostStatus.APPROVED):
+            raise InvalidTransition(f"post {post.id} is {post.status} and can no longer be redrafted")
+
+        config = brand_config_store.load(self._session, post.brand)
+        item = self._item_from(post, config)
+
+        engine = GenerationEngine(
+            config, playbook.load_active(self._session, post.brand), writer=self._writer
+        )
+        variants = engine.draft_variants(
+            item,
+            channel=post.channel,
+            recent_intros=self._recent_intros(post.brand, item.locale, config),
+            # Rebuilt rather than parsed back out of the old comment: tagging is deterministic, so
+            # the campaign is the same one and a redraft never splits a post's attribution.
+            link=utm.tag_link(
+                post.canonical_link or "",
+                brand=post.brand,
+                channel=post.channel,
+                post_id=str(post.id),
+                source_type=(post.features.source_type if post.features else "") or "",
+            )
+            if post.canonical_link
+            else None,
+            nudge=nudge,
+        )
+        offered = [v for v in variants if v.ok]
+        if not offered:
+            reasons = [f"{v.angle}: {'; '.join(v.rejected or [])}" for v in variants]
+            self._record_variants(post, variants, chosen=None)
+            return self._fail(post, " | ".join(reasons) or "no caption could be written")
+
+        chosen = offered[0]
+        post.post_text = post.generated_post_text = chosen.draft.post_text
+        post.first_comment_text = post.generated_first_comment_text = chosen.draft.first_comment_text
+        post.status = PostStatus.DRAFT
+        post.error = None
+        self._record_variants(post, variants, chosen=chosen.angle)
+        if post.features is not None:
+            post.features.hook_style = chosen.hook_style
+            post.features.intro_line = chosen.draft.intro_line
+            post.features.caption_length = len(chosen.draft.post_text)
+
+        self._session.commit()
+        return post
+
+    def _item_from(self, post: Post, config: dict) -> ContentItem:
+        """Rebuild the envelope from what the post froze at draft time.
+
+        Deliberately not re-fetched from the brand: the caption must describe the image that was
+        captured, and the brand's live data may have moved since.
+        """
+        return ContentItem(
+            content_id=post.content_id,
+            brand=post.brand,
+            source_type=(post.features.source_type if post.features else "") or "",
+            locale=(post.features.locale if post.features else None)
+            or config.get("default_locale", "th"),
+            asset={"kind": "image", "storage_key": post.asset_storage_key},
+            canonical_link=post.canonical_link,
+            facts=post.facts or {},
+            generated_at=post.source_generated_at or post.created_at,
+        )
 
     def choose_variant(self, post_id: uuid.UUID | str, angle: str) -> Post:
         """Adopt one of the offered angles as the post's copy.
@@ -382,10 +466,16 @@ class Orchestrator:
         try:
             result = adapter.publish(request)
         except Exception as exc:  # noqa: BLE001 — every channel failure mode ends the same way here
+            # An adapter may know the photo went live even though the operation failed. Recording
+            # that id is what makes the post recoverable instead of merely lost: without it nobody
+            # can find the card on the Page to add the comment or take it down.
+            live_id = getattr(exc, "channel_post_id", None)
+            if live_id:
+                post.channel_post_id = str(live_id)
             self._fail(post, f"publish failed: {exc}")
             raise PublishFailed(f"post {post.id} failed to publish: {exc}") from exc
 
-        if not result.channel_comment_id and request.scheduled_for is None:
+        if not result.channel_comment_id and request.scheduled_for is None:  # noqa: SIM102
             # The photo may well be live. Recording success anyway would be worse than recording
             # nothing: a published card with no link cost reach and returns no traffic, and it would
             # then sit in the analytics as a content failure rather than a delivery one.
@@ -415,8 +505,16 @@ class Orchestrator:
         return post
 
     def _record_variants(self, post: Post, variants: list, chosen: str | None) -> None:
-        """Persist every angle, offered or not, with the reason when not."""
+        """Persist every angle, offered or not, with the reason when not.
+
+        The old set is deleted and flushed before the new one is inserted. Assigning straight over
+        the collection makes SQLAlchemy insert first and delete after, which collides with the
+        unique constraint on (post_id, angle) the moment a post is regenerated.
+        """
         now = self._now()
+        if post.variants:
+            post.variants.clear()
+            self._session.flush()
         post.variants = [
             PostVariant(
                 id=uuid.uuid4(),

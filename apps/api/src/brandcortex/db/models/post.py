@@ -72,6 +72,11 @@ class Post(Base, TimestampMixin):
     generated_post_text: Mapped[str | None] = mapped_column(Text)
     generated_first_comment_text: Mapped[str | None] = mapped_column(Text)
 
+    # The item's canonical link, before UTM tagging. Stored rather than parsed back out of the first
+    # comment: a post that failed before any copy was written has no comment to parse, and
+    # reconstructing it would mean asking the brand again for something already known at draft time.
+    canonical_link: Mapped[str | None] = mapped_column(String(1024))
+
     # The campaign carried by the link in the first comment. Unique because it is the join key between
     # site analytics and this post: two posts sharing one campaign would merge their traffic silently,
     # so the collision has to be a write error at draft time instead.

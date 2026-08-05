@@ -94,3 +94,31 @@ class TestEventFacts:
         result = check("10 อันดับแรกของประเทศ", short)
         assert not result.ok
         assert "10" in result.unsupported
+
+
+class TestNotationIsNotAClaim:
+    """A brand's fixed labels carry digits that assert nothing.
+
+    Found in use rather than in review: ThaiSwim renders a long-course pool as `สระ 50 ม.`, so the
+    50 is the pool's length. On a 50m event it coincidentally matched the facts and passed; the
+    first 100m event produced a correct caption that the check called unsupported. A check that
+    rejects correct copy is worse than no check — it teaches people to click through it.
+    """
+
+    FACTS = {"distance": 100, "course": "LCM", "ageGroup": "65-69", "rowCount": 10}
+    POOL = ("สระ 50 ม.", "สระ 25 ม.")
+
+    def test_a_pool_length_is_not_a_claim_about_the_swim(self) -> None:
+        caption = "ผีเสื้อ 100 ม. · สระ 50 ม."
+        assert not check(caption, self.FACTS).ok, "without notation the 50 looks invented"
+        assert check(caption, self.FACTS, notation=self.POOL).ok
+
+    def test_stripping_notation_does_not_blind_the_check(self) -> None:
+        """The whole risk of an exemption is that it becomes a hole."""
+        result = check("ผีเสื้อ 100 ม. · สระ 50 ม. · ชนะ 7 รายการ", self.FACTS, notation=self.POOL)
+        assert not result.ok
+        assert result.unsupported == ["7"]
+
+    def test_the_longest_label_wins(self) -> None:
+        """`สระ 50 ม.` must be stripped whole; matching `ม.` first would leave a bare 50 behind."""
+        assert check("สระ 50 ม.", self.FACTS, notation=("ม.", "สระ 50 ม.")).ok

@@ -85,6 +85,11 @@ generated, Page ID `1223598310834457` (ThaiSwim.com, user is full admin).
 
 ## Open Questions
 
+- **ANTHROPIC_API_KEY expires 2026-11-03** (added 2026-08-05, 90 days). Rotate by
+  2026-10-27. On expiry the caption writer falls back to templates — the queue keeps
+  working, the copy gets plainer. **The account currently has no credits**, so that fallback is
+  already what runs on every draft.
+
 - **Ruff's line-length gate has never passed.** 281 E501s, all docstring prose at 101–104 against a
   100 limit, repo-wide and predating 2026-08-05. Paragraph reflow, or raise the limit? One line either
   way. Do **not** retry a line-by-line wrap — see R-2026-08-05-01.

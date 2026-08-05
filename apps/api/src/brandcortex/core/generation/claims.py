@@ -96,14 +96,28 @@ def supported_numbers(facts: dict[str, Any]) -> set[str]:
 
 
 def check(
-    text: str, facts: dict[str, Any], *, allowed: frozenset[str] | set[str] = DEFAULT_ALLOWED
+    text: str,
+    facts: dict[str, Any],
+    *,
+    allowed: frozenset[str] | set[str] = DEFAULT_ALLOWED,
+    notation: tuple[str, ...] | list[str] = (),
 ) -> ClaimCheck:
     """Verify every number in `text` is grounded in `facts`.
 
     Strips URLs and hashtags first: a link's path digits and a tag like `#Top10` are not assertions
     about the subject, and scanning them produces noise that trains people to ignore this check.
+
+    `notation` strips the brand's fixed labels too, and that one is not a nicety. ThaiSwim renders a
+    long-course pool as `สระ 50 ม.` — the 50 is the *pool's* length, not a claim about the swim. On a
+    50m event it happens to match the facts and passes; on a 100m event the identical, correct label
+    was reported as an unsupported number. A check that rejects correct copy is worse than no check,
+    because it teaches people to click through it.
     """
-    scrubbed = _HASHTAG.sub(" ", _URL.sub(" ", text)).translate(_THAI_DIGITS)
+    scrubbed = _HASHTAG.sub(" ", _URL.sub(" ", text))
+    for label in sorted(notation, key=len, reverse=True):
+        if label:
+            scrubbed = scrubbed.replace(label, " ")
+    scrubbed = scrubbed.translate(_THAI_DIGITS)
     grounded = supported_numbers(facts)
     allow = {_canonical(a) for a in allowed}
 
@@ -117,3 +131,64 @@ def check(
     deduped = [m for m in unsupported if not (m in seen or seen.add(m))]
 
     return ClaimCheck(ok=not deduped, unsupported=deduped, supported=grounded)
+
+
+# --- Claims bound to their source ---------------------------------------------------------------
+#
+# `check` above answers "does this number exist in the facts". That stops a caption inventing a
+# medal count, and it does not stop a caption attaching a real number to the wrong thing: with
+# goldCount 3 and rankedCount 12, "อันดับ 1 ของประเทศ 12 รายการ" passes, because 12 is in the facts.
+# It is simply about the wrong fact.
+#
+# Both of the things that go wrong here are lookups, not judgments, so both are computable:
+#
+#   bindings   a phrase pattern names the fact it must equal — "N ท่า" is `goldStrokes`, and any
+#              other number in that slot is wrong however real it is elsewhere
+#   notation   a vocabulary the brand has standardised on, and the spellings that are therefore
+#              forbidden — `เมตร` where the cards render `ม.`, or a raw `LCM` where they render
+#              `สระ 50 ม.`
+#
+# Both live in `brand_config`, because both are brand-shaped. The core executes them and never
+# learns what a stroke is.
+
+_BINDING_CACHE: dict[str, re.Pattern[str]] = {}
+
+
+@dataclass
+class BindingViolation:
+    pattern: str
+    fact: str
+    said: str
+    expected: str
+
+
+def _compiled(pattern: str) -> re.Pattern[str]:
+    if pattern not in _BINDING_CACHE:
+        _BINDING_CACHE[pattern] = re.compile(pattern)
+    return _BINDING_CACHE[pattern]
+
+
+def check_bindings(text: str, facts: dict, bindings: list[dict]) -> list[BindingViolation]:
+    """Every bound phrase must carry the number its fact holds.
+
+    A pattern that does not appear is not a violation — angles legitimately differ in what they
+    mention. The check is only ever "when you said this, was it the right figure".
+    """
+    violations: list[BindingViolation] = []
+    for binding in bindings or []:
+        pattern, fact = binding.get("pattern"), binding.get("fact")
+        if not pattern or not fact or fact not in facts:
+            continue
+        expected = _canonical(str(facts[fact]))
+        for match in _compiled(pattern).finditer(text):
+            said = _canonical(match.group(1))
+            if said != expected:
+                violations.append(
+                    BindingViolation(pattern=pattern, fact=fact, said=said, expected=expected)
+                )
+    return violations
+
+
+def check_notation(text: str, forbidden: list[str]) -> list[str]:
+    """Spellings the brand has standardised away from. Found means rejected."""
+    return [token for token in forbidden or [] if token and token in text]

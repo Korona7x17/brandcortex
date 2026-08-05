@@ -10,7 +10,26 @@ their release schedule rather than ours.
 
 import hashlib
 import hmac
+import logging
 from typing import Any
+
+import httpx
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+
+logger = logging.getLogger(__name__)
+
+#: Graph error codes worth trying again. Everything else is a human's problem, and retrying it only
+#: delays the moment someone finds out.
+#:   1, 2   transient platform faults
+#:   4, 17, 32, 613  rate limiting, per-app and per-user
+#:   341    temporary application-level throttle
+RETRYABLE_CODES = frozenset({1, 2, 4, 17, 32, 341, 613})
+
+#: A token that is expired, revoked or missing a scope. Never retried: the fix is a person
+#: re-authorizing, and a retry loop turns a clear failure into a silent one.
+AUTH_CODES = frozenset({190, 102, 200, 10})
+
+REQUEST_TIMEOUT_SECONDS = 60.0
 
 
 def appsecret_proof(access_token: str, app_secret: str) -> str:
@@ -28,6 +47,15 @@ def appsecret_proof(access_token: str, app_secret: str) -> str:
     ).hexdigest()
 
 
+class _Retryable(RuntimeError):
+    """Internal marker: a fault worth trying again. Never escapes the client."""
+
+    def __init__(self, message: str, *, code: int | None = None, subcode: int | None = None) -> None:
+        super().__init__(message)
+        self.code = code
+        self.subcode = subcode
+
+
 class GraphError(RuntimeError):
     """A Graph API error, carrying the subcode needed to distinguish retryable from terminal."""
 
@@ -37,12 +65,15 @@ class GraphError(RuntimeError):
         self.subcode = subcode
 
 
+class GraphAuthError(GraphError):
+    """The token cannot do this. A person must re-authorize; nothing here should retry."""
+
+
 class GraphClient:
     """Authenticated calls against a pinned Graph API version.
 
-    TODO(phase-1): implement over `httpx`, with `tenacity` retries on transient errors only —
-    rate limits and 5xx are retryable; an invalid token or a permission error is not, and retrying it
-    only delays the human fix.
+    Retries transient faults and rate limits only. An invalid token or a missing permission is
+    terminal by design: retrying it delays the human fix and turns a loud failure into a slow one.
     """
 
     def __init__(
@@ -66,8 +97,74 @@ class GraphClient:
             params["appsecret_proof"] = self._proof
         return params
 
+    def _url(self, path: str) -> str:
+        return f"{self._base_url}/{self._version}/{path.lstrip('/')}"
+
+    @retry(
+        retry=retry_if_exception_type((httpx.TransportError, _Retryable)),
+        stop=stop_after_attempt(4),
+        wait=wait_exponential(multiplier=1, max=20),
+        reraise=True,
+    )
+    def _send(self, method: str, path: str, **kwargs: Any) -> dict:
+        with httpx.Client(timeout=REQUEST_TIMEOUT_SECONDS) as client:
+            response = client.request(method, self._url(path), **kwargs)
+        return self._unwrap(response)
+
+    def _unwrap(self, response: httpx.Response) -> dict:
+        """Turn a Graph response into data, or into the narrowest error that fits.
+
+        Graph answers 200 with an `error` object often enough that status alone is not a reliable
+        signal, so the body is inspected either way.
+        """
+        try:
+            body = response.json()
+        except ValueError:
+            if response.is_success:
+                return {}
+            raise GraphError(
+                f"graph returned {response.status_code} with a non-JSON body"
+            ) from None
+
+        error = body.get("error") if isinstance(body, dict) else None
+        if error:
+            code = error.get("code")
+            subcode = error.get("error_subcode")
+            # The message can quote the request, which carries the token. Keep Meta's type and
+            # codes, drop their prose.
+            summary = f"{error.get('type', 'GraphError')} code={code} subcode={subcode}"
+            if code in AUTH_CODES:
+                raise GraphAuthError(
+                    f"{summary}: the Page token is invalid, expired or missing a permission",
+                    code=code,
+                    subcode=subcode,
+                )
+            if code in RETRYABLE_CODES or response.status_code >= 500:
+                raise _Retryable(summary, code=code, subcode=subcode)
+            raise GraphError(summary, code=code, subcode=subcode)
+
+        if response.status_code >= 500:
+            raise _Retryable(f"graph returned {response.status_code}")
+        if not response.is_success:
+            raise GraphError(f"graph returned {response.status_code}")
+        return body
+
     def post(self, path: str, data: dict[str, Any] | None = None, files: dict | None = None) -> dict:
-        raise NotImplementedError
+        """POST with auth in the form body, so the token never lands in a URL.
+
+        URLs reach access logs, proxies and error trackers; form bodies generally do not.
+        """
+        return self._send(
+            "POST", path, data={**(data or {}), **self._auth_params()}, files=files
+        )
 
     def get(self, path: str, params: dict[str, Any] | None = None) -> dict:
-        raise NotImplementedError
+        return self._send("GET", path, params={**(params or {}), **self._auth_params()})
+
+    def debug_token(self) -> dict:
+        """What this token actually is: its scopes, expiry and the app it belongs to.
+
+        Reads the token's own metadata, which is how `health_check` can report a missing permission
+        before a scheduled publish discovers it at 3am.
+        """
+        return self.get("debug_token", {"input_token": self._token})

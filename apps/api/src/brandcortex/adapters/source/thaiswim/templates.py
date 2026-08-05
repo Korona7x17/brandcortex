@@ -186,7 +186,6 @@ def _swimmer_comment(facts: dict[str, Any]) -> str:
 
 def _sweep_th(*, facts, intro, config, closing=0):
     """Across four strokes — the rarest thing on most of these cards."""
-    golds = facts.get("goldCount") or 0
     strokes = facts.get("goldStrokes") or 0
     if strokes < 2:
         raise _NotApplicable("only one stroke won")

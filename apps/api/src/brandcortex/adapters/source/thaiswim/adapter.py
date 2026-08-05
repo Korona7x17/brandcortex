@@ -30,7 +30,6 @@ import json
 import logging
 from datetime import UTC, datetime
 from typing import Any
-from urllib.parse import urlencode
 
 import httpx
 from sqlalchemy import Engine, text

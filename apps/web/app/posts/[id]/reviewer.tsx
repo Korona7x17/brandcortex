@@ -6,6 +6,8 @@ import { useState, useTransition } from "react";
 import { ApiError, api, type PostDetail } from "@/lib/api";
 import { diffWords } from "@/lib/diff";
 
+import { CopyButton } from "./copy";
+import { Schedule } from "./schedule";
 import { Variants } from "./variants";
 
 /**
@@ -22,6 +24,7 @@ export function Reviewer({ initial }: { initial: PostDetail }) {
   const [post, setPost] = useState(initial);
   const [caption, setCaption] = useState(initial.post_text ?? "");
   const [reasons, setReasons] = useState<string[]>([]);
+  const [nudge, setNudge] = useState("");
   const [pending, start] = useTransition();
 
   const dirty = caption !== (post.post_text ?? "");
@@ -50,10 +53,41 @@ export function Reviewer({ initial }: { initial: PostDetail }) {
 
   return (
     <>
+      <div className="panel">
+        <h2>Rewrite</h2>
+        <div className="field">
+          <label htmlFor="nudge">Direction for this post only</label>
+          <input
+            id="nudge"
+            type="search"
+            value={nudge}
+            onChange={(e) => setNudge(e.target.value)}
+            placeholder="shorter · lead with her age · make it about the comeback"
+            disabled={terminal || pending}
+          />
+        </div>
+        <div className="actions">
+          <button
+            onClick={() => run(() => api.regenerate(post.id, nudge))}
+            disabled={terminal || pending}
+          >
+            {pending ? "Writing…" : "Regenerate all angles"}
+          </button>
+          <span className="note">
+            Replaces every variant. A direction steers the writing; it cannot loosen a check.
+          </span>
+        </div>
+      </div>
+
       <Variants post={post} onChange={adopt} />
 
       <div className="panel">
-        <h2>Caption {dirty && "— unsaved"}</h2>
+        <h2>
+          Caption {dirty && "— unsaved"}
+          <span style={{ float: "right" }}>
+            {post.post_text && <CopyButton text={post.post_text} />}
+          </span>
+        </h2>
         {terminal ? (
           <p className="copy">{post.post_text}</p>
         ) : (
@@ -111,8 +145,15 @@ export function Reviewer({ initial }: { initial: PostDetail }) {
         )}
       </div>
 
+      <Schedule post={post} onChange={adopt} />
+
       <div className="panel">
-        <h2>First comment — carries the link</h2>
+        <h2>
+          First comment — carries the link
+          <span style={{ float: "right" }}>
+            {post.first_comment_text && <CopyButton text={post.first_comment_text} />}
+          </span>
+        </h2>
         <p className="comment">{post.first_comment_text ?? "—"}</p>
         <p className="note">
           The link never goes in the caption: photo posts out-reach link posts, and comments are exempt

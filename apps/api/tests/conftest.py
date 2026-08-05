@@ -18,9 +18,29 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from brandcortex.core.generation import writer as writer_module
 from brandcortex.db.base import Base
 from brandcortex.db.models import Post  # noqa: F401 — registers every model on Base.metadata
 from brandcortex.schemas.draft import PublishRequest, PublishResult
+
+
+@pytest.fixture(autouse=True)
+def no_model_calls(monkeypatch):
+    """No test may reach the Anthropic API.
+
+    The orchestrator builds a writer from settings, so once a real key is present in the environment
+    every ingest in the suite would make a live model call — slow, costly, and non-deterministic in
+    a way that makes a failing assertion impossible to trust. Patched to unavailable, which is also
+    the path that exercises the template fallback.
+
+    A test that wants the model path injects its own fake writer, and gets a deterministic one.
+    """
+
+    class Offline:
+        def write(self, **_):
+            raise writer_module.WriterUnavailable("model calls are disabled in tests")
+
+    monkeypatch.setattr(writer_module, "from_settings", lambda _settings: Offline())
 
 
 @pytest.fixture

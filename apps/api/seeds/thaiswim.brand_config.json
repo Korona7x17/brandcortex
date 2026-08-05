@@ -5,14 +5,15 @@
     "Values come from BrandCortex-architecture.md §6 and from reading dev/thaiswim.",
     "Load with `scripts/seed_brand_config.py` (TODO phase-1)."
   ],
-
   "brand": "thaiswim",
   "display_name": "ThaiSwim",
   "timezone": "Asia/Bangkok",
   "default_locale": "th",
   "_default_locale_comment": "Used when a card carries no recorded `lang`. Not a claim that the brand is monolingual — the event card engine renders English too, and brand #2 is expected to be an English site.",
-  "supported_locales": ["th", "en"],
-
+  "supported_locales": [
+    "th",
+    "en"
+  ],
   "voice": {
     "_comment": "A fixed constraint, not an optimizable lever. The reflection agent may never propose changes here (§10.4).",
     "tone": "understated, factual, warm — recognition, not advertising. Let the facts speak.",
@@ -30,7 +31,6 @@
     "require_no_links_in_body": true,
     "max_caption_length": 900
   },
-
   "intro_bank": {
     "_comment": "Rotating soft intros for swimmer posts (§6.4). Meant to grow; the reflection agent tracks fatigue per line.",
     "th": [
@@ -50,24 +50,30 @@
     ]
   },
   "intro_lookback": 5,
-
   "hashtags": {
-    "core": ["#ThaiSwim", "#ว่ายน้ำไทย", "#ว่ายน้ำมาสเตอร์ส"],
-    "optional": ["#MastersSwimming", "#swimmingthailand"]
+    "core": [
+      "#ThaiSwim",
+      "#ว่ายน้ำไทย",
+      "#ว่ายน้ำมาสเตอร์ส"
+    ],
+    "optional": [
+      "#MastersSwimming",
+      "#swimmingthailand"
+    ]
   },
-
   "unit_labels": {
     "_comment": "Open decision #3. Set to `ม.` because the card engines already render `${dist} ม.` — captions and cards must agree.",
     "metre_short": "ม.",
-    "course": { "LCM": "สระ 50 ม.", "SCM": "สระ 25 ม." }
+    "course": {
+      "LCM": "สระ 50 ม.",
+      "SCM": "สระ 25 ม."
+    }
   },
-
   "tag_targets": {
     "_comment": "Facebook Page handles for clubs and provincial teams, keyed by the club/province string as it appears in the card snapshot. Tagging is only possible where a Page is known — leave unmapped rather than guessing.",
     "clubs": {},
     "provinces": {}
   },
-
   "north_star": {
     "_comment": "UTM sessions + amplification. Reactions carry zero weight on purpose: weighting them steers the loop back to the hype voice the brand rejected (§10.4).",
     "_weights_comment": "Weights apply to Z-SCORED values, not raw counts. The earlier flat map of raw weights was wrong: metrics live on different scales, so a weighted sum of counts lets whichever metric is naturally largest dominate regardless of its weight. core/analytics/outcomes.py normalizes each component across the comparison window first.",
@@ -75,28 +81,117 @@
     "maturity_hours": 72,
     "tolerance_hours": 24,
     "metrics": {
-      "utm_sessions": { "weight": 1.0, "per_reach": true },
-      "shares": { "weight": 0.5, "per_reach": true },
-      "saves": { "weight": 0.35, "per_reach": true },
-      "comments": { "weight": 0.1, "per_reach": true },
-      "reactions": { "weight": 0.0, "per_reach": true }
+      "utm_sessions": {
+        "weight": 1.0,
+        "per_reach": true
+      },
+      "shares": {
+        "weight": 0.5,
+        "per_reach": true
+      },
+      "saves": {
+        "weight": 0.35,
+        "per_reach": true
+      },
+      "comments": {
+        "weight": 0.1,
+        "per_reach": true
+      },
+      "reactions": {
+        "weight": 0.0,
+        "per_reach": true
+      }
     },
     "_power_note": "utm_sessions is the metric that matters and the one with the least statistical power — the link sits in the first comment, which most readers never open, so expect 0-5 sessions per post. Shares will supply the usable evidence for the first months; sessions stay the north star and the anti-reward-hacking cross-check against the channel's own click count."
   },
-
   "scheduling": {
     "alternate_source_types": true,
-    "source_types": ["swimmer", "event"],
+    "source_types": [
+      "swimmer",
+      "event"
+    ],
     "min_spacing_hours": 20,
-    "preferred_hours": [19, 20, 21],
+    "preferred_hours": [
+      19,
+      20,
+      21
+    ],
     "_preferred_hours_note": "Hand-authored prior in Asia/Bangkok, to be replaced by the learned timing model once there is evidence (§10.5).",
     "max_posts_per_day": 1
   },
-
   "source": {
     "_comment": "Read by the ThaiSwim source adapter, not by the core.",
     "site_url": "https://thaiswim.com",
     "handoff_table": "card_renders",
-    "kinds": ["swimmer", "event"]
+    "kinds": [
+      "swimmer",
+      "event"
+    ]
+  },
+  "writer": {
+    "_comment": "What the model is briefed with. Editable in the app — angles, examples and guidance are the brand's, not the code's. The hard rules (numbers must exist in facts, no link in the caption, the emoji ceiling) are enforced after the model answers and cannot be edited away from here.",
+    "guidance": "ThaiSwim recognises masters swimmers — often 40 to 80 years old — who are still ranked nationally. The reader is usually a swimmer themselves, or someone's family. Write as if you know the sport: name the achievement plainly and let it stand. Never congratulate, never dramatise, never address the swimmer in the second person. Thai copy is first-class, not translated from English.",
+    "max_variants": 6,
+    "angles": [
+      {
+        "key": "plain",
+        "instruction": "State the achievement in the plainest possible numbers. No framing at all."
+      },
+      {
+        "key": "sweep",
+        "instruction": "Lead with the number of distinct strokes held at national #1. Only if more than one."
+      },
+      {
+        "key": "longevity",
+        "instruction": "Lead with the age group — still at national level at this age. The angle that travels furthest with masters swimmers."
+      },
+      {
+        "key": "breadth",
+        "instruction": "Lead with how many events they are ranked in, rather than how many they win."
+      },
+      {
+        "key": "standout",
+        "instruction": "Lead with one concrete swim: the distance, the stroke, the course and the time."
+      },
+      {
+        "key": "club",
+        "instruction": "Lead with the club or provincial team, so the club's own Page has a reason to share it."
+      }
+    ],
+    "examples": [
+      "ทุกฤดูกาลมีนักว่ายน้ำที่ทำให้เราต้องหยุดมอง\n\nริน สืบสงวน · สมาคมราชกรีฑาสโมสร · ทีมสุราษฎร์ธานี · รุ่น 55–59\n\nอันดับ 1 ของประเทศ 9 รายการ ครบ 4 ท่า\n\nสถิติที่สะสมมาทีละรายการ ไม่ได้มาในวันเดียว\n\nสถิติทั้งหมดอยู่ในคอมเมนต์แรก\n\n#ThaiSwim #ว่ายน้ำไทย #ว่ายน้ำมาสเตอร์ส"
+    ],
+    "_examples_comment": "Seeded with one caption from the template era so the model has a register to match. Replace these with captions you have actually approved — few-shot examples in your own Thai are worth more than any description of the voice.",
+    "_bindings_comment": "Phrases whose number is a lookup, not a judgment. `claims.check` already stops invented figures; these stop real figures attached to the wrong fact — with goldCount 3 and rankedCount 12, 'อันดับ 1 ของประเทศ 12 รายการ' is false but every number in it is real.",
+    "claim_bindings": [
+      {
+        "pattern": "อันดับ 1 ของประเทศ (\\d+) รายการ",
+        "fact": "goldCount"
+      },
+      {
+        "pattern": "ครบ (\\d+) ท่า",
+        "fact": "goldStrokes"
+      },
+      {
+        "pattern": "(\\d+) ท่าว่าย",
+        "fact": "goldStrokes"
+      },
+      {
+        "pattern": "ติดอันดับประเทศ (\\d+) รายการ",
+        "fact": "rankedCount"
+      },
+      {
+        "pattern": "ติดอันดับรวม (\\d+) รายการ",
+        "fact": "rankedCount"
+      }
+    ],
+    "forbidden_notation": [
+      "เมตร",
+      " LCM",
+      " SCM",
+      "(LCM)",
+      "(SCM)"
+    ],
+    "_notation_comment": "The card engines render `ม.` and `สระ 50 ม.`. A caption using `เมตร` or a raw course code disagrees with the image in the same post."
   }
 }

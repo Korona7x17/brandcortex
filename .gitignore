@@ -215,3 +215,6 @@ $RECYCLE.BIN/
 *.sublime-project
 .history/
 .direnv/
+
+# Local dev artifacts (assets captured to disk, scratch databases)
+.local/

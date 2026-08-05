@@ -56,7 +56,7 @@ apps/api/src/brandcortex/
               brand_config.py  config document <-> table
   adapters/   base.py protocols + registry; source/thaiswim/*; channel/facebook/*
   db/models/  8 tables per spec §5.2
-apps/web/     Next.js dashboard — routes exist, still stubs (the API now feeds it)
+apps/web/     DOES NOT EXIST — never scaffolded, despite CLAUDE.md's layout section
 packages/contracts/   content-item envelope JSON Schema (versioned, never edited)
 apps/api/seeds/thaiswim.brand_config.json   voice, intro banks (th+en), hashtags, north_star
 ```

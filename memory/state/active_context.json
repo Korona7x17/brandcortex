@@ -26,7 +26,7 @@
     "facebook adapter publish / fetch_insights",
     "publisher and insights_fetcher workers",
     "reflection agent",
-    "apps/web dashboard routes"
+    "apps/web — the directory does not exist at all; no dashboard has ever been built"
   ],
   "blocked": [
     {

@@ -31,3 +31,15 @@ User tokens (Business Settings) never expire and skip the OAuth dialog entirely;
 **Status:** Accepted (token not yet obtained)
 **Date:** 2026-08-04
 **Ref:** apps/api/src/brandcortex/adapters/channel/facebook/adapter.py@f7847f
+
+## T-2026-08-05-04 — Tests build SQLite from the models; `alembic check` is the migration contract
+
+**Rationale:** In-memory SQLite created from `Base.metadata` keeps the suite fast and dependency-free,
+and it deliberately does *not* prove the migration matches the models — `alembic check` does, and it
+is what runs when a model changes. `StaticPool` plus `check_same_thread=False` share one connection so
+`TestClient`, which serves the app on its own thread, sees rows the test just wrote. Postgres remains
+the production target; the baseline has so far only ever been applied to SQLite.
+
+**Status:** Accepted
+**Date:** 2026-08-05
+**Ref:** apps/api/tests/conftest.py; apps/api/alembic/versions/f9790093b021_initial_schema.py@b2ea54

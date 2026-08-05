@@ -26,3 +26,15 @@ Three attempts (facebook.com redirect, thaiswim.com redirect, two Graph versions
 Domains rules and then by "No redirect URI in the params". Graph API Explorer separately blocked by a
 cached invalid scope. Abandoned in favour of the System User route (D-2026-08-04-T03), which needs no
 redirect and no dialog.
+
+## R-2026-08-05-01 — Automated line-wrap sweep to make `ruff check` pass
+
+Wrote a tokenize-based script to wrap over-long comment and docstring lines at column 100. It wrapped
+*lines* greedily rather than reflowing *paragraphs*, so a 103-character line became 100 characters
+plus an orphaned three-character word on its own line — across ~40 files, including ones the session
+had no other reason to touch. Reverted entirely: `git checkout` for files not otherwise changed, full
+rewrite for the day's own, then `git diff --name-only` checked against the intended list.
+
+The lesson is the unit, not the tool: prose reflows by paragraph. The underlying question — 281
+docstring lines sit at 101–104 against a 100 limit — is still open and is a one-line decision either
+way.

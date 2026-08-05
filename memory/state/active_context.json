@@ -1,16 +1,33 @@
 {
   "project": "brandcortex",
-  "updated": "2026-08-04",
-  "phase": "1 (MVP) — generation path working, persistence and channel I/O outstanding",
+  "updated": "2026-08-05",
+  "phase": "1 (MVP) — generation and persistence working; channel I/O and dashboard outstanding",
   "tenant": "thaiswim",
   "channel": "facebook",
+  "branch": "scaffold/thaiswim-facebook-mvp",
+  "head": "1ab1f4b",
+  "pushed": false,
   "topics": [
+    "orchestrator + review API",
+    "alembic baseline",
     "thaiswim card_renders seam",
     "generation engine + numeric grounding",
     "self-improving loop verification",
     "meta page token"
   ],
-  "tests": { "passed": 97, "skipped": 9 },
+  "tests": { "passed": 135, "skipped": 9 },
+  "working_end_to_end": [
+    "card_renders row -> content item -> checked Thai copy",
+    "draft persisted with captured card, frozen facts, UTM campaign, features",
+    "review API: queue, generated-vs-edited diff, card bytes, edit, approve, publish",
+    "alembic baseline applied and drift-free (SQLite only so far)"
+  ],
+  "still_stubs": [
+    "facebook adapter publish / fetch_insights",
+    "publisher and insights_fetcher workers",
+    "reflection agent",
+    "apps/web dashboard routes"
+  ],
   "blocked": [
     {
       "what": "facebook page access token",
@@ -18,19 +35,37 @@
       "have": ["app_id", "app_secret", "page_id", "fernet_key"],
       "missing_scopes": ["pages_manage_posts", "pages_manage_engagement", "read_insights"],
       "next": "System User token via business.facebook.com Business Settings (never expires, no OAuth dialog)",
-      "note": "user was heavily frustrated by this flow; approach gently and offer to park it"
+      "note": "user was heavily frustrated by this flow; approach gently and offer to park it",
+      "blocks": "only real publishing — the FB adapter itself is writable and testable offline against respx"
     }
   ],
-  "next_actions": [
-    "real React dashboard OR orchestrator + DB persistence (user's call)",
-    "retry meta token via System User",
-    "alembic revision --autogenerate once Postgres is up"
+  "open_questions": [
+    {
+      "what": "ruff line-length gate has never passed",
+      "detail": "281 E501s, all docstring prose at 101-104 against a 100 limit, repo-wide and predating 2026-08-05",
+      "options": ["paragraph-level reflow", "raise line-length"],
+      "do_not": "retry a line-by-line wrap — it orphans words; see R-2026-08-05-01"
+    },
+    { "what": "no Postgres provisioned", "detail": "baseline has only ever been applied to SQLite" }
   ],
+  "next_actions": [
+    "react dashboard (API now feeds it) OR facebook publish path against respx",
+    "retry meta token via System User",
+    "provision Postgres and apply the baseline there",
+    "settle the E501 question so ruff check is a real gate"
+  ],
+  "local_dev": {
+    "migrate": "uv run alembic upgrade head",
+    "seed": "uv run python -m brandcortex.db.seed seeds/thaiswim.brand_config.json",
+    "serve": "uv run uvicorn brandcortex.main:app --reload",
+    "note": "config reads .env from the working directory; ASSET_BUCKET as a path means local disk"
+  },
   "do_not": [
     "modify ThaiSwim card engines",
     "write anything to the brand DB",
     "put links in the post caption",
     "let the learning loop propose voice.* rules",
-    "hardcode locale to th"
+    "hardcode locale to th",
+    "declare a status column as String — it loads back a bare str and breaks every `is` comparison"
   ]
 }

@@ -3,6 +3,7 @@
     uv run uvicorn brandcortex.main:app --reload
 """
 
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -10,13 +11,27 @@ from fastapi import FastAPI
 from brandcortex.api.routes import content_items, health, insights, playbook, posts
 from brandcortex.config import get_settings
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Bind brand and channel keys to implementations. The only place either is allowed to appear.
-    # TODO(phase-1): enable once the ThaiSwim and Facebook adapters are implemented.
-    # from brandcortex.adapters import registry
-    # registry.bootstrap()
+    """Bind brand and channel keys to implementations, then serve.
+
+    A failure here is logged rather than raised. Bootstrap reads `brand_config`, so an unseeded or
+    unreachable database would otherwise take the whole API down — including the endpoints that
+    would have told you why. Unregistered adapters make the routes that need one return a clear
+    error, which is a better first thing to see than a container that will not start.
+
+    Workers call `registry.bootstrap()` directly and do let it raise: a publisher with no channel
+    adapter has nothing useful to do.
+    """
+    from brandcortex.adapters import registry
+
+    try:
+        registry.bootstrap()
+    except Exception:  # noqa: BLE001 — see docstring
+        logger.exception("adapter bootstrap failed; brand and channel routes are unavailable")
     yield
 
 

@@ -30,6 +30,11 @@ Three properties keep the whole thing honest:
 from datetime import datetime, timedelta
 from typing import Any
 
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from brandcortex.db.models import PlaybookRule, PlaybookRuleStatus
+
 #: Rule-key prefixes the learning loop may auto-activate once verified — low-risk, easily reverted,
 #: and the spec explicitly allows it (§10.3).
 AUTO_ACTIVATE_PREFIXES: tuple[str, ...] = ("timing.",)
@@ -44,15 +49,26 @@ class RuleRejected(ValueError):
     """A proposal that may not proceed. Carries why, so the report can say so plainly."""
 
 
-def load_active(brand: str) -> dict:
+def load_active(session: Session, brand: str) -> dict[str, dict]:
     """Return the active rule set for a brand, keyed by `rule_key`.
+
+    Each entry carries the rule's `payload` plus its `version`, because the version is what every
+    draft records: without it a rollback cannot tell which posts were produced under which rules,
+    and attribution silently mixes two regimes.
 
     Returns an empty playbook when nothing is active yet — Phase 1 runs this way on purpose, and the
     engine must behave correctly with an empty playbook.
-
-    TODO(phase-1): implement.
     """
-    raise NotImplementedError
+    rules = session.scalars(
+        select(PlaybookRule).where(
+            PlaybookRule.brand == brand,
+            PlaybookRule.status == PlaybookRuleStatus.ACTIVE,
+        )
+    ).all()
+    return {
+        rule.rule_key: {**(rule.payload or {}), "version": rule.version, "rule": rule.rule}
+        for rule in rules
+    }
 
 
 def assert_proposable(rule_key: str) -> None:

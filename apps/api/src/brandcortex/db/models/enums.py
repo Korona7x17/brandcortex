@@ -6,6 +6,31 @@ through the adapter registry, so adding IG or brand #2 never touches this file.
 
 from enum import StrEnum
 
+from sqlalchemy import Enum as SAEnum
+
+
+def status_column(enum_cls: type[StrEnum], *, length: int = 16) -> SAEnum:
+    """Column type for a status enum: a VARCHAR that still comes back as an enum member.
+
+    Declaring these as a plain `String` is the obvious thing, and it is wrong in a way that hides.
+    The value writes fine but loads back as a bare `str`, so every `status is PostStatus.DRAFT` in
+    the codebase silently evaluates False against a row read from the database, while continuing to
+    work on the object still in the identity map. The orchestrator's state machine is built on those
+    comparisons; the symptom is an approve button that 409s in production and passes every test that
+    never reloads the row.
+
+    `native_enum=False` keeps the storage a VARCHAR — no Postgres ENUM type, so adding a status is
+    an ordinary migration rather than an `ALTER TYPE`. `values_callable` stores `draft` rather than
+    `DRAFT`, which keeps the column readable in a query and lets an API filter pass the string
+    straight through.
+    """
+    return SAEnum(
+        enum_cls,
+        native_enum=False,
+        length=length,
+        values_callable=lambda enum: [member.value for member in enum],
+    )
+
 
 class PostStatus(StrEnum):
     """Lifecycle of a post inside BrandCortex.

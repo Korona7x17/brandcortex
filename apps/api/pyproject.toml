@@ -42,6 +42,23 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "TID"]
 
+[tool.ruff.lint.per-file-ignores]
+# The adapter ban is a statement about `core/`, not about the whole tree. Adapters import
+# adapters; the API, the workers and the tests all have to reach real implementations. Ruff
+# applies banned-api globally, so the scoping is expressed here as ignores — and the ban is not
+# what enforces the rule anyway. `tests/unit/test_core_is_brand_agnostic.py` is, by reading the
+# AST of `core/` specifically.
+"src/brandcortex/adapters/**" = ["TID251"]
+"src/brandcortex/api/**" = ["TID251"]
+"src/brandcortex/workers/**" = ["TID251"]
+"src/brandcortex/main.py" = ["TID251"]
+"tests/**" = ["TID251"]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's whole dependency mechanism is a call in a default argument. B008 is right about
+# almost everything else and wrong about exactly these.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Header"]
+
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 # The core must never learn brand or channel identity. Adapters are resolved at
 # runtime through adapters/registry.py, never imported by core modules.

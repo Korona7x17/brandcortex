@@ -12,7 +12,7 @@ from sqlalchemy import JSON, DateTime, Index, Integer, Numeric, String, Text, Un
 from sqlalchemy.orm import Mapped, mapped_column
 
 from brandcortex.db.base import Base, TimestampMixin
-from brandcortex.db.models.enums import ExperimentStatus, PlaybookRuleStatus
+from brandcortex.db.models.enums import ExperimentStatus, PlaybookRuleStatus, status_column
 
 
 class PlaybookRule(Base, TimestampMixin):
@@ -69,7 +69,7 @@ class PlaybookRule(Base, TimestampMixin):
     prediction_result: Mapped[dict] = mapped_column(JSON, default=dict)
 
     status: Mapped[PlaybookRuleStatus] = mapped_column(
-        String(16), nullable=False, default=PlaybookRuleStatus.PROPOSED
+        status_column(PlaybookRuleStatus), nullable=False, default=PlaybookRuleStatus.PROPOSED
     )
     # Set when a human clears the approval gate. Low-risk knobs (timing) may auto-activate; voice and
     # strategy changes may not.
@@ -98,7 +98,7 @@ class Experiment(Base, TimestampMixin):
     results: Mapped[dict] = mapped_column(JSON, default=dict)
 
     status: Mapped[ExperimentStatus] = mapped_column(
-        String(16), nullable=False, default=ExperimentStatus.DRAFT
+        status_column(ExperimentStatus), nullable=False, default=ExperimentStatus.DRAFT
     )
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     concluded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

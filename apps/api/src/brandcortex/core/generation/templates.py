@@ -39,7 +39,7 @@ def get(source_type: str, locale: str, *, fallback_locale: str | None = None) ->
     if renderer is None and fallback_locale:
         renderer = _TEMPLATES.get((source_type, fallback_locale))
     if renderer is None:
-        known = sorted(f"{s}/{l}" for s, l in _TEMPLATES)
+        known = sorted(f"{kind}/{loc}" for kind, loc in _TEMPLATES)
         raise LookupError(
             f"no template registered for {source_type!r}/{locale!r}; registered: {known or '(none)'}"
         )

@@ -48,6 +48,12 @@ class BrandConfig(Base, TimestampMixin):
     # Scheduling policy: source-type alternation, minimum spacing, preferred windows.
     scheduling: Mapped[dict] = mapped_column(JSON, default=dict)
 
+    # Everything else the brand's config document carries — `supported_locales`, `intro_lookback`,
+    # and the `_comment` keys that record why a value is what it is. Kept rather than dropped so the
+    # stored config round-trips: a column per setting would mean a migration every time a brand grows
+    # one, and the generation engine reads this table as a flat mapping regardless.
+    settings: Mapped[dict] = mapped_column(JSON, default=dict)
+
 
 class IntroHistory(Base, TimestampMixin):
     """Recently used intro lines, enforcing no-repeat rotation (spec §6.5).

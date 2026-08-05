@@ -22,7 +22,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from brandcortex.db.base import Base, TimestampMixin
-from brandcortex.db.models.enums import PostStatus
+from brandcortex.db.models.enums import PostStatus, status_column
 
 
 class Post(Base, TimestampMixin):
@@ -44,7 +44,7 @@ class Post(Base, TimestampMixin):
     channel: Mapped[str] = mapped_column(String(64), nullable=False)
 
     status: Mapped[PostStatus] = mapped_column(
-        String(16), nullable=False, default=PostStatus.DRAFT
+        status_column(PostStatus), nullable=False, default=PostStatus.DRAFT
     )
 
     # BrandCortex's frozen copy of the card, captured at draft time. These exact bytes are what
@@ -52,12 +52,41 @@ class Post(Base, TimestampMixin):
     # afterwards without consequence.
     asset_storage_key: Mapped[str | None] = mapped_column(String(512))
 
-    # The caption. Never contains the canonical link — links go in the first comment (spec §8).
+    # The content item's `facts` as they stood when the draft was written — the brand's snapshot,
+    # denormalized and frozen. Three things need it and none of them can get it any other way: the
+    # review UI shows what the card asserts next to what the caption says, the numeric check has to
+    # re-run against a reviewer's edit, and afterwards this is the only surviving record of what the
+    # image claimed, since the brand's own row can change and the card re-renders from live data.
+    facts: Mapped[dict] = mapped_column(JSON, default=dict)
+
+    # The caption as it will publish. Never contains the canonical link — links go in the first
+    # comment (spec §8). A reviewer may edit this; the pair below keeps what the engine actually wrote.
     post_text: Mapped[str | None] = mapped_column(Text)
     # The first comment, carrying the UTM-tagged canonical link.
     first_comment_text: Mapped[str | None] = mapped_column(Text)
 
+    # The engine's own output, frozen at draft time and never edited afterwards. The delta between
+    # these and the columns above is the single most valuable training signal the system produces — a
+    # reviewer's edit is a direct statement about what the engine got wrong. Storing both texts rather
+    # than a diff keeps it recomputable with whatever comparison turns out to be the useful one.
+    generated_post_text: Mapped[str | None] = mapped_column(Text)
+    generated_first_comment_text: Mapped[str | None] = mapped_column(Text)
+
+    # The campaign carried by the link in the first comment. Unique because it is the join key between
+    # site analytics and this post: two posts sharing one campaign would merge their traffic silently,
+    # so the collision has to be a write error at draft time instead.
+    utm_campaign: Mapped[str | None] = mapped_column(String(128), unique=True, index=True)
+
+    # When the brand rendered the card — the envelope's `generated_at`, copied across the seam. It is
+    # also the ingest cursor: the watcher polls for rows newer than the newest one it has drafted, so
+    # the cursor lives in the same table as the evidence it was advanced by, and re-deriving it after
+    # a restart is one query rather than a piece of worker state that can go missing.
+    source_generated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), index=True
+    )
+
     scheduled_for: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     # Channel-side identifiers, captured on publish. These are what make analytics joinable back to

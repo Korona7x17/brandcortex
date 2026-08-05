@@ -12,6 +12,7 @@ written holds either way, so this can be settled at deploy time.
 """
 
 from collections.abc import Iterator
+from contextlib import contextmanager
 from functools import lru_cache
 
 from sqlalchemy import Engine, create_engine
@@ -39,7 +40,31 @@ def _session_factory() -> sessionmaker[Session]:
     return sessionmaker(bind=get_engine(), expire_on_commit=False, future=True)
 
 
+def create_session() -> Session:
+    """A new session, for workers and scripts that manage their own lifetime."""
+    return _session_factory()()
+
+
 def get_session() -> Iterator[Session]:
     """FastAPI dependency yielding a transactional session."""
     with _session_factory()() as session:
         yield session
+
+
+@contextmanager
+def session_scope(session: Session | None = None) -> Iterator[Session]:
+    """Use the caller's session, or open and close one when there isn't one.
+
+    Lets a function be called both from a request (which already has a session bound to the
+    response lifetime) and from startup or a script (which does not), without either caller having
+    to know which case it is in. A borrowed session is never closed here — closing something you
+    did not open is how a request loses its session halfway through.
+    """
+    if session is not None:
+        yield session
+        return
+    owned = create_session()
+    try:
+        yield owned
+    finally:
+        owned.close()

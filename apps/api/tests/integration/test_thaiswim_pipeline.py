@@ -13,7 +13,8 @@ from pathlib import Path
 
 import pytest
 
-from brandcortex.adapters.source.thaiswim import mapping, templates as thaiswim_templates
+from brandcortex.adapters.source.thaiswim import mapping
+from brandcortex.adapters.source.thaiswim import templates as thaiswim_templates
 from brandcortex.core.generation import templates
 from brandcortex.core.generation.engine import DraftRejected, GenerationEngine
 

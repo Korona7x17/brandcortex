@@ -12,7 +12,7 @@ from brandcortex.db.models.enums import (
     status_column,
 )
 from brandcortex.db.models.learning import Experiment, PlaybookRule
-from brandcortex.db.models.post import Post, PostFeatures, PostInsight
+from brandcortex.db.models.post import Post, PostFeatures, PostInsight, PostVariant
 
 __all__ = [
     "BrandConfig",
@@ -26,5 +26,6 @@ __all__ = [
     "PostFeatures",
     "PostInsight",
     "PostStatus",
+    "PostVariant",
     "status_column",
 ]

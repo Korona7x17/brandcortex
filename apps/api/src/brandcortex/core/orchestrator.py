@@ -45,7 +45,7 @@ from brandcortex.core.generation import claims, voice
 from brandcortex.core.generation.engine import DraftRejected, GenerationEngine
 from brandcortex.core.learning import features as feature_capture
 from brandcortex.core.learning import playbook
-from brandcortex.db.models import IntroHistory, Post, PostFeatures, PostStatus
+from brandcortex.db.models import IntroHistory, Post, PostFeatures, PostStatus, PostVariant
 from brandcortex.schemas.content_item import AssetRef, ContentItem
 from brandcortex.schemas.draft import GeneratedDraft, PublishRequest
 from brandcortex.services import assets
@@ -140,21 +140,29 @@ class Orchestrator:
 
         engine = GenerationEngine(config, playbook.load_active(self._session, item.brand))
         try:
-            draft = engine.draft(
+            variants = engine.draft_variants(
                 item,
                 channel=channel,
                 recent_intros=self._recent_intros(item.brand, item.locale, config),
                 link=link,
             )
-        except DraftRejected as exc:
-            return self._fail(post, "; ".join(exc.reasons))
         except LookupError as exc:
             # No template for this source type and locale — a configuration problem rather than a
             # bad card, but it is still this post that cannot be drafted.
             return self._fail(post, str(exc))
 
+        offered = [v for v in variants if v.ok]
+        if not offered:
+            # Every angle failed. Record why each one did, not just the first — a template bug
+            # usually shows up across several at once, and one reason hides that.
+            reasons = [f"{v.angle}: {'; '.join(v.rejected or [])}" for v in variants]
+            self._record_variants(post, variants, chosen=None)
+            return self._fail(post, " | ".join(reasons) or "no caption could be written")
+
+        draft = offered[0].draft
         post.post_text = post.generated_post_text = draft.post_text
         post.first_comment_text = post.generated_first_comment_text = draft.first_comment_text
+        self._record_variants(post, variants, chosen=offered[0].angle)
 
         try:
             post.asset_storage_key = self._capture(item.asset, post_id=str(post.id))
@@ -247,6 +255,44 @@ class Orchestrator:
             post.error = None
         if post.features is not None:
             post.features.caption_length = len(caption)
+
+        self._session.commit()
+        return post
+
+    def choose_variant(self, post_id: uuid.UUID | str, angle: str) -> Post:
+        """Adopt one of the offered angles as the post's copy.
+
+        Recorded rather than merely applied: which framing a reviewer picks over the alternatives is
+        a cleaner signal than an edit, and `hook_style` is a lever the learning loop may tune. The
+        engine's original stays untouched in `generated_post_text`, so switching angles is not
+        mistaken for a human rewrite.
+        """
+        post = self._get(post_id)
+        if post.status not in (PostStatus.DRAFT, PostStatus.APPROVED, PostStatus.FAILED):
+            raise InvalidTransition(f"post {post.id} is {post.status} and can no longer be changed")
+
+        chosen = next((v for v in post.variants if v.angle == angle), None)
+        if chosen is None:
+            offered = sorted(v.angle for v in post.variants if v.post_text)
+            raise PostNotFound(f"post {post.id} has no variant {angle!r}; offered: {offered}")
+        if not chosen.post_text:
+            raise InvalidTransition(
+                f"variant {angle!r} was not offered: {'; '.join(chosen.rejected or [])}"
+            )
+
+        now = self._now()
+        for variant in post.variants:
+            variant.chosen_at = now if variant is chosen else None
+
+        post.post_text = chosen.post_text
+        post.first_comment_text = chosen.first_comment_text
+        if post.status is PostStatus.FAILED:
+            post.status = PostStatus.DRAFT
+            post.error = None
+        if post.features is not None:
+            post.features.hook_style = chosen.hook_style
+            post.features.intro_line = chosen.intro_line
+            post.features.caption_length = len(chosen.post_text)
 
         self._session.commit()
         return post
@@ -367,6 +413,25 @@ class Orchestrator:
         if post is None:
             raise PostNotFound(f"no post {post_id}")
         return post
+
+    def _record_variants(self, post: Post, variants: list, chosen: str | None) -> None:
+        """Persist every angle, offered or not, with the reason when not."""
+        now = self._now()
+        post.variants = [
+            PostVariant(
+                id=uuid.uuid4(),
+                angle=v.angle,
+                position=index,
+                post_text=v.draft.post_text if v.ok else None,
+                first_comment_text=v.draft.first_comment_text if v.ok else None,
+                intro_line=v.draft.intro_line if v.ok else None,
+                hook_style=v.hook_style,
+                origin=v.source,
+                rejected=list(v.rejected or []),
+                chosen_at=now if v.angle == chosen else None,
+            )
+            for index, v in enumerate(variants)
+        ]
 
     def _fail(self, post: Post, error: str) -> Post:
         post.status = PostStatus.FAILED

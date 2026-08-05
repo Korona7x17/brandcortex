@@ -18,6 +18,8 @@ The last three are style and structure; the first is factual grounding, which is
 module and no `brand_config` setting can switch it off.
 """
 
+from dataclasses import dataclass
+
 from brandcortex.core.generation import claims, templates, voice
 from brandcortex.core.generation.intro_rotation import pick_intro
 from brandcortex.schemas.content_item import ContentItem
@@ -32,10 +34,117 @@ class DraftRejected(ValueError):
         self.reasons = reasons
 
 
+@dataclass
+class Variant:
+    """One angle on the same facts, already checked.
+
+    `rejected` variants are kept rather than dropped so the reason is visible: an angle that keeps
+    failing the numeric check is a template bug, and silently offering five options instead of six
+    is exactly how that stays unnoticed.
+    """
+
+    angle: str
+    draft: GeneratedDraft | None
+    hook_style: str | None = None
+    rejected: list[str] | None = None
+    source: str = "template"
+
+    @property
+    def ok(self) -> bool:
+        return self.draft is not None
+
+
 class GenerationEngine:
     def __init__(self, brand_config: dict, playbook: dict | None = None) -> None:
         self._config = brand_config
         self._playbook = playbook or {}
+
+    def draft_variants(
+        self,
+        item: ContentItem,
+        *,
+        channel: str,
+        recent_intros: list[str] | None = None,
+        link: str | None = None,
+        limit: int = 6,
+    ) -> list[Variant]:
+        """Every angle registered for this structure, each independently checked.
+
+        A reviewer is meant to choose, so the job here is to offer real alternatives and be honest
+        about the ones that did not survive. An angle that does not fit the facts — a sweep for a
+        swimmer with one gold — declines to render and is simply absent; an angle that renders but
+        fails a hard check is returned with its reasons.
+
+        Intros are dealt out so no two variants open the same way. Offering the same first line six
+        times would make the choice look smaller than it is.
+        """
+        locale = item.locale
+        bank = list(self._config.get("intro_bank", {}).get(locale, []))
+        lookback = int(self._config.get("intro_lookback", 5))
+        recent = recent_intros or []
+        fresh = [line for line in bank if line not in set(recent[:lookback])] or bank
+
+        angles = templates.variants(
+            item.source_type, locale, fallback_locale=self._config.get("default_locale")
+        )[:limit]
+
+        url = link or str(item.canonical_link)
+        results: list[Variant] = []
+
+        for index, (angle, renderer) in enumerate(angles):
+            intro = ""
+            if item.source_type == "swimmer" and fresh:
+                intro = fresh[index % len(fresh)]
+            try:
+                caption, comment_body, hook = renderer(
+                    facts=item.facts, intro=intro, config=self._config
+                )
+            except ValueError as exc:
+                # The angle does not fit these facts. Not offered, and not an error.
+                results.append(Variant(angle=angle, draft=None, rejected=[str(exc)]))
+                continue
+
+            reasons = self._check(caption, item.facts)
+            if reasons:
+                results.append(Variant(angle=angle, draft=None, hook_style=hook, rejected=reasons))
+                continue
+
+            results.append(
+                Variant(
+                    angle=angle,
+                    hook_style=hook,
+                    draft=GeneratedDraft(
+                        post_text=caption,
+                        first_comment_text=f"{comment_body}\n{url}" if comment_body else url,
+                        intro_line=intro or None,
+                        hook_style=hook,
+                        hashtag_set=",".join(self._config.get("hashtags", {}).get("core", []))
+                        or None,
+                        playbook_versions={
+                            k: v.get("version", 1) for k, v in self._playbook.items()
+                        },
+                    ),
+                )
+            )
+
+        return results
+
+    def _check(self, caption: str, facts: dict) -> list[str]:
+        """The hard constraints, in one place so `draft` and `draft_variants` cannot diverge.
+
+        Facts are passed in rather than held on the engine: one engine drafts many items, and a
+        cached `self._facts` would check a caption against the previous card's numbers.
+        """
+        reasons: list[str] = []
+        grounding = claims.check(caption, facts)
+        if not grounding.ok:
+            reasons.append(
+                "numbers not supported by the card: " + ", ".join(grounding.unsupported)
+            )
+        voice_result = voice.check(caption, voice.load_rules(self._config))
+        if not voice_result.ok:
+            reasons += [f"{v.rule}: {v.detail}" for v in voice_result.violations]
+        return reasons
 
     def draft(
         self,

@@ -24,9 +24,45 @@ from typing import Any
 #: (source_type, locale) -> renderer. Registered by the brand's template module at bootstrap.
 _TEMPLATES: dict[tuple[str, str], Callable[..., Any]] = {}
 
+#: (source_type, locale) -> [(angle, renderer)]. One structure per *angle on the same facts* — the
+#: four-stroke sweep, longevity, the club, one standout event. A reviewer picks between them.
+#:
+#: Angles, not rewordings. Five paraphrases of one sentence is not a choice, and the thing worth
+#: learning from a reviewer's pick is which framing travels — which is `hook_style`, a lever the
+#: learning loop is allowed to tune. Voice is not, and no angle may vary it.
+_VARIANTS: dict[tuple[str, str], list[tuple[str, Callable[..., Any]]]] = {}
+
 
 def register(source_type: str, locale: str, renderer: Callable[..., Any]) -> None:
+    """Register a single renderer, replacing any variant set for the same key.
+
+    Replacing matters: "this is now the renderer for swimmer/th" has to mean it, or a test that
+    registers a deliberately broken template would still be offered the good variants beside it.
+    """
     _TEMPLATES[(source_type, locale)] = renderer
+    _VARIANTS[(source_type, locale)] = [("default", renderer)]
+
+
+def register_variants(
+    source_type: str, locale: str, renderers: list[tuple[str, Callable[..., Any]]]
+) -> None:
+    """Register several angles on the same facts. The first is the default draft."""
+    if not renderers:
+        raise ValueError("at least one renderer is required")
+    _VARIANTS[(source_type, locale)] = list(renderers)
+    _TEMPLATES[(source_type, locale)] = renderers[0][1]
+
+
+def variants(
+    source_type: str, locale: str, *, fallback_locale: str | None = None
+) -> list[tuple[str, Callable[..., Any]]]:
+    """Every angle registered for this structure, falling back the same way `get` does."""
+    found = _VARIANTS.get((source_type, locale))
+    if found is None and fallback_locale:
+        found = _VARIANTS.get((source_type, fallback_locale))
+    if found is None:
+        return [("default", get(source_type, locale, fallback_locale=fallback_locale))]
+    return found
 
 
 def get(source_type: str, locale: str, *, fallback_locale: str | None = None) -> Callable[..., Any]:
@@ -49,3 +85,4 @@ def get(source_type: str, locale: str, *, fallback_locale: str | None = None) ->
 def clear() -> None:
     """Drop all registrations. For tests, so one test's brand cannot leak into another's."""
     _TEMPLATES.clear()
+    _VARIANTS.clear()

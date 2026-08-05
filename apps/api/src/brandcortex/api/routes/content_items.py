@@ -12,6 +12,7 @@ draft. An error status would leave the caller thinking nothing was recorded when
 """
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from brandcortex.adapters import registry
@@ -75,6 +76,47 @@ def reingest(
     item = adapter.fetch(content_id)
     if item is None:
         raise HTTPException(status_code=404, detail=f"{brand} has no content item {content_id}")
+
+    post = Orchestrator(session).ingest(item, channel=_resolve_channel(channel))
+    return _serialize(post, detail=True)
+
+
+class ComposeRequest(BaseModel):
+    """Make a card the brand has not made yet."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    brand: str
+    source_type: str
+    params: dict
+
+
+@router.post("/compose")
+def compose_content_item(
+    payload: ComposeRequest, channel: str | None = None, session: Session = Depends(get_session)
+) -> dict:
+    """Compose a card and draft it in one step.
+
+    This is the intake path that does not wait for someone to click Download in the brand's own
+    admin. The adapter resolves the card's numbers from the brand and returns an ordinary content
+    item, so everything downstream — capture, copy, checks, review — is the same code as table-watch
+    intake. Idempotent, because a composed item's id is derived from its params.
+    """
+    try:
+        adapter = registry.get_source_adapter(payload.brand)
+    except registry.AdapterNotRegistered as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if not hasattr(adapter, "compose"):
+        raise HTTPException(
+            status_code=501, detail=f"{payload.brand} adapter cannot compose cards"
+        )
+
+    try:
+        item = adapter.compose(payload.source_type, payload.params)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     post = Orchestrator(session).ingest(item, channel=_resolve_channel(channel))
     return _serialize(post, detail=True)

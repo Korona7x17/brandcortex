@@ -111,6 +111,21 @@ def _serialize(post: Post, *, detail: bool = False) -> dict:
         if post.features
         else None
     )
+    payload["variants"] = [
+        {
+            "angle": v.angle,
+            "position": v.position,
+            "post_text": v.post_text,
+            "first_comment_text": v.first_comment_text,
+            "hook_style": v.hook_style,
+            "intro_line": v.intro_line,
+            "origin": v.origin,
+            "model": v.model,
+            "rejected": v.rejected or [],
+            "chosen": v.chosen_at is not None,
+        }
+        for v in sorted(post.variants, key=lambda v: v.position)
+    ]
     latest = max(post.insights, key=lambda row: row.captured_at, default=None)
     payload["latest_insight"] = _insight(latest) if latest else None
     return payload
@@ -238,3 +253,20 @@ def post_insights(post_id: str, session: Session = Depends(get_session)) -> list
     """
     post = _load(session, post_id)
     return [_insight(row) for row in sorted(post.insights, key=lambda r: r.captured_at)]
+
+
+@router.post("/{post_id}/variants/{angle}/choose")
+def choose_variant(post_id: str, angle: str, session: Session = Depends(get_session)) -> dict:
+    """Adopt one of the offered angles.
+
+    Distinct from an edit on purpose. An edit says the copy was wrong; a pick says this framing beat
+    the alternatives, which is a cleaner signal and one the learning loop is allowed to act on —
+    `hook_style` is a tunable lever, unlike voice.
+    """
+    try:
+        post = Orchestrator(session).choose_variant(_post_id(post_id), angle)
+    except PostNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except InvalidTransition as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return _serialize(post, detail=True)

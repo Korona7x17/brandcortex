@@ -102,6 +102,9 @@ class Post(Base, TimestampMixin):
     insights: Mapped[list["PostInsight"]] = relationship(
         back_populates="post", cascade="all, delete-orphan"
     )
+    variants: Mapped[list["PostVariant"]] = relationship(
+        back_populates="post", cascade="all, delete-orphan", order_by="PostVariant.position"
+    )
 
 
 class PostFeatures(Base, TimestampMixin):
@@ -175,3 +178,50 @@ class PostInsight(Base, TimestampMixin):
     raw: Mapped[dict] = mapped_column(JSON, default=dict)
 
     post: Mapped[Post] = relationship(back_populates="insights")
+
+
+class PostVariant(Base, TimestampMixin):
+    """One caption the engine offered for a post, and whether it was the one chosen.
+
+    Variants are stored rather than regenerated because the *choice* is the point. Which angle a
+    reviewer picks over five alternatives is a cleaner signal than an edit — an edit says the copy
+    was wrong, a pick says this framing beat those. `hook_style` is exactly the kind of lever the
+    learning loop is allowed to tune, unlike voice, so this is legitimate training data rather than
+    a UI convenience.
+
+    Rejected variants are kept too. An angle that keeps failing the numeric check is a template bug,
+    and quietly offering five options instead of six is how that goes unnoticed for months.
+    """
+
+    __tablename__ = "post_variants"
+    __table_args__ = (
+        UniqueConstraint("post_id", "angle", name="uq_post_variants_angle"),
+        Index("ix_post_variants_post", "post_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    post_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("posts.id", ondelete="CASCADE"), nullable=False
+    )
+
+    #: Which framing this is — "sweep", "longevity", "club". Stable across regenerations.
+    angle: Mapped[str] = mapped_column(String(64), nullable=False)
+    #: Display order as offered.
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    post_text: Mapped[str | None] = mapped_column(Text)
+    first_comment_text: Mapped[str | None] = mapped_column(Text)
+    intro_line: Mapped[str | None] = mapped_column(Text)
+    hook_style: Mapped[str | None] = mapped_column(String(64))
+
+    #: "template" or "model". The learning loop should be able to ask whether written copy is
+    #: actually chosen more often than generated copy, which needs the origin recorded per variant.
+    origin: Mapped[str] = mapped_column(String(16), nullable=False, default="template")
+    model: Mapped[str | None] = mapped_column(String(64))
+
+    #: Why this variant was not offered. Empty when it passed.
+    rejected: Mapped[list] = mapped_column(JSON, default=list)
+
+    chosen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    post: Mapped[Post] = relationship(back_populates="variants")

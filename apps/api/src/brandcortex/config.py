@@ -9,7 +9,7 @@ Settings here are infrastructure only.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -53,10 +53,31 @@ class Settings(BaseSettings):
     facebook_graph_version: str = Field("v21.0", alias="FACEBOOK_GRAPH_VERSION")
     facebook_page_id: str | None = Field(None, alias="FACEBOOK_PAGE_ID")
 
+    # Origins allowed to call this API from a browser — the review dashboard, which runs as its own
+    # origin. Comma-separated. Defaults to local development; production sets the real host. Never a
+    # wildcard: these endpoints approve and publish, so any page a reviewer has open would be able to
+    # drive them.
+    cors_allow_origins: list[str] = Field(
+        default=["http://localhost:3000", "http://127.0.0.1:3000"], alias="CORS_ALLOW_ORIGINS"
+    )
+
     # Site analytics is the source of truth for traffic; FB's click count is not.
     analytics_provider: str = Field("plausible", alias="ANALYTICS_PROVIDER")
     analytics_api_key: str | None = Field(None, alias="ANALYTICS_API_KEY")
     analytics_site_id: str | None = Field(None, alias="ANALYTICS_SITE_ID")
+
+
+    @field_validator("cors_allow_origins", mode="before")
+    @classmethod
+    def _split_origins(cls, value: object) -> object:
+        """Accept `a,b` as well as a JSON array.
+
+        pydantic-settings parses a list-typed variable as JSON, which makes the natural env spelling
+        — a comma-separated list — a startup crash rather than a setting.
+        """
+        if isinstance(value, str) and not value.strip().startswith("["):
+            return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
 
 
 @lru_cache

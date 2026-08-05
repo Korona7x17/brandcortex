@@ -7,8 +7,9 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from brandcortex.api.routes import content_items, health, insights, playbook, posts
+from brandcortex.api.routes import brands, content_items, health, insights, playbook, posts
 from brandcortex.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -48,7 +49,20 @@ def create_app() -> FastAPI:
         docs_url=None if settings.env == "production" else "/docs",
     )
 
+    # The review dashboard runs as its own origin, so the browser needs permission to call this API
+    # from it. Origins come from config and default to local development only — a wildcard here would
+    # let any page a reviewer has open drive the approve and publish endpoints.
+    if settings.cors_allow_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=settings.cors_allow_origins,
+            allow_credentials=True,
+            allow_methods=["GET", "POST", "PATCH", "DELETE"],
+            allow_headers=["*"],
+        )
+
     app.include_router(health.router)
+    app.include_router(brands.router)
     app.include_router(content_items.router)
     app.include_router(posts.router)
     app.include_router(insights.router)

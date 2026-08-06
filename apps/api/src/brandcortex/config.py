@@ -79,6 +79,21 @@ class Settings(BaseSettings):
     analytics_site_id: str | None = Field(None, alias="ANALYTICS_SITE_ID")
 
 
+    @field_validator("database_url", "brand_db_url", mode="before")
+    @classmethod
+    def _psycopg_scheme(cls, value: object) -> object:
+        """Normalize `postgres://` and `postgresql://` to the psycopg-3 dialect.
+
+        Managed platforms hand out standard-scheme URLs, and SQLAlchemy resolves those to the
+        psycopg2 driver — which is not installed. The URL is the platform's to mint; the driver
+        choice is ours.
+        """
+        if isinstance(value, str):
+            for prefix in ("postgresql://", "postgres://"):
+                if value.startswith(prefix):
+                    return "postgresql+psycopg://" + value[len(prefix) :]
+        return value
+
     @field_validator("cors_allow_origins", "clerk_authorized_parties", mode="before")
     @classmethod
     def _split_origins(cls, value: object) -> object:

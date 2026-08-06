@@ -42,10 +42,11 @@ def mint(*, key=_key, issuer=ISSUER, azp="http://localhost:3000", expired=False)
 @pytest.fixture(autouse=True)
 def clean_settings(monkeypatch):
     """Each test states its own auth env; required-but-irrelevant settings get placeholders."""
-    for var in ("CLERK_ISSUER", "CLERK_AUTHORIZED_PARTIES"):
-        monkeypatch.delenv(var, raising=False)
-    # Explicitly false, not merely unset: the developer's own .env (read from the working
-    # directory) legitimately carries AUTH_DISABLED=true, and only a process env var outranks it.
+    # Explicitly pinned, not merely unset: the developer's own .env (read from the working
+    # directory) legitimately carries these, and only a process env var outranks it. Empty means
+    # unconfigured to the Settings model.
+    monkeypatch.setenv("CLERK_ISSUER", "")
+    monkeypatch.delenv("CLERK_AUTHORIZED_PARTIES", raising=False)
     monkeypatch.setenv("AUTH_DISABLED", "false")
     monkeypatch.setenv("DATABASE_URL", "sqlite+pysqlite:///:memory:")
     monkeypatch.setenv("ASSET_BUCKET", "/tmp/test-assets")

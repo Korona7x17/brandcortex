@@ -1,6 +1,6 @@
 # Project Snapshot — BrandCortex
 
-Last updated: 2026-08-06 (session 05)
+Last updated: 2026-08-06 (session 06)
 
 AI content engine that generates, publishes and self-improves brand content across channels.
 Home `brandcortex.app`. Tenant #1 **ThaiSwim** (`dev/thaiswim`). Channel #1 **Facebook**.
@@ -26,6 +26,14 @@ Working conventions in `CLAUDE.md`.
 - **Two caption registers, picked per post by the reviewer.** Reporting (no emoji) and
   congratulatory (🏆 headline · `ขอแสดงความยินดีกับ คุณ<name> จาก <club>` · 👏 · plain link nudge).
   Register carries through the caption *and* its first comment together.
+- **No scene-setting opener, no inspirational sign-off.** Both tell the reader how to feel about a
+  fact the card already shows — the advertising voice this brand is defined against. A post is a
+  fact, a person, a nudge, and it stops. Variants must differ in *shape*, not only in wording.
+- **A swimmer's post never leads with the club.** It is the swimmer's achievement; the club is
+  prominent on line two, which is reason enough for it to repost.
+- **Deploying code and applying config are separate acts.** `brand_config` is a database row and the
+  seed JSON is only its reviewed source. Seed-on-boot (D-2026-08-06-08) closes the gap, but refuses
+  to overwrite a row edited in `/settings/voice` — that conflict belongs to a human.
 - **North star = UTM sessions + amplification.** Reactions recorded, weighted 0.0, never targeted.
 - **Brand DB is read-only to us.** Never write a `posted` flag back. `card_renders` already means
   "generated/available"; "posted to channel" is ours alone.
@@ -52,7 +60,9 @@ D-2026-08-05-01 rejected drafts persist as `failed`, ingest never raises (the en
 picks filesystem vs S3 from `ASSET_BUCKET`'s shape · -09 API logs a bootstrap failure, workers raise.
 D-2026-08-06-01 pages_read_user_content Added · -02/-03 fail-closed auth · -04 publish refuses
 foreign-host links · -05 volume now, R2 before the cron worker · **-06 honorific is a config-declared
-voice rule enforced by validator, not prompt** · **-07 two registers, emoji ceiling 1→2**.
+voice rule enforced by validator, not prompt** · **-07 two registers, emoji ceiling 1→2** ·
+**-08 seed brand_config on boot behind two fingerprints** · **-09 no opener/sign-off, variants
+differ by form, the club never leads**.
 Stack: T01 FastAPI+Next.js · T02 permutation test · T03 Meta Dev mode, System User is the token path ·
 T04 tests build SQLite from models; `alembic check` is the migration contract.
 Full text in `memory/decisions/`.
@@ -81,8 +91,8 @@ store. Canonical links and `season` are derived by the adapter.
 
 ## Current Focus
 
-**190 pass / 9 skip.** Now LIVE at brandcortex.app; the whole scaffold merged to `main` at
-751ac81 (unpushed). Working end to end and *persisted*: `card_renders` row → content
+**199 pass / 9 skip.** Now LIVE at brandcortex.app; everything merged to `main` and pushed
+(5d744d4). Vercel auto-deploys from main; Railway is still effectively manual (`railway up`). Working end to end and *persisted*: `card_renders` row → content
 item → checked Thai copy → `posts` row with captured card, frozen facts, UTM campaign and features →
 review API (queue, diff, card bytes, edit, approve, publish). Verified against a real migrated SQLite
 database, not only fixtures.

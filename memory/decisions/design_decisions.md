@@ -322,3 +322,47 @@ and it does widen a future App Review.
 **Status:** Accepted
 **Date:** 2026-08-06
 **Ref:** Meta app 1278952477505548 use case PAGES_API; adapters/channel/facebook/adapter.py (FUTURE_PERMISSIONS)
+
+## D-2026-08-06-02 — Auth fails closed: no CLERK_ISSUER means 503, not open
+
+**Rationale:** An API that approves and publishes to a live Page must never be reachable bare
+because a deployment forgot one env var. Local development opts out with an explicit
+AUTH_DISABLED=true — a statement a person wrote, not a default they fell into. Tests prove the
+unconfigured state is a lock.
+
+**Status:** Accepted
+**Date:** 2026-08-06
+**Ref:** apps/api/src/brandcortex/api/auth.py; tests/unit/test_api_auth.py
+
+## D-2026-08-06-03 — The API verifies Clerk JWTs offline; the dashboard's auth is only for people
+
+**Rationale:** Verification is signature-against-JWKS + issuer + azp, pure computation with cached
+keys — Clerk down leaves signed-in reviewers working, and a bypassed Next middleware still dies at
+the API with 401. The card image goes through a Next proxy because an <img> cannot carry a bearer
+token.
+
+**Status:** Accepted
+**Date:** 2026-08-06
+**Ref:** api/auth.py; web/middleware.ts; web/app/card/[id]/route.ts
+
+## D-2026-08-06-04 — Publish refuses links whose host differs from the current BRAND_SITE_URL
+
+**Rationale:** Links bake into a post at draft time and are never re-derived; the first live post
+shipped localhost:9000 in its comment this way. Host comparison is a computation, names no brand in
+core, and still permits a deliberate staging configuration. The worker treats the refusal as one
+failed post, not a dead cycle.
+
+**Status:** Accepted
+**Date:** 2026-08-06
+**Ref:** core/orchestrator.py (_foreign_link_hosts); workers/publisher.py; the localhost:9000 comment
+
+## D-2026-08-06-05 — Captured cards on a Railway volume now; R2 before the cron worker exists
+
+**Rationale:** Publish-now runs in the API process, so a mounted volume suffices for the MVP. But
+Railway volumes cannot be shared between services, and the scheduled-publish worker is a separate
+service — R2 is the precondition for the cron worker, not an optimization. Key format is identical
+either way (assets.py dispatches on ASSET_BUCKET shape), so migration is a file copy.
+
+**Status:** Accepted
+**Date:** 2026-08-06
+**Ref:** services/assets.py; docs/deploy.md

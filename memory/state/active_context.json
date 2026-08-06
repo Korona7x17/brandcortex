@@ -1,21 +1,22 @@
 {
   "project": "brandcortex",
   "updated": "2026-08-06",
-  "phase": "1 (MVP) — full path compose -> approve -> schedule -> publish is live-capable; first real publish pending user go",
+  "phase": "1 (MVP) — DEPLOYED: API on Railway, dashboard on Vercel, both behind auth; first production compose pending",
   "tenant": "thaiswim",
   "channel": "facebook",
   "branch": "scaffold/thaiswim-facebook-mvp",
-  "head": "fb4640a",
+  "head": "f56e0e6",
   "pushed": true,
   "topics": [
-    "meta page token acquired",
-    "facebook channel healthy",
-    "first real publish pending",
+    "production deployed",
+    "clerk auth fail-closed",
+    "publish link guard",
+    "cron worker + R2 pending",
     "insights fetcher",
-    "editor-preference loop"
+    "brandcortex.app DNS"
   ],
   "tests": {
-    "passed": 154,
+    "passed": 165,
     "skipped": 9
   },
   "working_end_to_end": [
@@ -23,12 +24,13 @@
     "model writes 6 caption variants; each checked for grounded numbers, notation and voice",
     "pick a variant, edit, or regenerate with a per-post steer",
     "approve and schedule with a policy-aware suggested slot and its reasons",
-    "publish path tested against a fake Graph AND now authorized against the real one: PAGE token stored encrypted, GET /health/channels ok"
+    "publish path tested against a fake Graph AND now authorized against the real one: PAGE token stored encrypted, GET /health/channels ok",
+    "PRODUCTION: api-production-b008.up.railway.app (facebook channel ok, routes 401 bare) + brandcortex-ravenbone.vercel.app behind Clerk"
   ],
   "still_stubs": [
     "insights fetcher",
     "reflection agent",
-    "no auth on the dashboard"
+    "publisher cron worker on Railway"
   ],
   "blocked": [],
   "resolved_2026-08-06": {
@@ -48,15 +50,15 @@
       "do_not": "retry a line-by-line wrap — it orphans words; see R-2026-08-05-01"
     },
     {
-      "what": "first real publish needs explicit user go-ahead",
-      "detail": "approved draft is queued; publishing posts publicly on the live ThaiSwim Page"
+      "what": "rotate the Clerk secret key",
+      "detail": "it surfaced in the session transcript via my unredacted grep of .env; dev-mode rotation is one click, then update .env and Vercel env"
     }
   ],
   "next_actions": [
-    "publish the queued draft -> verify photo + first-comment link on the real Graph",
-    "insights fetcher (Y data cannot be backfilled — every unpublished day is lost history)",
-    "editor-preference loop: variant picks and edit deltas, independent of Facebook entirely",
-    "Meta-independent: Clerk auth, Railway deploy, R2 for captured cards"
+    "user signs in on the production dashboard and composes the first production draft",
+    "R2 bucket -> ASSET_* on Railway -> cron worker service (*/5, python -m brandcortex.workers.publisher)",
+    "insights fetcher (published post f4dcc669's audience data is still uncaptured)",
+    "DNS: brandcortex.app -> Vercel, api.brandcortex.app -> Railway; then swap CORS/azp/API_URL to real domains"
   ],
   "local_dev": {
     "postgres": "docker container brandcortex-pg — start it before the API after a reboot",
@@ -74,7 +76,8 @@
     "hardcode locale to th",
     "declare a status column as String — it loads back a bare str and breaks every `is` comparison",
     "duplicate the ThaiSwim card engines — two definitions of the card would drift",
-    "send the user around Meta's UI on unverified guesses — drive the browser or probe the API"
+    "send the user around Meta's UI on unverified guesses — drive the browser or probe the API",
+    "assume session_scope() commits — it never does; the caller owns the transaction"
   ],
   "credentials": {
     "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env / channel_tokens.",
@@ -91,5 +94,20 @@
       "where": "channel_tokens (encrypted at rest), tenant thaiswim",
       "note": "PAGE token, 7 scopes; re-run authorize.py flow if Meta invalidates it (password change, App Review changes, data-access expiry)"
     }
+  },
+  "production": {
+    "api": "https://api-production-b008.up.railway.app (Railway project b18f9576, service api, volume /data)",
+    "web": "https://brandcortex-ravenbone.vercel.app (Vercel project brandcortex, team ravenbone; deployment protection OFF — Clerk is the wall)",
+    "db": "Railway Postgres, migrated + seeded, channel token installed (same Fernet key as local)",
+    "deploy_cmds": {
+      "api": "railway up apps/api --path-as-root --service api --detach   # from repo root; up roots at linked dir!",
+      "web": "cd apps/web && vercel deploy --prod --yes   # CLI-push only, git pushes do NOT deploy"
+    },
+    "gaps": [
+      "no cron worker service — scheduled posts do not fire in production (publish-now works)",
+      "cards on service volume — R2 required before the worker exists (volumes not shareable)",
+      "brandcortex.app DNS not pointed",
+      "clerk instance is Development mode; production instance is a later step"
+    ]
   }
 }

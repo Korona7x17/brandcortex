@@ -301,6 +301,22 @@ class TestPublish:
         assert "rate limited" in post.error
         assert post.post_text and post.asset_storage_key, "everything needed to retry is still here"
 
+    def test_links_baked_against_another_environment_refuse_to_publish(
+        self, orchestrator, item, fake_channel
+    ):
+        """Links are derived from BRAND_SITE_URL at draft time and never re-derived, so a draft
+        composed against a dev server keeps its dev links forever. The first live post shipped
+        `localhost:9000` in its comment this way; the check exists so the failure repeats as a
+        refusal in the queue, not as a dead link on the Page."""
+        post = orchestrator.approve(orchestrator.ingest(item, channel=CHANNEL).id)
+        post.first_comment_text = "http://localhost:9000/swimmers/rin-suebsanguan?utm_source=x"
+        post.canonical_link = "http://localhost:9000/swimmers/rin-suebsanguan"
+
+        with pytest.raises(InvalidTransition, match="localhost:9000"):
+            orchestrator.publish(post.id)
+
+        assert not fake_channel.requests, "the refusal must come before any channel I/O"
+
     def test_publishing_twice_does_not_post_twice(self, orchestrator, item, fake_channel):
         post = orchestrator.approve(orchestrator.ingest(item, channel=CHANNEL).id)
         orchestrator.publish(post.id)

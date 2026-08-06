@@ -31,9 +31,11 @@ caller *is* the person waiting for an answer.
 exception would erase the only record of what happened.
 """
 
+import re
 import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime
+from urllib.parse import urlparse
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -75,6 +77,28 @@ class PublishFailed(RuntimeError):
 
 def _utcnow() -> datetime:
     return datetime.now(UTC)
+
+
+_URL = re.compile(r"https?://[^\s]+")
+
+
+def _foreign_link_hosts(site_url: str, *texts: str | None) -> set[str]:
+    """Hosts of any URL in `texts` that differ from the brand site's.
+
+    Links are baked into a post at draft time from the then-current `BRAND_SITE_URL`, and nothing
+    re-derives them later. A draft composed against a dev or staging environment therefore carries
+    that environment's links for the rest of its life — and the first live post shipped
+    `localhost:9000` in its comment before this check existed. Comparing hosts against the current
+    setting catches exactly that drift without the core ever naming a brand's domain.
+    """
+    site_host = urlparse(site_url).netloc
+    return {
+        host
+        for text in texts
+        if text
+        for host in (urlparse(match).netloc for match in _URL.findall(text))
+        if host != site_host
+    }
 
 
 class Orchestrator:
@@ -446,6 +470,15 @@ class Orchestrator:
         if not (post.post_text and post.first_comment_text and post.asset_storage_key):
             raise InvalidTransition(
                 f"post {post.id} is missing caption, first comment or captured card"
+            )
+        stale = _foreign_link_hosts(
+            get_settings().brand_site_url, post.canonical_link, post.first_comment_text
+        )
+        if stale:
+            raise InvalidTransition(
+                f"post {post.id} carries links on {sorted(stale)} but the brand site is"
+                f" {get_settings().brand_site_url}; links are baked at draft time, so a draft"
+                " composed against another environment must be regenerated, not published"
             )
 
         config = brand_config_store.load(self._session, post.brand)

@@ -194,8 +194,16 @@ class TestHardConstraints:
         assert "first comment" in str(exc.value)
 
     def test_stacked_emoji_is_rejected(self, config) -> None:
+        """One past the brand's ceiling, whatever the brand has set it to.
+
+        The count is read from `brand_config` rather than written here. The ceiling moved once
+        already — from one to four, when the owner adopted the congratulatory register — and a
+        hardcoded three would have made this test quietly stop testing anything.
+        """
+        over = "🔥" * (int(config["voice"]["max_emoji"]) + 1)
+
         def bad(*, facts, intro, config):
-            return "อันดับ 1 ของประเทศ 🔥🔥🔥", "", "bad"
+            return f"อันดับ 1 ของประเทศ {over}", "", "bad"
 
         templates.register("swimmer", "th", bad)
         item = mapping.row_to_content_item(SWIMMER_ROW, site_url=SITE)

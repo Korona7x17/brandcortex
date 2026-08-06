@@ -114,10 +114,21 @@ ThaiSwim's engines currently equate **download** with **publish**. Split the eve
 Consumes a content item + `brand_config` + the active `playbook`, returns `{ post_text, first_comment_text }` per channel.
 
 ### 6.1 House voice (ThaiSwim config)
-Understated, factual, warm. Recognition, not advertising. No superlative drumroll, no stacked emojis, no cheesy lines. 0–1 emoji. Never repeat the asset's own on-image tagline (e.g. "อายุเป็นเพียงตัวเลข") in the copy.
+Understated, factual, warm. Recognition, not advertising. No superlative drumroll, no cheesy lines. Never repeat the asset's own on-image tagline (e.g. "อายุเป็นเพียงตัวเลข") in the copy.
+
+Two registers are in use, and the reviewer picks between them per post:
+
+- **Reporting** — no emoji, no congratulation. The fact stated and left to stand.
+- **Congratulatory** — the owner's own shape: `🏆` headline carrying the number → `ขอแสดงความยินดีกับ คุณ{name} จาก {club}` → the achievement with `👏` → a plain line saying the link is in the first comment → hashtags. Warm and direct, addressed to the reader *about* the swimmer.
+
+Emoji ceiling is **2** (raised from 1 to admit the congratulatory shape). Both emoji carry the congratulation; the nudge carries none, because a line that already says where the link is doesn't need decorating. The reporting angles still carry no emoji at all. Warmth comes from respect and from the numbers, never from adjectives — neither register dramatises, and neither addresses the swimmer in the second person.
 
 ### 6.2 Profile post structure
-Rotating soft intro (from the bank; not the previous profile's) → name + club · team + age group → achievement in plain numbers (X national #1s across Y events; name the strokes) → one warm closing line → "link in first comment" nudge → hashtags. **First comment:** `📊 … {profile_link}`.
+**Reporting angles** (`plain`, `breadth`, `standout`, `club`): rotating soft intro (from the bank; not the previous profile's) → name + club · team + age group → achievement in plain numbers → one closing line from the rotation → "link in first comment" nudge → hashtags.
+
+**Congratulatory angles** (`sweep`, `longevity`): `🏆` headline → `ขอแสดงความยินดีกับ คุณ{name} จาก {club}` → achievement + `👏` → `ดูสถิติและโปรไฟล์ทั้งหมดได้จากลิงก์ในคอมเมนต์แรก` → hashtags. Single newlines, no soft intro — these open on the achievement itself, so the dealt intro line goes unused and is **not** recorded to `intro_history`.
+
+**First comment:** rotate the matching bank in §6.5, in the same register as the caption. Always `คุณ` before a person's name.
 
 ### 6.3 Event post structure
 Category (season, stroke + distance + course, gender, age group) → "10 อันดับแรกของประเทศในฤดูกาลนี้" → personal hook "เวลาของคุณอยู่อันดับไหน?" (the card already shows the names — tease the reader's own rank) → link-in-comment nudge → hashtags. **First comment:** `{rankings_link}`.
@@ -129,8 +140,26 @@ Category (season, stroke + distance + course, gender, age group) → "10 อั�
 - นักว่ายน้ำมาสเตอร์ที่พิสูจน์ว่าการฝึกซ้อมไม่มีวันสาย
 - ในสระว่ายน้ำ ประสบการณ์คือพลังอย่างหนึ่ง
 
-### 6.5 Rules
-Locale branch (th/en) off the content item. No-repeat intro within last N posts (check `intro_history`). Core hashtags `#ThaiSwim #ว่ายน้ำไทย #ว่ายน้ำมาสเตอร์ส` (+ optional `#MastersSwimming #swimmingthailand`). One unit-label standard (`50 ม.` **or** `50 เมตร`). Tag the club/team Page when known. All of the above read from `brand_config` + `playbook`, so the engine is not ThaiSwim-hardcoded.
+### 6.5 First-comment bank (profile posts)
+The line above the link, rotated with the closings so six variants don't all end the same way. Named and general lines alternate: the named ones carry the honorific, the general ones are right when the caption has already named the swimmer twice — and are the only option when the card carries no name.
+
+Reporting register (`COMMENTS_TH`):
+- `📊 สถิติทั้งหมดของคุณ{name} อยู่ที่นี่` — e.g. `📊 สถิติทั้งหมดของคุณไกรศรี บุตรวงษ์ อยู่ที่นี่`
+- `📊 สถิติทั้งหมดอยู่ที่นี่`
+- `📊 ดูสถิติและผลงานทั้งหมดของคุณ{name} ได้ที่นี่`
+- `📊 ดูโปรไฟล์และสถิติทั้งหมดได้ที่นี่`
+- `📊 สถิติและอันดับทั้งหมดอยู่ที่นี่`
+
+Congratulatory register (`COMMENTS_WARM_TH`):
+- `👉 ดูสถิติและโปรไฟล์ทั้งหมดของคุณ{name} ได้ที่นี่`
+- `👉 สถิติและอันดับทั้งหมดอยู่ที่นี่`
+- `🏆 ผลงานและสถิติทั้งหมดของคุณ{name} อยู่ที่นี่`
+- `👉 ดูโปรไฟล์และสถิติทั้งหมดได้ที่นี่`
+
+The canonical link follows on its own line in every case.
+
+### 6.6 Rules
+**Honorific (hard rule):** never write a person's name bare in Thai copy — always `คุณ` + name, in the post body and the first comment alike. `ไกรศรี บุตรวงษ์` → `คุณไกรศรี บุตรวงษ์`. Applies to every generated surface; if the honorific is uncertain, fall back to a general no-name line from §6.5 rather than dropping `คุณ`. Locale branch (th/en) off the content item. No-repeat intro within last N posts (check `intro_history`). Core hashtags `#ThaiSwim #ว่ายน้ำไทย #ว่ายน้ำมาสเตอร์ส` (+ optional `#MastersSwimming #swimmingthailand`). One unit-label standard (`50 ม.` **or** `50 เมตร`). Tag the club/team Page when known. All of the above read from `brand_config` + `playbook`, so the engine is not ThaiSwim-hardcoded.
 
 ## 7. Publishing pipeline (end to end)
 1. Brand renders content → content item + asset written.

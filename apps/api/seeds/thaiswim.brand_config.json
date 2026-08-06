@@ -16,8 +16,9 @@
   ],
   "voice": {
     "_comment": "A fixed constraint, not an optimizable lever. The reflection agent may never propose changes here (§10.4).",
-    "tone": "understated, factual, warm — recognition, not advertising. Let the facts speak.",
-    "max_emoji": 1,
+    "tone": "warm, factual, unhurried — recognition, not advertising. Glad for the swimmer, never breathless about them. Let the facts carry the feeling.",
+    "max_emoji": 2,
+    "_max_emoji_note": "Raised from 1 to 2 by the owner, to admit the congratulatory register: 🏆 on the headline and 👏 on the achievement. Both carry the congratulation. The reference post also put arrows on the link nudge; those are out, because a line that already says where the link is does not need decorating. The reporting angles still carry no emoji at all.",
     "banned_phrases": [
       "ที่สุดในประเทศ",
       "ไม่น่าเชื่อ",
@@ -29,7 +30,17 @@
     ],
     "_forbidden_echoes_note": "Taglines printed on the card art. Repeating one in the caption makes the reader see the same line twice in a single post.",
     "require_no_links_in_body": true,
-    "max_caption_length": 900
+    "max_caption_length": 900,
+    "honorific": {
+      "prefix": "คุณ",
+      "locales": [
+        "th"
+      ],
+      "name_fields": [
+        "name"
+      ],
+      "_comment": "Never write a swimmer's name bare. These are masters swimmers, most of them older than the reader, and in Thai an unadorned name reads as disrespect to exactly the audience this brand is for. Applies to the caption and the first comment alike; core.generation.voice rejects a draft that drops it."
+    }
   },
   "intro_bank": {
     "_comment": "Rotating soft intros for swimmer posts (§6.4). Meant to grow; the reflection agent tracks fatigue per line.",
@@ -130,7 +141,7 @@
   },
   "writer": {
     "_comment": "What the model is briefed with. Editable in the app — angles, examples and guidance are the brand's, not the code's. The hard rules (numbers must exist in facts, no link in the caption, the emoji ceiling) are enforced after the model answers and cannot be edited away from here.",
-    "guidance": "ThaiSwim recognises masters swimmers — often 40 to 80 years old — who are still ranked nationally. The reader is usually a swimmer themselves, or someone's family. Write as if you know the sport: name the achievement plainly and let it stand. Never congratulate, never dramatise, never address the swimmer in the second person. Thai copy is first-class, not translated from English.",
+    "guidance": "ThaiSwim recognises masters swimmers — often 40 to 80 years old — who are still ranked nationally. The reader is usually a swimmer themselves, or someone's family, and they already know what these times cost. Write as someone glad to see it: name the achievement, say it kindly, and trust it to land. The warmth comes from respect and from the numbers themselves, never from adjectives — no สุดยอด, no น่าทึ่ง, no exclamation marks stacked up, nothing a stranger would say. Two registers are in use and the reviewer picks between them. REPORTING: no emoji, no congratulation — the fact stated and left to stand. CONGRATULATORY: a 🏆 headline carrying the number, then 'ขอแสดงความยินดีกับ คุณ<name> จาก <club>', then the achievement closing on 👏, then a plain line saying the link is in the first comment. Two emoji in total is the ceiling; the nudge carries none. Neither register dramatises, and neither addresses the swimmer in the second person — you are telling the reader about them, not speaking to them. Thai copy is first-class, not translated from English.",
     "max_variants": 6,
     "angles": [
       {
@@ -139,11 +150,11 @@
       },
       {
         "key": "sweep",
-        "instruction": "Lead with the number of distinct strokes held at national #1. Only if more than one."
+        "instruction": "CONGRATULATORY register. Lead with a 🏆 headline carrying the national #1 count, then congratulate the swimmer by name and club, then the sweep across strokes with the age group. Only if more than one stroke."
       },
       {
         "key": "longevity",
-        "instruction": "Lead with the age group — still at national level at this age. The angle that travels furthest with masters swimmers."
+        "instruction": "CONGRATULATORY register. Lead with a 🏆 headline naming the age group, then congratulate the swimmer by name and club, then that they are still holding national #1 at that age. The angle that travels furthest with masters swimmers."
       },
       {
         "key": "breadth",
@@ -159,9 +170,10 @@
       }
     ],
     "examples": [
-      "ทุกฤดูกาลมีนักว่ายน้ำที่ทำให้เราต้องหยุดมอง\n\nริน สืบสงวน · สมาคมราชกรีฑาสโมสร · ทีมสุราษฎร์ธานี · รุ่น 55–59\n\nอันดับ 1 ของประเทศ 9 รายการ ครบ 4 ท่า\n\nสถิติที่สะสมมาทีละรายการ ไม่ได้มาในวันเดียว\n\nสถิติทั้งหมดอยู่ในคอมเมนต์แรก\n\n#ThaiSwim #ว่ายน้ำไทย #ว่ายน้ำมาสเตอร์ส"
+      "ทุกฤดูกาลมีนักว่ายน้ำที่ทำให้เราต้องหยุดมอง\n\nคุณริน สืบสงวน · สมาคมราชกรีฑาสโมสร · ทีมสุราษฎร์ธานี · รุ่น 55–59\n\nอันดับ 1 ของประเทศ 9 รายการ ครบ 4 ท่า\n\nสถิติที่สะสมมาทีละรายการ ไม่ได้มาในวันเดียว\n\nสถิติทั้งหมดอยู่ในคอมเมนต์แรก\n\n#ThaiSwim #ว่ายน้ำไทย #ว่ายน้ำมาสเตอร์ส",
+      "🏆 10 รายการ อันดับ 1 ของประเทศไทย\nขอแสดงความยินดีกับ คุณดวง คงเจริญ จาก สโมสรกีฬาทางน้ำสระจุฬาภรณ์ Chulabhorn Aquatic Club\nครองอันดับ 1 ของประเทศไทยถึง 10 รายการ ในรุ่นอายุ 80–84 ปี 👏\nดูสถิติและโปรไฟล์ทั้งหมดได้จากลิงก์ในคอมเมนต์แรก\n#ThaiSwim #ว่ายน้ำไทย #MastersSwimming #swimmingthailand"
     ],
-    "_examples_comment": "Seeded with one caption from the template era so the model has a register to match. Replace these with captions you have actually approved — few-shot examples in your own Thai are worth more than any description of the voice.",
+    "_examples_comment": "Two registers, both owner-approved: the first reports, the second congratulates. The congratulatory one is the owner's own post and is the reference for that shape — 🏆 headline carrying the number, 'ขอแสดงความยินดีกับ คุณ<name> จาก <club>', 👏 on the achievement, then a plain nudge. It is reproduced here with the 👉/👇 arrows removed from the nudge, to sit inside the two-emoji ceiling; the shape is otherwise theirs, verbatim. Keep replacing these with captions you have actually approved — few-shot examples in your own Thai are worth more than any description of the voice.",
     "_bindings_comment": "Phrases whose number is a lookup, not a judgment. `claims.check` already stops invented figures; these stop real figures attached to the wrong fact — with goldCount 3 and rankedCount 12, 'อันดับ 1 ของประเทศ 12 รายการ' is false but every number in it is real.",
     "claim_bindings": [
       {

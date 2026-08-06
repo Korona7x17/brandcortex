@@ -163,6 +163,13 @@ def _system_prompt(config: dict[str, Any]) -> str:
     parts = [SYSTEM, "", "BRAND VOICE RULES:"]
 
     parts.append(f"- At most {voice.get('max_emoji', 1)} emoji per caption.")
+    honorific = voice.get("honorific") or {}
+    if honorific.get("prefix"):
+        parts.append(
+            f"- Always write a person's name as {honorific['prefix']}<name>, with no space between "
+            f"the honorific and the name. Never write a name bare, in the caption or in "
+            f"`comment_body`. These posts name real people, most of them older than the reader."
+        )
     if voice.get("banned_phrases"):
         parts.append("- Never use these phrasings: " + "; ".join(voice["banned_phrases"]))
     if voice.get("forbidden_echoes"):

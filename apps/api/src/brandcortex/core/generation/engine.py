@@ -123,7 +123,10 @@ class GenerationEngine:
         written = self._write_with_model(item, locale=locale, nudge=nudge, limit=limit)
         if written:
             for angle, caption, comment_body in written:
-                reasons = self._check(caption, item.facts)
+                reasons = self._check(caption, item.facts, locale)
+                # The first comment carries the swimmer's name as often as the caption does, and the
+                # model writes it too — so it is held to the naming rule rather than trusted.
+                reasons += self._check_names(comment_body, item.facts, locale)
                 results.append(
                     Variant(
                         angle=angle,
@@ -157,7 +160,8 @@ class GenerationEngine:
                 results.append(Variant(angle=angle, draft=None, rejected=[str(exc)]))
                 continue
 
-            reasons = self._check(caption, item.facts)
+            reasons = self._check(caption, item.facts, locale)
+            reasons += self._check_names(comment_body, item.facts, locale)
             if reasons:
                 results.append(Variant(angle=angle, draft=None, hook_style=hook, rejected=reasons))
                 continue
@@ -166,7 +170,12 @@ class GenerationEngine:
                 Variant(
                     angle=angle,
                     hook_style=hook,
-                    draft=self._assemble(caption, comment_body, url, intro=intro, hook=hook),
+                    # Only record the intro the caption actually opens with. Some structures open on
+                    # the achievement instead and ignore the line they were dealt — recording it
+                    # anyway would retire a line from the rotation that no reader ever saw.
+                    draft=self._assemble(
+                        caption, comment_body, url, intro=intro if intro in caption else None, hook=hook
+                    ),
                 )
             )
 
@@ -217,7 +226,21 @@ class GenerationEngine:
             playbook_versions={k: v.get("version", 1) for k, v in self._playbook.items()},
         )
 
-    def _check(self, caption: str, facts: dict) -> list[str]:
+    def _check_names(self, text: str, facts: dict, locale: str) -> list[str]:
+        """The honorific rule alone, for text that is not a caption.
+
+        The first comment gets this and nothing else: it is the one place a link belongs, it carries
+        no numbers of its own, and the emoji ceiling is a caption rule.
+        """
+        if not text:
+            return []
+        rules = voice.load_rules(self._config)
+        result = voice.check_names(
+            text, rules, names=voice.names_in(facts, rules), locale=locale
+        )
+        return [f"first comment — {v.rule}: {v.detail}" for v in result.violations]
+
+    def _check(self, caption: str, facts: dict, locale: str) -> list[str]:
         """The hard constraints, in one place so `draft` and `draft_variants` cannot diverge.
 
         Facts are passed in rather than held on the engine: one engine drafts many items, and a
@@ -237,7 +260,10 @@ class GenerationEngine:
         for token in claims.check_notation(caption, writer_cfg.get("forbidden_notation", [])):
             reasons.append(f"uses {token!r}, which this brand has standardised away from")
 
-        voice_result = voice.check(caption, voice.load_rules(self._config))
+        rules = voice.load_rules(self._config)
+        voice_result = voice.check(
+            caption, rules, names=voice.names_in(facts, rules), locale=locale
+        )
         if not voice_result.ok:
             reasons += [f"{v.rule}: {v.detail}" for v in voice_result.violations]
         return reasons
@@ -284,9 +310,14 @@ class GenerationEngine:
                 "numbers not supported by the card: " + ", ".join(grounding.unsupported)
             )
 
-        voice_result = voice.check(caption, voice.load_rules(self._config))
+        rules = voice.load_rules(self._config)
+        names = voice.names_in(item.facts, rules)
+        voice_result = voice.check(caption, rules, names=names, locale=locale)
         if not voice_result.ok:
             reasons += [f"{v.rule}: {v.detail}" for v in voice_result.violations]
+
+        comment_result = voice.check_names(comment_body, rules, names=names, locale=locale)
+        reasons += [f"first comment — {v.rule}: {v.detail}" for v in comment_result.violations]
 
         if reasons:
             raise DraftRejected(reasons)

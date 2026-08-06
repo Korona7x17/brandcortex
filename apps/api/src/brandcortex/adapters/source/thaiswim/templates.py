@@ -4,13 +4,22 @@ These live with the adapter, not in `core/`, because they are this brand's writi
 registry and the constraints; the brand owns the words. Brand #2 registers its own and touches nothing
 here.
 
-Two rules shape every line below:
+Three rules shape every line below:
 
 * **No number appears that isn't in `facts`.** `claims.check` enforces it, and these templates are
   written to pass by construction — every figure is read from the snapshot rather than counted, phrased
   or rounded in the copy.
 * **The link never appears in the caption.** It goes in the first comment, which is a separate return
   value, not a formatting choice.
+* **A person's name is never written bare.** Everything here goes through `_person`, which carries the
+  honorific from `brand_config`; `core.generation.voice` rejects a draft that drops it. These are
+  masters swimmers, most of them older than the reader, and in Thai an unadorned name is a slight
+  aimed at exactly the audience the post is for.
+
+Two registers, and the reviewer picks: the reporting angles state the fact and leave it alone, and
+`_sweep_th` / `_longevity_th` congratulate, in the shape of a post the owner wrote by hand. Register
+is carried through both halves of a variant — a warm caption over a flat first comment reads as two
+people writing one post.
 
 The event hook works because the card already lists the top names. There is nothing to withhold, so the
 copy asks readers about *their own* rank rather than teasing what the image has already shown them.
@@ -38,6 +47,25 @@ def _hashtags(config: dict[str, Any]) -> str:
     return " ".join(config.get("hashtags", {}).get("core", []))
 
 
+def _person(facts: dict[str, Any], config: dict[str, Any]) -> str:
+    """The swimmer's name with the brand's honorific, or "" when the card has no usable name.
+
+    Never a bare name. These are masters swimmers, most of them older than whoever is reading — Thai
+    does not let you write such a person's name unadorned and stay polite, and the reader who notices
+    is exactly the reader the post is for. The prefix comes from `brand_config.voice.honorific` and
+    `core.generation.voice` rejects a caption that drops it, so this is the convenience, not the
+    guarantee.
+
+    The empty string is deliberate: a card with no name should fall back to a line that needs none,
+    not print the honorific on its own or on a placeholder dash.
+    """
+    name = facts.get("name") or facts.get("romanized") or ""
+    if not name:
+        return ""
+    prefix = ((config.get("voice") or {}).get("honorific") or {}).get("prefix", "")
+    return f"{prefix}{name}"
+
+
 def swimmer_th(*, facts: dict[str, Any], intro: str, config: dict[str, Any]) -> tuple[str, str, str]:
     """Swimmer card caption (§6.2). Returns (caption, first_comment_body, hook_style).
 
@@ -48,12 +76,12 @@ def swimmer_th(*, facts: dict[str, Any], intro: str, config: dict[str, Any]) -> 
     copy asserting which four, and the snapshot's `rows` only carry the top sixteen events — so a
     fifteen-event swimmer could be described wrongly. The count is always true.
     """
-    name = facts.get("name") or facts.get("romanized") or "—"
+    person = _person(facts, config)
     club = facts.get("club")
     province = facts.get("province")
     # The province is a provincial TEAM affiliation, shown as "ทีม{province}" so it doesn't read as a
     # location — the same treatment the card itself uses.
-    identity = " · ".join(x for x in [name, club, f"ทีม{province}" if province else None] if x)
+    identity = " · ".join(x for x in [person, club, f"ทีม{province}" if province else None] if x)
 
     ages = facts.get("ageGroups") or []
     age_line = f"รุ่น {_age(ages[0])}" if ages else None
@@ -86,7 +114,7 @@ def swimmer_th(*, facts: dict[str, Any], intro: str, config: dict[str, Any]) -> 
         ]
         if x
     )
-    return caption, f"📊 สถิติและอันดับทั้งหมดของ {name}", hook
+    return caption, _swimmer_comment(facts, config), hook
 
 
 def event_th(*, facts: dict[str, Any], intro: str, config: dict[str, Any]) -> tuple[str, str, str]:
@@ -143,6 +171,9 @@ def register(templates_module: Any) -> None:
 # not a rewording: the sweep across strokes, staying at national level at this age, the club, the
 # breadth of ranked events, one standout swim, and the plain-numbers version already in use.
 #
+# The first two are written in the congratulatory register and the rest report; the choice of what to
+# notice and the choice of how warmly to say it are independent, so the reviewer gets both.
+#
 # Every one obeys the same rules the original does. `goldStrokes` is stated as a count, never by
 # naming which four — the snapshot's `rows` cap at sixteen events, so naming them could describe a
 # fifteen-event swimmer wrongly. No number appears that is not in `facts`; `claims.check` enforces
@@ -160,14 +191,13 @@ CLOSINGS_TH: tuple[str, ...] = (
 )
 
 
-def _identity(facts: dict[str, Any]) -> str:
-    """Name · club · provincial team, exactly as the card presents them."""
-    name = facts.get("name") or facts.get("romanized") or "—"
+def _identity(facts: dict[str, Any], config: dict[str, Any]) -> str:
+    """Name · club · provincial team, exactly as the card presents them — the name never bare."""
     club = facts.get("club")
     province = facts.get("province")
     # "ทีม{province}" so the province doesn't read as an address — the card's own treatment.
     return " · ".join(
-        x for x in [name, club, f"ทีม{province}" if province else None] if x
+        x for x in [_person(facts, config), club, f"ทีม{province}" if province else None] if x
     )
 
 
@@ -180,47 +210,139 @@ def _assemble(parts: list[str | None], config: dict[str, Any]) -> str:
     return "\n\n".join(x for x in [*parts, "สถิติทั้งหมดอยู่ในคอมเมนต์แรก", _hashtags(config)] if x)
 
 
-def _swimmer_comment(facts: dict[str, Any]) -> str:
-    return "📊 สถิติและอันดับทั้งหมด"
+#: Openers for the first comment, the line that sits above the link. Rotated with the closings so six
+#: variants don't all end in the same sentence — the link nudge is as visible as the caption and
+#: repeating it verbatim across every post is what makes a feed read as automated.
+#:
+#: Named and general lines alternate on purpose. The named ones carry the honorific through
+#: `_person`, so the name is never bare here either; the general ones are the right choice when the
+#: caption has already named the swimmer twice, and the only choice when the card has no name.
+COMMENTS_TH: tuple[str, ...] = (
+    "📊 สถิติทั้งหมดของ{person} อยู่ที่นี่",
+    "📊 สถิติทั้งหมดอยู่ที่นี่",
+    "📊 ดูสถิติและผลงานทั้งหมดของ{person} ได้ที่นี่",
+    "📊 ดูโปรไฟล์และสถิติทั้งหมดได้ที่นี่",
+    "📊 สถิติและอันดับทั้งหมดอยู่ที่นี่",
+)
+
+
+#: The same bank in the warm register, for the angles that congratulate rather than report. A warm
+#: caption above a flat "📊 สถิติทั้งหมดอยู่ที่นี่" reads as two people writing one post, so register
+#: is chosen per variant and carried through both halves.
+COMMENTS_WARM_TH: tuple[str, ...] = (
+    "👉 ดูสถิติและโปรไฟล์ทั้งหมดของ{person} ได้ที่นี่",
+    "👉 สถิติและอันดับทั้งหมดอยู่ที่นี่",
+    "🏆 ผลงานและสถิติทั้งหมดของ{person} อยู่ที่นี่",
+    "👉 ดูโปรไฟล์และสถิติทั้งหมดได้ที่นี่",
+)
+
+
+def _swimmer_comment(
+    facts: dict[str, Any], config: dict[str, Any], index: int = 0, *, warm: bool = False
+) -> str:
+    """One line from the bank. Falls back to a general line when the card carries no name."""
+    bank = COMMENTS_WARM_TH if warm else COMMENTS_TH
+    person = _person(facts, config)
+    line = bank[index % len(bank)]
+    if "{person}" in line and not person:
+        line = next(x for x in bank if "{person}" not in x)
+    return line.format(person=person)
+
+
+def _from(facts: dict[str, Any]) -> str | None:
+    """"จาก {club}" — the affiliation as an attribution, the way the owner's own posts write it.
+
+    Falls back to the provincial team, and to nothing at all: "จาก" with no one to name reads worse
+    than a line that simply doesn't mention a club.
+    """
+    club = facts.get("club") or (f"ทีม{facts['province']}" if facts.get("province") else None)
+    return f"จาก {club}" if club else None
+
+
+def _assemble_warm(headline: str, claim: str, facts: dict[str, Any], config: dict[str, Any]) -> str:
+    """The congratulatory shape: headline -> who -> what they did -> link nudge -> hashtags.
+
+    Single newlines rather than blank lines between them. This is the owner's own register, kept in
+    shape so the generated posts sit next to the hand-written ones without a seam.
+
+    Two emoji, and the ceiling is two: 🏆 on the headline and 👏 on the achievement. The reference
+    post carried arrows on the nudge as well; they were the first thing to go when the ceiling came
+    down, because they decorate a line that already says where the link is, while the other two carry
+    the congratulation itself.
+
+    Every rule the factual templates obey still applies here: no number that isn't in `facts`, no
+    link in the body, and never a bare name — `ขอแสดงความยินดีกับ` is followed by `_person`, which
+    carries the honorific.
+    """
+    person = _person(facts, config)
+    congratulation = " ".join(
+        x for x in ["ขอแสดงความยินดีกับ", person or None, _from(facts)] if x
+    )
+    return "\n".join(
+        x
+        for x in [
+            headline,
+            congratulation if person else _from(facts),
+            claim,
+            "ดูสถิติและโปรไฟล์ทั้งหมดได้จากลิงก์ในคอมเมนต์แรก",
+            _hashtags(config),
+        ]
+        if x
+    )
 
 
 def _sweep_th(*, facts, intro, config, closing=0):
-    """Across four strokes — the rarest thing on most of these cards."""
+    """Across four strokes — the rarest thing on most of these cards. Written warm (see `_assemble_warm`).
+
+    The intro is not used here. This shape opens on the achievement itself, which is what makes it
+    read as a congratulation rather than a bulletin; a rotating soft line above the trophy would put
+    two openings on one post.
+    """
     strokes = facts.get("goldStrokes") or 0
     if strokes < 2:
         raise _NotApplicable("only one stroke won")
+    golds = facts.get("goldCount") or 0
+    ages = facts.get("ageGroups") or []
+    age = f" ในรุ่นอายุ {_age(ages[0])} ปี" if ages else ""
+    claim = (
+        f"ครองอันดับ 1 ของประเทศไทยถึง {golds} รายการ ครบ {strokes} ท่า{age} 👏"
+        if golds
+        else f"อันดับ 1 ของประเทศไทย ครบ {strokes} ท่า{age} 👏"
+    )
+    headline = (
+        f"🏆 {golds} รายการ อันดับ 1 ของประเทศไทย"
+        if golds
+        else f"🏆 อันดับ 1 ของประเทศไทย ครบ {strokes} ท่า"
+    )
     return (
-        _assemble(
-            [
-                intro,
-                " · ".join(x for x in [_identity(facts), _age_line(facts)] if x),
-                # Deliberately a different sentence from the `plain` angle, which leads with the
-                # count. Two variants that differ only by their opening line are one variant.
-                f"ครบ {strokes} ท่า แต่ละท่าคืออันดับ 1 ของประเทศ",
-                CLOSINGS_TH[closing % len(CLOSINGS_TH)],
-            ],
-            config,
-        ),
-        _swimmer_comment(facts),
+        _assemble_warm(headline, claim, facts, config),
+        _swimmer_comment(facts, config, closing, warm=True),
         "multi_gold",
     )
 
 
 def _longevity_th(*, facts, intro, config, closing=1):
-    """Still at national level in this age group. The angle that travels furthest with masters."""
+    """Still at national level in this age group. The angle that travels furthest with masters.
+
+    Warm, and leading with the age group, because that is the fact the audience reacts to. The intro
+    is unused for the same reason as in `_sweep_th`.
+    """
     ages = facts.get("ageGroups") or []
     if not ages:
         raise _NotApplicable("no age group on the card")
     golds = facts.get("goldCount") or 0
     ranked = facts.get("rankedCount") or 0
+    headline = f"🏆 อันดับ 1 ของประเทศไทย ในรุ่นอายุ {_age(ages[0])} ปี" if golds else (
+        f"🏆 ติดอันดับประเทศไทย ในรุ่นอายุ {_age(ages[0])} ปี"
+    )
     claim = (
-        f"รุ่น {_age(ages[0])} ยังครองอันดับ 1 ของประเทศ {golds} รายการ"
+        f"ยังครองอันดับ 1 ของประเทศไทยถึง {golds} รายการ 👏"
         if golds
-        else f"รุ่น {_age(ages[0])} ติดอันดับประเทศ {ranked} รายการ"
+        else f"ติดอันดับประเทศไทย {ranked} รายการ 👏"
     )
     return (
-        _assemble([intro, _identity(facts), claim, CLOSINGS_TH[closing % len(CLOSINGS_TH)]], config),
-        _swimmer_comment(facts),
+        _assemble_warm(headline, claim, facts, config),
+        _swimmer_comment(facts, config, closing, warm=True),
         "longevity",
     )
 
@@ -238,11 +360,11 @@ def _breadth_th(*, facts, intro, config, closing=2):
     )
     return (
         _assemble(
-            [intro, " · ".join(x for x in [_identity(facts), _age_line(facts)] if x), claim,
+            [intro, " · ".join(x for x in [_identity(facts, config), _age_line(facts)] if x), claim,
              CLOSINGS_TH[closing % len(CLOSINGS_TH)]],
             config,
         ),
-        _swimmer_comment(facts),
+        _swimmer_comment(facts, config, closing),
         "ranked_breadth",
     )
 
@@ -262,11 +384,11 @@ def _standout_th(*, facts, intro, config, closing=3):
     )
     return (
         _assemble(
-            [intro, " · ".join(x for x in [_identity(facts), _age_line(facts)] if x),
+            [intro, " · ".join(x for x in [_identity(facts, config), _age_line(facts)] if x),
              f"{line}\n{rank_line}", CLOSINGS_TH[closing % len(CLOSINGS_TH)]],
             config,
         ),
-        _swimmer_comment(facts),
+        _swimmer_comment(facts, config, closing),
         "standout_swim",
     )
 
@@ -278,17 +400,17 @@ def _club_th(*, facts, intro, config, closing=4):
         raise _NotApplicable("no club or province on the card")
     golds = facts.get("goldCount") or 0
     ranked = facts.get("rankedCount") or 0
-    name = facts.get("name") or facts.get("romanized") or "—"
+    person = _person(facts, config)
     claim = (
         f"อันดับ 1 ของประเทศ {golds} รายการ" if golds else f"ติดอันดับประเทศ {ranked} รายการ"
     )
     return (
         _assemble(
-            [intro, club, " · ".join(x for x in [name, _age_line(facts)] if x), claim,
+            [intro, club, " · ".join(x for x in [person, _age_line(facts)] if x), claim,
              CLOSINGS_TH[closing % len(CLOSINGS_TH)]],
             config,
         ),
-        _swimmer_comment(facts),
+        _swimmer_comment(facts, config, closing),
         "club_first",
     )
 

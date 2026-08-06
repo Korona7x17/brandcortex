@@ -5,15 +5,14 @@
   "tenant": "thaiswim",
   "channel": "facebook",
   "branch": "scaffold/thaiswim-facebook-mvp",
-  "head": "f56e0e6",
+  "head": "1093111",
   "pushed": true,
   "topics": [
-    "production deployed",
-    "clerk auth fail-closed",
-    "publish link guard",
-    "cron worker + R2 pending",
+    "monochrome design system applied",
+    "first production compose pending",
+    "R2 + cron worker",
     "insights fetcher",
-    "brandcortex.app DNS"
+    "design-system folder untracked"
   ],
   "tests": {
     "passed": 165,
@@ -77,7 +76,8 @@
     "declare a status column as String — it loads back a bare str and breaks every `is` comparison",
     "duplicate the ThaiSwim card engines — two definitions of the card would drift",
     "send the user around Meta's UI on unverified guesses — drive the browser or probe the API",
-    "assume session_scope() commits — it never does; the caller owns the transaction"
+    "assume session_scope() commits — it never does; the caller owns the transaction",
+    "run pnpm build while next dev is live without restarting dev after — they share .next"
   ],
   "credentials": {
     "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env / channel_tokens.",
@@ -109,5 +109,9 @@
       "Google sign-in on production needs custom OAuth creds (email code works)"
     ],
     "clerk": "production instance, issuer https://clerk.brandcortex.app; localhost stays on the dev instance (test keys in .env; CLERK_SECRET_KEY_LIVE is Vercel-only)"
+  },
+  "design": {
+    "guideline": "docs/agenticskills-design-system (untracked; user's AgenticSkills monochrome system)",
+    "rules": "pure neutrals; hierarchy by weight/scale/hairlines; zero radius; no shadows; inversion = selection; Geist/Geist Mono via next/font + Noto Sans Thai fallback; serif accent and dark mode deliberately omitted"
   }
 }

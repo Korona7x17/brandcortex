@@ -20,3 +20,12 @@ C: prod Clerk refuses localhost — .env keeps test pair + CLERK_SECRET_KEY_LIVE
 DNS checkers lie after changes — dig @1.1.1.1 + curl --resolve are the truth
 Q: Google button needs custom OAuth creds on prod (email code fine); dev secret rotation open
 →: first production compose → R2 → cron worker → insights fetcher
+
+## Session 4 addendum
+Δ: Dashboard restyled to the AgenticSkills monochrome system (docs/agenticskills-design-system,
+untracked); empty queue redirects to /new; sign-in is lockup+box via (dashboard) route group;
+all deployed to brandcortex.app; branch PUSHED fb4640a..1093111 (12 commits, diff secret-scan clean)
+C: inversion is the only selection signal; Geist needs Noto Sans Thai fallback; pnpm build
+corrupts a live next dev (.next shared) — restart dev after local prod builds
+Q: commit the design-system folder or keep the pointer (user's call)
+→: R2 → cron worker → insights fetcher; first production compose still pending

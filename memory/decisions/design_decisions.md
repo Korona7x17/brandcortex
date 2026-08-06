@@ -444,3 +444,20 @@ mechanism stays and the engine records an `intro_line` only when the caption ope
 **Date:** 2026-08-06
 **Ref:** adapters/source/thaiswim/templates.py@99ed18; seeds/thaiswim.brand_config.json@4cde02;
 docs/BrandCortex-architecture.md §6.1–6.5
+
+## D-2026-08-07-01 — Railway builds `apps/api`; build config pinned in the repo
+
+**Rationale:** The GitHub connection was never broken — it fired on every push and every build failed,
+because the service had no Root Directory and Railpack analysed the repo root, found a pnpm workspace
+with no recognisable app, and exited. Railway keeps the previous container serving, so `/health`
+stayed 200 and production looked stale rather than broken; that ambiguity produced three wrong
+"the push did not deploy" conclusions across two days. Set `rootDirectory=apps/api` (the cause),
+`dockerfilePath=Dockerfile`, and `watchPatterns=["apps/api/**"]` so web, docs and memory commits stop
+rebuilding the API. `builder: DOCKERFILE` does not exist in Railway's enum — a Dockerfile is
+auto-detected inside the root directory. Build and healthcheck settings live in `apps/api/railway.json`
+so they are reviewable and survive the service being recreated; Root Directory cannot, since it is
+what tells Railway where to find that file.
+
+**Status:** Accepted
+**Date:** 2026-08-07
+**Ref:** apps/api/railway.json@99c321; deployment 6dc2fed (BUILDING → DEPLOYING root=apps/api → SUCCESS)

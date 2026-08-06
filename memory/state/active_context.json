@@ -1,19 +1,19 @@
 {
   "project": "brandcortex",
-  "updated": "2026-08-06",
+  "updated": "2026-08-07",
   "phase": "1 (MVP) — LIVE at https://brandcortex.app (production Clerk, own domain); cron worker + insights outstanding",
   "tenant": "thaiswim",
   "channel": "facebook",
   "branch": "main (scaffold branch deleted local+remote; main is the GitHub default)",
-  "head": "bb44820",
+  "head": "6dc2fed",
   "pushed": true,
   "topics": [
-    "seed-on-boot armed in production (row stamped, bootstrap line visible in deploy log)",
-    "copy rewritten — promo scaffolding cut, variants differ by form",
-    "honorific live in production",
-    "Railway git connection still does not deploy on push",
+    "both platforms deploy on push (Railway fixed 2026-08-07)",
+    "seed-on-boot armed; config ships with its deploy",
+    "honorific + rewritten copy live in production",
     "R2 + cron worker",
-    "insights fetcher"
+    "insights fetcher",
+    "first production compose still pending"
   ],
   "tests": {
     "passed": 201,
@@ -62,19 +62,15 @@
       "detail": "api.ts, diff.ts, server-auth.ts existed untracked on main before the merge and overlap in purpose with the apps/web code the merge brought in — reconcile before they drift"
     },
     {
-      "what": "Railway git deploys unverified",
-      "detail": "connected, but the 5d744d4 push did not produce a deploy — container had no bootstrap_config.py. Check root directory (must be apps/api) and watch paths in the Railway dashboard."
-    },
-    {
       "what": "old drafts keep old copy",
       "detail": "post_text is frozen at draft time by design; existing queue rows must be regenerated to pick up new copy."
     }
   ],
   "next_actions": [
-    "verify or repair the Railway git connection (root dir apps/api, watch paths) so pushes deploy",
     "user composes the first production draft (old drafts keep frozen text, need regenerating)",
     "R2 bucket -> ASSET_* -> cron worker service (*/5)",
-    "insights fetcher"
+    "insights fetcher",
+    "remove the committed .DS_Store at the repo root"
   ],
   "local_dev": {
     "postgres": "docker container brandcortex-pg — start it before the API after a reboot",
@@ -100,7 +96,7 @@
     "assume a code deploy changes the copy — brand_config is a database row and must be applied separately (or carried by seed-on-boot)",
     "lead a swimmer's post with the club — it is the swimmer's achievement; the club goes on line two",
     "use a bare directory name in .gitignore (`lib/`) — it matches at any depth and silently drops source",
-    "conclude a deploy landed from /health or a log line the previous build also produced — grep the container for a new symbol instead"
+    "conclude a deploy never happened because the running container lacks the new code — Railway keeps the old container serving when a build fails; read the deployment's `status`"
   ],
   "credentials": {
     "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env / channel_tokens.",
@@ -146,7 +142,7 @@
   "deploy": {
     "_lesson": "Deploying CODE and applying CONFIG are separate acts. brand_config is a DB row; the seed JSON is only its reviewed source. Seed-on-boot (D-08) closes this, but only for rows carrying a _seeded_from stamp.",
     "vercel": "github-connected 2026-08-06: Korona7x17/brandcortex, prodBranch main, root apps/web. Pushes deploy. Before this it was CLI-upload-only, and `vercel deploy` stamps the local branch onto an upload — the dashboard shows that identically to a real integration, so check `link` via the REST API, never the deployment meta.",
-    "railway": "connected to GitHub 2026-08-06 but pushes do NOT deploy — every API change needs `railway up apps/api --path-as-root --service api --detach`. Check root directory (apps/api) and watch paths. Run DB work with `railway ssh --service api \"uv run python -m ...\"` (internal host does not resolve outside; the container needs `uv run`). VERIFY A DEPLOY by grepping the running container for a symbol only the new build has — /health and existing log lines answer for the old container too. `railway ssh` erroring with 'not running or unexpected state' means mid-restart.",
+    "railway": "FIXED 2026-08-07 — deploys on push to main. It was never disconnected: every push built at the REPO ROOT and failed (Railpack found no app), while the old container kept serving. rootDirectory=apps/api, dockerfilePath=Dockerfile, watchPatterns=['apps/api/**']. Build/health config in apps/api/railway.json; Root Directory is service-level and cannot live there. Manual fallback if ever needed: `railway up apps/api --path-as-root --service api --detach`. DB work: `railway ssh --service api \"uv run python -m ...\"`. VERIFY A DEPLOY by its `status` field — /health, existing log lines and the container's contents all answer for the old build; a failed deploy and an absent one look identical from outside. GraphQL: backboard.railway.com/graphql/v2, CLI token from ~/.railway/config.json, MUST send a User-Agent header or Cloudflare 403s (1010). serviceInstance(environmentId, serviceId) has rootDirectory/builder/dockerfilePath/watchPatterns; service(id).deployments has status + meta.",
     "logging": "Root logging is configured in create_app from BRANDCORTEX_LOG_LEVEL. Before that, uvicorn owned its loggers and root stayed at default, so brandcortex.* INFO never reached Railway — a refusal was visible only because WARNING clears the bar. Railway shows all stderr as severity=error."
   }
 }

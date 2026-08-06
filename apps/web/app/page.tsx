@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { api, cardUrl, type PostSummary } from "@/lib/api";
 
@@ -32,9 +33,15 @@ export default async function Queue({
       <div className="empty">
         <p>Can’t reach the API.</p>
         <p className="note">{unreachable}</p>
-        <code>{`cd apps/api\nuv run uvicorn brandcortex.main:app --reload`}</code>
       </div>
     );
+  }
+
+  // Nothing to review means the person came here to make something — put them in the composer
+  // instead of an empty room. Once drafts exist, home is the queue. Filtered views ("published",
+  // "failed") stay put even when empty: an explicit filter is a question, and "none" is its answer.
+  if (posts.length === 0 && !status) {
+    redirect("/new");
   }
 
   return (
@@ -87,25 +94,6 @@ export default async function Queue({
 }
 
 function EmptyQueue({ status }: { status: string }) {
-  if (status) {
-    return <div className="empty">Nothing with status “{status}”.</div>;
-  }
-  return (
-    <div className="empty">
-      <p>No drafts yet. The queue fills when a card is ingested.</p>
-      <p className="note">
-        Either poll the brand’s <code style={{ display: "inline", padding: "1px 5px" }}>card_renders</code>{" "}
-        table, or push one envelope directly:
-      </p>
-      <code>{`# table-watch (needs BRAND_DB_URL pointing at a read-only role)
-cd apps/api
-uv run python -c "from brandcortex.adapters import registry; registry.bootstrap()
-from brandcortex.workers.ingest_watcher import run_once
-print(run_once('thaiswim'))"
-
-# or push one envelope
-curl -X POST localhost:8000/content-items \\
-  -H 'content-type: application/json' -d @item.json`}</code>
-    </div>
-  );
+  // Only ever renders for an explicit filter — an unfiltered empty queue redirects to /new.
+  return <div className="empty">Nothing with status “{status}”.</div>;
 }

@@ -195,6 +195,18 @@ button.primary { background: var(--accent); border-color: var(--accent); color: 
 button.primary:hover:not(:disabled) { filter: brightness(1.06); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 
+/* A link dressed as the primary button — for calls to action that navigate rather than act. */
+a.button {
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 7px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+}
+a.button:hover { filter: brightness(1.06); }
+
 .reasons {
   margin-top: 14px;
   border: 1px solid var(--bad);

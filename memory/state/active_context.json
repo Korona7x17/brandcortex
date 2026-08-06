@@ -1,19 +1,18 @@
 {
   "project": "brandcortex",
-  "updated": "2026-08-05",
-  "phase": "1 (MVP) — generation and persistence working; channel I/O and dashboard outstanding",
+  "updated": "2026-08-06",
+  "phase": "1 (MVP) — full path compose -> approve -> schedule -> publish is live-capable; first real publish pending user go",
   "tenant": "thaiswim",
   "channel": "facebook",
   "branch": "scaffold/thaiswim-facebook-mvp",
-  "head": "ef105d9",
-  "pushed": false,
+  "head": "fb4640a",
+  "pushed": true,
   "topics": [
-    "orchestrator + review API",
-    "alembic baseline",
-    "thaiswim card_renders seam",
-    "generation engine + numeric grounding",
-    "self-improving loop verification",
-    "meta page token"
+    "meta page token acquired",
+    "facebook channel healthy",
+    "first real publish pending",
+    "insights fetcher",
+    "editor-preference loop"
   ],
   "tests": {
     "passed": 154,
@@ -24,31 +23,20 @@
     "model writes 6 caption variants; each checked for grounded numbers, notation and voice",
     "pick a variant, edit, or regenerate with a per-post steer",
     "approve and schedule with a policy-aware suggested slot and its reasons",
-    "publish path fully implemented and tested against a fake Graph — untested against the real one"
+    "publish path tested against a fake Graph AND now authorized against the real one: PAGE token stored encrypted, GET /health/channels ok"
   ],
   "still_stubs": [
     "insights fetcher",
     "reflection agent",
     "no auth on the dashboard"
   ],
-  "blocked": [
-    {
-      "what": "facebook page access token",
-      "why": "the login dialog rejects pages_read_user_content — a scope the app has never held and no request of ours sends, so it is injected by the app configuration",
-      "ruled_out": [
-        "hand-built OAuth URL with five explicit scopes",
-        "auth_type=rerequest",
-        "Login for Business config_id, system-user and user token types",
-        "publishing the app; privacy URL set and reachable",
-        "all five permissions Ready for testing in the use case"
-      ],
-      "untried": [
-        "click + Add on pages_read_user_content so it is no longer invalid (already in FUTURE_PERMISSIONS)",
-        "drive the browser and read the actual request in the network tab"
-      ],
-      "note": "2026-08-05 burned hours sending the user round Meta's UI on wrong guesses. Do not send them again without driving the browser or having a verified answer."
-    }
-  ],
+  "blocked": [],
+  "resolved_2026-08-06": {
+    "what": "facebook page access token",
+    "how": "Login for Business injects the use case's permission bundle; pages_read_user_content was referenced by the Manage Pages use case but never Added to the app, invalidating every login. One '+ Add' click fixed it. Verified by reproducing the failure firsthand (browser driven via Claude-in-Chrome), then the same five-scope dialog succeeded.",
+    "token": "PAGE, page 1223598310834457, expires never, 7 scopes, encrypted in channel_tokens; .env token line cleared — DB is authoritative",
+    "lesson": "drive the browser or probe the API; never send the user around Meta's UI on guesses"
+  },
   "open_questions": [
     {
       "what": "ruff line-length gate has never passed",
@@ -60,26 +48,23 @@
       "do_not": "retry a line-by-line wrap — it orphans words; see R-2026-08-05-01"
     },
     {
-      "what": "no Postgres provisioned",
-      "detail": "baseline has only ever been applied to SQLite"
-    },
-    {
-      "what": "anthropic account has no credit balance",
-      "detail": "the key authenticates but every request returns 400 'credit balance is too low', so the model writer falls back to templates on every draft",
-      "fix": "add credits at console.anthropic.com Plans & Billing"
+      "what": "first real publish needs explicit user go-ahead",
+      "detail": "approved draft is queued; publishing posts publicly on the live ThaiSwim Page"
     }
   ],
   "next_actions": [
-    "resolve the scope injection, then token -> one published post",
+    "publish the queued draft -> verify photo + first-comment link on the real Graph",
     "insights fetcher (Y data cannot be backfilled — every unpublished day is lost history)",
     "editor-preference loop: variant picks and edit deltas, independent of Facebook entirely",
     "Meta-independent: Clerk auth, Railway deploy, R2 for captured cards"
   ],
   "local_dev": {
+    "postgres": "docker container brandcortex-pg — start it before the API after a reboot",
     "migrate": "uv run alembic upgrade head",
     "seed": "uv run python -m brandcortex.db.seed seeds/thaiswim.brand_config.json",
     "serve": "uv run uvicorn brandcortex.main:app --reload",
-    "note": "config reads .env from the working directory; ASSET_BUCKET as a path means local disk"
+    "web": "pnpm dev from apps/web (port 3000)",
+    "note": "config reads .env from the working directory; apps/api/.env is a symlink to the repo root .env; ASSET_BUCKET as a path means local disk"
   },
   "do_not": [
     "modify ThaiSwim card engines",
@@ -88,16 +73,23 @@
     "let the learning loop propose voice.* rules",
     "hardcode locale to th",
     "declare a status column as String — it loads back a bare str and breaks every `is` comparison",
-    "duplicate the ThaiSwim card engines — two definitions of the card would drift"
+    "duplicate the ThaiSwim card engines — two definitions of the card would drift",
+    "send the user around Meta's UI on unverified guesses — drive the browser or probe the API"
   ],
   "credentials": {
-    "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env.",
+    "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env / channel_tokens.",
     "anthropic_api_key": {
       "added": "2026-08-05",
       "expires": "2026-11-03",
       "rotate_by": "2026-10-27",
       "where": ".env ANTHROPIC_API_KEY (gitignored, mode 600)",
       "on_expiry": "caption drafting falls back to templates; the queue keeps working, the copy gets plainer"
+    },
+    "facebook_page_token": {
+      "added": "2026-08-06",
+      "expires": "never",
+      "where": "channel_tokens (encrypted at rest), tenant thaiswim",
+      "note": "PAGE token, 7 scopes; re-run authorize.py flow if Meta invalidates it (password change, App Review changes, data-access expiry)"
     }
   }
 }

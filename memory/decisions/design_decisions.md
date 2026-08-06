@@ -308,3 +308,17 @@ overnight must not wake and publish yesterday's post into an audience that has m
 **Status:** Accepted
 **Date:** 2026-08-05
 **Ref:** apps/api/src/brandcortex/core/orchestrator.py; workers/publisher.py@f54b34
+
+## D-2026-08-06-01 — `pages_read_user_content` added to the app before Phase 3 needs it
+
+**Rationale:** Facebook Login for Business injects the use case's whole permission bundle
+server-side; the "Manage Pages" use case referenced this permission, and any use-case permission
+not Added to the app invalidates *every* login dialog — including requests that never ask for it
+(verified by reproducing the failure with a five-scope request, then watching the same request
+succeed after "+ Add"). Adding it was the fix; the alternative — removing it from the use case —
+is not offered by Meta's UI. It stays unused until Phase 3 inbox triage (`FUTURE_PERMISSIONS`),
+and it does widen a future App Review.
+
+**Status:** Accepted
+**Date:** 2026-08-06
+**Ref:** Meta app 1278952477505548 use case PAGES_API; adapters/channel/facebook/adapter.py (FUTURE_PERMISSIONS)

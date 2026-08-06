@@ -121,3 +121,33 @@ def test_a_malformed_file_does_not_stop_the_boot(session: Session, tmp_path: Pat
     assert any(r.startswith("failed") for r in results)
     assert any(r.startswith("created") for r in results)
     assert session.get(BrandConfig, "testbrand") is not None
+
+
+def test_an_unstamped_row_identical_to_the_file_is_adopted(session: Session, seed_file: Path) -> None:
+    """Production's own case, on 2026-08-06.
+
+    The row was seeded by hand before stamping existed, so it carried no provenance — and its content
+    was already exactly the file's. Refusing that is caution with no object: nothing would be
+    overwritten. Adopting it stamps the row, which is what lets the *next* deploy carry a change.
+    """
+    store.save(session, DOCUMENT)  # a hand-run seed from before this module existed
+
+    result = bootstrap_config.apply_seed(session, seed_file)
+
+    assert result.startswith("adopted")
+    stamp = store.load(session, "testbrand")[bootstrap_config.STAMP_KEY]
+    assert stamp["row_sha256"] and stamp["file_sha256"]
+
+    # And now a reviewed change flows, which is the whole point of adopting it.
+    changed = {**DOCUMENT, "voice": {**DOCUMENT["voice"], "max_emoji": 2}}
+    seed_file.write_text(json.dumps(changed, ensure_ascii=False), encoding="utf-8")
+    assert bootstrap_config.apply_seed(session, seed_file).startswith("updated")
+
+
+def test_an_unstamped_row_that_differs_is_still_refused(session: Session, seed_file: Path) -> None:
+    """Adoption is only safe because the content matches. When it does not, provenance is unknown
+    and the row could be anyone's tuning — that still belongs to a human."""
+    store.save(session, {**DOCUMENT, "voice": {**DOCUMENT["voice"], "max_emoji": 7}})
+
+    assert bootstrap_config.apply_seed(session, seed_file) == "skipped-edited testbrand"
+    assert store.load(session, "testbrand")["voice"]["max_emoji"] == 7

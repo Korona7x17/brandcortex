@@ -18,8 +18,9 @@ from sqlalchemy.orm import Session
 
 from brandcortex.db.models import BrandConfig
 
-#: Document keys with a dedicated column. Everything else goes to `settings`.
-_COLUMNS = (
+#: Document keys with a dedicated column. Everything else goes to `settings`. Public because
+#: `db.bootstrap_config` needs the same split to predict what applying a document would change.
+COLUMNS = (
     "display_name",
     "timezone",
     "default_locale",
@@ -45,7 +46,7 @@ def to_document(row: BrandConfig) -> dict[str, Any]:
     """Flatten a row back into the document shape the engine reads."""
     document: dict[str, Any] = dict(row.settings or {})
     document["brand"] = row.brand
-    for key in _COLUMNS:
+    for key in COLUMNS:
         document[key] = getattr(row, key)
     return document
 
@@ -70,11 +71,11 @@ def save(session: Session, document: dict[str, Any]) -> BrandConfig:
     brand = document["brand"]
     row = session.get(BrandConfig, brand) or BrandConfig(brand=brand)
 
-    for key in _COLUMNS:
+    for key in COLUMNS:
         if key in document:
             setattr(row, key, document[key])
     row.settings = {
-        key: value for key, value in document.items() if key not in _COLUMNS and key != "brand"
+        key: value for key, value in document.items() if key not in COLUMNS and key != "brand"
     }
 
     session.add(row)

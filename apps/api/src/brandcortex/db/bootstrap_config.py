@@ -23,11 +23,19 @@ So each seeded row records a fingerprint of the document it was written from. At
 
     file unchanged since the last seed          -> nothing to do
     file changed, row still matches its seed    -> apply; the row was never hand-edited
+    unstamped row, applying would change nothing-> adopt it and stamp it
     file changed, row no longer matches         -> REFUSE, and log both fingerprints
 
 The last case is a genuine conflict — a reviewed change and a live edit, both wanting the same field —
 and a machine picking a winner is exactly how someone's tuning disappears without a trace. It stays
-for a human, and `scripts` can still force it with the ordinary seed command.
+for a human, and `db.seed` can still force it.
+
+The adopt case exists because of what production actually looked like the first time this ran. Its
+row had been seeded by hand minutes earlier, so it carried no stamp — and refusing an unstamped row
+outright is caution with no object when the row already holds exactly what the file says. It would
+have meant boot-seeding sat inert until someone ran the manual command it was built to replace. The
+deployment log read `file=34b942d201fc row=34b942d201fc expected=(none)`: identical content, refused
+on provenance alone.
 """
 
 import hashlib
@@ -90,6 +98,23 @@ def write_stamped(session: Session, document: dict[str, Any], file_hash: str) ->
     return row
 
 
+def _projected(current: dict[str, Any], document: dict[str, Any]) -> dict[str, Any]:
+    """What the row would hold if `document` were applied — computed, not written.
+
+    Mirrors `store.save`: a column named in the document is overwritten, a column the document omits
+    keeps its current value, and `settings` is replaced wholesale. Comparing against this rather than
+    against the raw document is what makes "would applying this change anything?" answerable for a
+    partial seed file, whose omissions are not the same thing as deletions.
+    """
+    projected = {
+        key: value for key, value in document.items() if key not in store.COLUMNS and key != "brand"
+    }
+    projected["brand"] = current.get("brand", document.get("brand"))
+    for column in store.COLUMNS:
+        projected[column] = document[column] if column in document else current.get(column)
+    return projected
+
+
 def apply_seed(session: Session, path: Path) -> str:
     """Apply one seed file if it is safe to. Returns what happened, for the log.
 
@@ -114,11 +139,20 @@ def apply_seed(session: Session, path: Path) -> str:
     if stamp.get("file_sha256") == file_hash:
         return f"unchanged {brand}"
 
-    # A row this module wrote carries the hash it had when written. If it no longer matches, someone
-    # else has written to the row — `/settings/voice`, or a hand-run `db.seed`. Either way the row is
-    # the authority and a deploy does not get to revert it. A row with no stamp at all predates this
-    # module and is treated the same way: unknown provenance is not consent to overwrite.
     expected_row = stamp.get("row_sha256")
+
+    # An unstamped row predates this module — seeded by hand, or by a deploy before boot-seeding
+    # existed. Refusing it outright would be safe but useless: the first such row is production's,
+    # and it would need a manual seed before boot-seeding ever did anything. So adopt it when
+    # applying the file would change nothing. Nothing is overwritten, there is no conflict to
+    # arbitrate, and the stamp it gains is what arms every deploy after this one.
+    if expected_row is None and fingerprint(current) == fingerprint(_projected(current, document)):
+        write_stamped(session, document, file_hash)
+        return f"adopted {brand} (identical to {path.name}, now stamped)"
+
+    # Otherwise the row and the file disagree and the row is the authority: someone wrote to it
+    # through `/settings/voice` or a hand-run `db.seed`, or its provenance is unknown. A deploy does
+    # not get to revert either of those.
     if expected_row is None or fingerprint(current) != expected_row:
         logger.warning(
             "brand_config for %r has been edited since it was seeded (or predates boot-seeding); "

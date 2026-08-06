@@ -1,0 +1,60 @@
+/* Typography scale.
+   Display sizes use clamp() — they are fluid by design.
+   The serif appears ONLY as an italic accent inside a headline, never upright,
+   never for body copy. */
+:root{
+  /* Fluid display sizes */
+  --type-hero:clamp(48px,6.4vw,88px);
+  --type-page:clamp(40px,5vw,72px);
+  --type-section:clamp(32px,4vw,48px);
+
+  /* Fixed sizes */
+  --type-h2:36px;
+  --type-h3-lg:28px;
+  --type-h3:24px;
+  --type-h4:22px;
+  --type-h5:18px;
+  --type-card:17px;
+  --type-card-sm:16px;
+  --type-card-xs:15px;
+
+  --type-lede:18px;
+  --type-lede-sm:17px;
+  --type-body:16px;
+  --type-sm:14px;
+  --type-xs:13px;
+  --type-micro:11px;
+  --type-nano:10px;
+
+  /* Line heights */
+  --lh-display:0.94;
+  --lh-page:0.98;
+  --lh-section:1.0;
+  --lh-heading:1.2;
+  --lh-lede:1.55;
+  --lh-body:1.7;
+  --lh-tight:1.5;
+
+  /* Letter spacing */
+  --ls-hero:-0.035em;
+  --ls-display:-0.03em;
+  --ls-heading:-0.025em;
+  --ls-title:-0.02em;
+  --ls-tight:-0.01em;
+  --ls-micro:0.14em;
+  --ls-label:0.12em;
+  --ls-tag:0.08em;
+  --ls-nano:0.06em;
+  --ls-wide:0.16em;
+
+  /* Weights — the system uses 400/500/600 only. 700 is never used. */
+  --fw-regular:400;
+  --fw-medium:500;
+  --fw-semibold:600;
+
+  /* Measure */
+  --measure-lede:60ch;
+  --measure-prose:62ch;
+  --measure-headline:18ch;
+  --measure-card:32ch;
+}

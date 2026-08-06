@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Web Development — AgenticSkills</title>
+<link rel="stylesheet" href="monochrome.css"/>
+<style>
+  .cat-hero{padding:48px 0 56px;border-bottom:1px solid var(--line);background:var(--paper-2)}
+  .cat-hero h1{font-size:clamp(48px,6vw,84px);font-weight:500;letter-spacing:-.03em;line-height:.96;margin:18px 0 0}
+  .cat-hero h1 em{font-family:var(--serif);font-style:italic;font-weight:400}
+  .cat-hero .lede{margin-top:24px;font-size:17px;color:var(--mute-1);max-width:60ch;line-height:1.55}
+  .cat-stats{margin-top:48px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+  .cat-stats > div{padding:18px 16px 4px 0}
+  .cat-stats .v{font-family:var(--mono);font-size:28px;font-weight:500;letter-spacing:-.02em}
+  .cat-stats .l{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute-2);margin-top:6px}
+
+  .filter-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 0;border-bottom:1px solid var(--line)}
+  .search-input{flex:1;display:flex;align-items:center;gap:10px;height:40px;padding:0 14px;background:var(--paper);border:1px solid var(--line);min-width:240px}
+  .search-input input{border:none;outline:none;background:transparent;flex:1;font-size:14px;color:var(--ink);font-family:var(--sans)}
+  .chips{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line);background:var(--paper)}
+  .chip{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 12px;color:var(--mute-1);border-right:1px solid var(--line);background:transparent;cursor:pointer}
+  .chip:last-child{border-right:none}
+  .chip.on{background:var(--ink);color:var(--paper)}
+  .sort{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute-2)}
+  .sort select{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:var(--paper);font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:8px 28px 8px 12px;color:var(--ink)}
+
+  .skill-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+  .skill{padding:24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:14px;background:var(--paper);min-height:240px}
+  .skill:hover{background:var(--paper-2)}
+  .skill-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .skill-name{font-size:17px;font-weight:500;letter-spacing:-.01em;margin:0}
+  .skill-by{font-family:var(--mono);font-size:11px;color:var(--mute-2);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+  .skill-desc{font-size:13px;color:var(--mute-1);line-height:1.5}
+  .skill-meta{display:flex;flex-wrap:wrap;gap:6px}
+  .skill-foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px dashed var(--line);font-family:var(--mono);font-size:11px;color:var(--mute-1)}
+
+  .sister{padding:80px 0;background:var(--paper-2);border-top:1px solid var(--line)}
+  .sister-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line);border-left:1px solid var(--line)}
+  .sister a{padding:18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper);display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px}
+  .sister a:hover{background:var(--paper-3)}
+  .sister a .ct{font-family:var(--mono);font-size:11px;color:var(--mute-2);letter-spacing:.1em}
+  @media(max-width:980px){.skill-grid{grid-template-columns:repeat(2,1fr)}.sister-grid{grid-template-columns:repeat(2,1fr)}.cat-stats{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:640px){.skill-grid{grid-template-columns:1fr}.sister-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div data-mc="ticker"></div>
+<div data-mc="navbar"></div>
+
+<section class="cat-hero">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">Index</a><span class="sep">/</span><span class="here">Web Development</span></div>
+    <span class="micro">Category 01 / 16</span>
+    <h1>Web <em>Development</em></h1>
+    <p class="lede">Frontend frameworks, React, Next.js, and modern web tooling. The most actively maintained part of the index — 15 skills, updated weekly.</p>
+    <div class="cat-stats">
+      <div><div class="v">15</div><div class="l">Skills</div></div>
+      <div><div class="v">847K</div><div class="l">Total Installs</div></div>
+      <div><div class="v">12</div><div class="l">Officials</div></div>
+      <div><div class="v">02.18.26</div><div class="l">Last Update</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="filter-bar">
+    <div class="search-input">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input placeholder="Search Web Development skills…"/>
+      <span class="micro">15</span>
+    </div>
+    <div class="chips">
+      <button class="chip on">All</button>
+      <button class="chip">S-rank</button>
+      <button class="chip">Official</button>
+      <button class="chip">Open Source</button>
+    </div>
+    <div class="sort"><span>Sort</span><select><option>Popular</option><option>Newest</option><option>A→Z</option></select></div>
+  </div>
+
+  <div class="skill-grid" id="grid"></div>
+</div>
+
+<section class="sister">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:end;margin-bottom:32px">
+      <div>
+        <span class="micro">Adjacent</span>
+        <h2 style="font-size:32px;font-weight:500;letter-spacing:-.02em;margin:8px 0 0">Other <em style="font-family:var(--serif);font-style:italic;font-weight:400">categories</em></h2>
+      </div>
+      <a class="micro" href="index.html#categories" style="color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:2px">All categories →</a>
+    </div>
+    <div class="sister-grid">
+      <a href="#"><span>Backend &amp; APIs</span><span class="ct">10 skills</span></a>
+      <a href="#"><span>DevOps &amp; Infra</span><span class="ct">14 skills</span></a>
+      <a href="#"><span>Mobile</span><span class="ct">7 skills</span></a>
+      <a href="#"><span>Design &amp; UI/UX</span><span class="ct">9 skills</span></a>
+      <a href="#"><span>Testing</span><span class="ct">15 skills</span></a>
+      <a href="#"><span>SEO &amp; Growth</span><span class="ct">7 skills</span></a>
+      <a href="#"><span>Security</span><span class="ct">12 skills</span></a>
+      <a href="#"><span>Documents</span><span class="ct">10 skills</span></a>
+    </div>
+  </div>
+</section>
+
+<div data-mc="newsletter"></div>
+<div data-mc="footer"></div>
+
+<script src="monochrome.js"></script>
+<script>
+  MonoChrome.mount({active:'skills'});
+  const items = [
+    {n:"React Best Practices",a:"Vercel Labs",d:"Hooks, composition, performance, server components.",pf:["Claude","Cursor","Codex"],q:"S",inst:"198K",st:"2.4K",off:true},
+    {n:"Next Best Practices",a:"Vercel Labs",d:"App Router, streaming, server actions, deployment patterns.",pf:["Claude","Cursor","Codex"],q:"S",inst:"142K",st:"1.8K",off:true},
+    {n:"Frontend Design",a:"Anthropic",d:"Aesthetic direction and component patterns for production frontends.",pf:["Claude","Cursor","Multi"],q:"S",inst:"184K",st:"2.1K",off:true},
+    {n:"Tailwind Patterns",a:"Tailwind Labs",d:"Idiomatic utility composition and design-token strategies.",pf:["Claude","Cursor","Codex"],q:"A",inst:"96K",st:"1.1K",off:true},
+    {n:"Astro Skill",a:"Astro Build",d:"Content sites, MDX, view transitions, islands architecture.",pf:["Claude","Cursor","Multi"],q:"A",inst:"42K",st:"640",off:true},
+    {n:"Remix Patterns",a:"Remix Run",d:"Loaders, actions, nested routing, and form-first UX.",pf:["Claude","Codex","Multi"],q:"A",inst:"38K",st:"512",off:true},
+    {n:"SvelteKit Skill",a:"Svelte Society",d:"File-based routing, runes, and SSR patterns for SvelteKit.",pf:["Claude","Cursor","Multi"],q:"A",inst:"31K",st:"410"},
+    {n:"Vue Idioms",a:"Vue Labs",d:"Composition API, Pinia, and Nuxt patterns done right.",pf:["Claude","Cursor"],q:"B",inst:"24K",st:"312"},
+    {n:"Solid Patterns",a:"Ryan Carniato",d:"Fine-grained reactivity primitives for Solid and SolidStart.",pf:["Claude","Multi"],q:"B",inst:"14K",st:"208"},
+    {n:"Web Components",a:"Open WC",d:"Custom-element authoring, lit-html, and shadow-DOM patterns.",pf:["Claude","Codex"],q:"B",inst:"11K",st:"180"},
+    {n:"Accessibility Audit",a:"Deque Systems",d:"WCAG-aware code review and a11y-first refactoring guidance.",pf:["Claude","Cursor","Multi"],q:"A",inst:"28K",st:"352"},
+    {n:"CSS Architecture",a:"Andy Bell",d:"CUBE CSS, modern layout primitives, container queries.",pf:["Claude","Multi"],q:"B",inst:"19K",st:"244"},
+  ];
+  document.getElementById('grid').innerHTML = items.map(s=>`
+    <a class="skill" href="skill.html">
+      <div class="skill-head">
+        <div>
+          <h3 class="skill-name">${s.n}${s.off?' <span style="display:inline-block;width:14px;height:14px;vertical-align:-2px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg></span>':''}</h3>
+          <div class="skill-by">By ${s.a}</div>
+        </div>
+        <span class="rank ${s.q==='S'?'s':''}">${s.q}-rank</span>
+      </div>
+      <p class="skill-desc">${s.d}</p>
+      <div class="skill-meta">
+        <span class="tag solid">Web Dev</span>
+        ${s.pf.map(p=>`<span class="tag">${p}</span>`).join('')}
+      </div>
+      <div class="skill-foot"><span>↓ ${s.inst} · ★ ${s.st}</span><span>Open ↗</span></div>
+    </a>
+  `).join('');
+</script>
+</body></html>

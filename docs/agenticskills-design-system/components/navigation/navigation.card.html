@@ -1,0 +1,57 @@
+<!-- @dsCard group="Components" viewport="700x420" name="Navigation" subtitle="Ticker, Navbar, TableOfContents, Footer" -->
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<link rel="stylesheet" href="../../styles.css"/>
+<style>body{padding:20px;background:var(--paper)}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.lbl{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute-3);margin-bottom:8px}.stack{display:flex;flex-direction:column;gap:16px}body{padding:0}</style>
+</head><body><div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="../../ds-preview.js"></script>
+<script type="text/babel">
+const NS = (() => {
+  const skip = new Set(['top','parent','self','window','frames','opener']);
+  for (const k of Object.keys(window)) {
+    if (skip.has(k)) continue;
+    try {
+      const v = window[k];
+      if (v && typeof v === 'object' && !Array.isArray(v) && v.Button && v.Tag) return v;
+    } catch (e) { /* cross-origin frame ref */ }
+  }
+  return {};
+})();
+
+const { Ticker, Navbar, TableOfContents, Footer } = NS;
+const links = [
+  {id:'skills',label:'Skills',href:'#'},{id:'mcp',label:'MCP Servers',href:'#'},
+  {id:'workflows',label:'Workflows',href:'#'},{id:'learn',label:'Learn',href:'#'}
+];
+function Demo(){
+  const [active,setActive] = React.useState('usage');
+  return (
+    <div>
+      <Ticker feed={[{v:'+12',l:'new this week'},{v:'2.4M',l:'installs/mo'},{v:'18',l:'platforms'}]} />
+      <Navbar active="skills" links={links} cta="Submit a Skill" />
+      <div style={{padding:'24px 32px',display:'grid',gridTemplateColumns:'1fr 200px',gap:32}}>
+        <div style={{fontSize:12,color:'var(--mute-2)',fontFamily:'var(--font-mono)',letterSpacing:'.1em',textTransform:'uppercase'}}>page content</div>
+        <TableOfContents activeId={active} onSelect={setActive} items={[
+          {id:'overview',label:'Overview'},{id:'usage',label:'Usage'},
+          {id:'compat',label:'Compatibility'},{id:'maint',label:'Maintained by'}]} />
+      </div>
+      <Footer blurb="The curated index for AI agent skills."
+        columns={[
+          {title:'Product',links:[{label:'Browse',href:'#'},{label:'MCP Servers',href:'#'}]},
+          {title:'Resources',links:[{label:'Learn',href:'#'},{label:'Changelog',href:'#'}]},
+          {title:'Company',links:[{label:'About',href:'#'},{label:'Privacy',href:'#'}]}]}
+        left="© 2026 AgenticSkills" right="v2.4.1" />
+    </div>
+  );
+}
+const root = document.getElementById('root');
+if (Object.keys(NS).length === 0) {
+  root.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute-2);border:1px solid var(--line);padding:20px">Components unavailable — could not load component sources</div>';
+} else {
+  ReactDOM.createRoot(root).render(<Demo />);
+}
+</script></body></html>

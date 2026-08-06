@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Workflows — AgenticSkills</title>
+<link rel="stylesheet" href="monochrome.css"/>
+<style>
+  .wf-hero{padding:96px 0 80px;border-bottom:1px solid var(--line);background:var(--paper-2)}
+  .wf-hero h1{font-size:clamp(44px,5.6vw,80px);font-weight:500;letter-spacing:-.03em;line-height:.96;margin:18px 0 0;max-width:18ch}
+  .wf-hero h1 em{font-family:var(--serif);font-style:italic;font-weight:400}
+  .wf-hero .lede{margin-top:24px;font-size:17px;color:var(--mute-1);max-width:60ch;line-height:1.55}
+
+  .wf-list{padding:80px 0;border-bottom:1px solid var(--line)}
+  .wf{
+    display:grid;grid-template-columns:80px 1fr auto;gap:32px;
+    padding:36px 0;border-top:1px solid var(--line);align-items:start;
+  }
+  .wf:last-child{border-bottom:1px solid var(--line)}
+  .wf:hover{background:var(--paper-2)}
+  .wf .num{font-family:var(--mono);font-size:14px;color:var(--mute-2);letter-spacing:.1em}
+  .wf h3{margin:0;font-size:28px;font-weight:500;letter-spacing:-.02em;line-height:1.15}
+  .wf h3 em{font-family:var(--serif);font-style:italic;font-weight:400}
+  .wf .desc{margin-top:10px;font-size:15px;color:var(--mute-1);max-width:62ch;line-height:1.55}
+  .wf .stack{margin-top:18px;display:flex;flex-wrap:wrap;gap:6px}
+  .wf .meta{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mute-2);text-align:right;display:flex;flex-direction:column;gap:8px}
+  .wf .meta .diff{display:inline-block;border:1px solid var(--ink);padding:4px 8px;color:var(--ink)}
+  .wf .meta .diff.beg{background:var(--paper)}
+  .wf .meta .diff.int{background:var(--paper-3)}
+  .wf .meta .diff.adv{background:var(--ink);color:var(--paper)}
+  .wf .open{margin-top:auto;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+
+  @media(max-width:768px){.wf{grid-template-columns:1fr}.wf .meta{text-align:left}}
+</style>
+</head>
+<body>
+<div data-mc="ticker"></div>
+<div data-mc="navbar"></div>
+
+<section class="wf-hero">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">Index</a><span class="sep">/</span><span class="here">Workflows</span></div>
+    <span class="micro">Curated bundles</span>
+    <h1>Install a <em>whole stack</em>, not one skill at a time.</h1>
+    <p class="lede">Workflows are curated bundles of skills + MCP servers for common jobs — frontend, database, deployment, marketing site, internal tool. One command, every piece.</p>
+  </div>
+</section>
+
+<section class="wf-list">
+  <div class="wrap">
+    <span class="micro">06 · Featured workflows</span>
+    <div style="margin-top:24px" id="wflist"></div>
+  </div>
+</section>
+
+<div data-mc="newsletter"></div>
+<div data-mc="footer"></div>
+
+<script src="monochrome.js"></script>
+<script>
+  MonoChrome.mount({active:'workflows'});
+  const wfs = [
+    {n:"Modern <em>Next.js</em> stack",d:"Bootstrap a production-ready Next.js app with Supabase auth, Tailwind, Vercel deploy, and Stripe payments wired up. Includes setup script and end-to-end smoke test.",stack:["next-best-practices","tailwind-patterns","supabase-postgres","vercel-deploy","stripe-best-practices"],diff:"Beginner",time:"~12 min",inst:"42K"},
+    {n:"<em>Internal tool</em> in a day",d:"Postgres-backed internal tools with role-based access, audit logging, and a clean admin UI. Skill set plus the Linear and Sentry MCP servers for live workflow integration.",stack:["postgresql-mcp","better-auth","frontend-design","sentry-mcp","linear-mcp"],diff:"Intermediate",time:"~25 min",inst:"28K"},
+    {n:"<em>Documentation</em> site",d:"Astro + MDX docs with versioning, search, and a content-pipeline skill that handles redirects and broken-link checks.",stack:["astro-skill","beautiful-prose","seo-audit","cloudflare-wrangler"],diff:"Beginner",time:"~10 min",inst:"19K"},
+    {n:"<em>Marketing</em> launch kit",d:"Land-page copywriting, content-strategy, technical-SEO, plus the Posthog and Linear MCP servers. From idea to indexed page in one afternoon.",stack:["copywriting","content-strategy","technical-seo","linear-mcp","posthog-mcp"],diff:"Beginner",time:"~18 min",inst:"14K"},
+    {n:"<em>Multi-agent</em> orchestration",d:"MCP builder, Loki planning mode, and skill-creator wired together. For teams building production agent systems with hand-offs and checkpoints.",stack:["mcp-builder","loki-mode","skill-creator","agent-orchestration"],diff:"Advanced",time:"~40 min",inst:"8.4K"},
+    {n:"<em>Mobile</em> shipping kit",d:"React Native + Expo + Sentry + Bitrise. Includes a debugging skill tuned for mobile platform quirks and OTA-update patterns.",stack:["react-native-bp","expo-patterns","mobile-ui","systematic-debugging"],diff:"Intermediate",time:"~30 min",inst:"6.2K"},
+  ];
+  document.getElementById('wflist').innerHTML = wfs.map((w,i)=>`
+    <a class="wf" href="#">
+      <span class="num">W.${String(i+1).padStart(2,'0')}</span>
+      <div>
+        <h3>${w.n}</h3>
+        <p class="desc">${w.d}</p>
+        <div class="stack">
+          ${w.stack.map(s=>`<span class="tag">${s}</span>`).join('')}
+        </div>
+      </div>
+      <div class="meta">
+        <span class="diff ${w.diff==='Beginner'?'beg':w.diff==='Advanced'?'adv':'int'}">${w.diff}</span>
+        <span>${w.time} · ${w.stack.length} parts</span>
+        <span>↓ ${w.inst} installs</span>
+        <span class="open">Open ↗</span>
+      </div>
+    </a>
+  `).join('');
+</script>
+</body></html>

@@ -1,0 +1,83 @@
+/* Utility primitives shared by cards, kits, and components. */
+
+.ds-wrap{max-width:var(--wrap-max);margin:0 auto;padding:0 var(--wrap-pad)}
+.ds-wrap-narrow{max-width:var(--wrap-narrow);margin:0 auto;padding:0 var(--wrap-pad)}
+
+/* Mono micro-label — the workhorse metadata style */
+.ds-micro{
+  font-family:var(--font-mono);font-size:var(--type-micro);
+  letter-spacing:var(--ls-micro);text-transform:uppercase;color:var(--text-meta);
+}
+.ds-nano{
+  font-family:var(--font-mono);font-size:var(--type-nano);
+  letter-spacing:var(--ls-tag);text-transform:uppercase;color:var(--text-meta);
+}
+.ds-num{font-family:var(--font-mono);font-feature-settings:"tnum"}
+
+/* Serif italic accent, used inside headlines only */
+.ds-accent{font-family:var(--font-serif);font-style:italic;font-weight:var(--fw-regular)}
+
+/* Hairline grid: the core layout device.
+   Wrapper draws top+left, each cell draws right+bottom. gap is always 0. */
+.ds-grid{display:grid;gap:0;border-top:var(--border-hairline);border-left:var(--border-hairline)}
+.ds-grid > *{border-right:var(--border-hairline);border-bottom:var(--border-hairline)}
+.ds-grid--ink{border-top:var(--border-strong);border-bottom:var(--border-strong);border-left:none}
+.ds-grid--ink > *{border-bottom:none}
+.ds-grid--ink > *:last-child{border-right:none}
+
+/* Rules */
+.ds-rule{height:1px;background:var(--rule);width:100%}
+.ds-rule--strong{background:var(--rule-strong)}
+
+/* Button */
+.ds-btn{
+  display:inline-flex;align-items:center;gap:var(--space-3);
+  padding:9px var(--space-7);font-size:var(--type-xs);font-weight:var(--fw-medium);
+  background:var(--ink);color:var(--on-ink);border:var(--border-strong);
+  border-radius:var(--radius);cursor:pointer;
+  transition:transform var(--dur-fast) var(--ease);
+}
+.ds-btn:hover{transform:translateY(-1px);color:var(--on-ink)}
+.ds-btn__arrow{display:inline-block;transition:transform var(--dur-fast) var(--ease)}
+.ds-btn:hover .ds-btn__arrow{transform:translateX(var(--nudge))}
+.ds-btn--ghost{background:transparent;color:var(--ink)}
+.ds-btn--ghost:hover{background:var(--ink);color:var(--on-ink)}
+
+/* Tag */
+.ds-tag{
+  font-family:var(--font-mono);font-size:var(--type-nano);
+  letter-spacing:var(--ls-nano);text-transform:uppercase;
+  border:var(--border-hairline);padding:3px var(--space-2);
+  color:var(--mute-1);background:var(--paper);
+}
+.ds-tag--solid{background:var(--paper-3);color:var(--ink-3);border-color:var(--paper-4)}
+.ds-tag--ink{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+
+/* Rank pill */
+.ds-rank{
+  font-family:var(--font-mono);font-size:var(--type-nano);
+  letter-spacing:var(--ls-micro);text-transform:uppercase;
+  border:var(--border-hairline);padding:3px var(--space-2);
+  color:var(--ink);background:var(--paper);white-space:nowrap;
+}
+.ds-rank--s{border-color:var(--ink);background:var(--ink);color:var(--on-ink)}
+
+/* Monogram — stands in for platform/product logos */
+.ds-monogram{
+  border:var(--border-strong);display:grid;place-items:center;
+  font-family:var(--font-mono);font-weight:var(--fw-semibold);
+  color:var(--ink);background:var(--paper);flex-shrink:0;
+}
+
+/* Stripe placeholder for imagery and avatars */
+.ds-placeholder{
+  background:var(--stripe);border:var(--border-hairline);
+  display:grid;place-items:center;
+  font-family:var(--font-mono);font-size:var(--type-micro);
+  letter-spacing:var(--ls-wide);text-transform:uppercase;color:var(--text-meta);
+}
+
+/* Status dot */
+.ds-dot{display:inline-block;width:6px;height:6px;border-radius:var(--radius-dot);background:var(--status-on)}
+.ds-dot--off{background:var(--status-off)}
+.ds-dot--live{animation:pulse 2s ease-in-out infinite}

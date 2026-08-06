@@ -1,0 +1,24 @@
+/* Borders and elevation.
+   Radius is ZERO everywhere. Shadows do not exist in this system —
+   all separation is hairlines and surface tone. */
+:root{
+  --radius:0;
+  --radius-kbd:3px;
+  --radius-dot:50%;
+
+  --border-hairline:1px solid var(--line);
+  --border-strong:1px solid var(--ink);
+  --border-dashed:1px dashed var(--line);
+  --border-faint:1px solid var(--line-3);
+  --border-inverse:1px solid var(--on-ink-line);
+
+  --shadow-none:none;
+
+  /* Background grid used on hero surfaces */
+  --grid-size:48px;
+  --grid-line:var(--line-3);
+
+  /* Diagonal stripe placeholder (images, avatars) */
+  --stripe:repeating-linear-gradient(45deg,var(--paper-3) 0 12px,var(--paper-4) 12px 24px);
+  --stripe-sm:repeating-linear-gradient(45deg,var(--paper-3) 0 8px,var(--paper-4) 8px 16px);
+}

@@ -1,0 +1,16 @@
+/* Typefaces
+   Geist (sans) · Geist Mono (mono) · Instrument Serif (italic accents only)
+   NOTE: served from Google Fonts. No binaries were available in the source
+   project, so these are remote @font-face declarations. Self-host for prod. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
+
+:root{
+  --font-sans:"Geist","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+  --font-mono:"Geist Mono",ui-monospace,"SF Mono","JetBrains Mono",Menlo,monospace;
+  --font-serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+
+  /* legacy aliases used across the redesign source */
+  --sans:var(--font-sans);
+  --mono:var(--font-mono);
+  --serif:var(--font-serif);
+}

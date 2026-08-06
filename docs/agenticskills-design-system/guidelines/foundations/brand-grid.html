@@ -1,0 +1,13 @@
+<!-- @dsCard group="Brand" viewport="700x200" name="Hairline grid" subtitle="gap:0 — separation is the border, never whitespace" -->
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<link rel="stylesheet" href="../../styles.css"/>
+<style>body{padding:20px;background:var(--paper);font-family:var(--font-sans)}</style>
+</head><body>
+<div class="ds-grid" style="grid-template-columns:repeat(4,1fr)">
+<div style="padding:18px;min-height:80px;font-size:12px;color:var(--mute-1);line-height:1.5">Wrapper draws top + left</div><div style="padding:18px;min-height:80px;font-size:12px;color:var(--mute-1);line-height:1.5">Each cell draws right + bottom</div><div style="padding:18px;min-height:80px;font-size:12px;color:var(--mute-1);line-height:1.5">gap is always 0</div><div style="padding:18px;min-height:80px;font-size:12px;color:var(--mute-1);line-height:1.5">Cards carry no border</div>
+</div>
+<div class="ds-grid ds-grid--ink" style="grid-template-columns:repeat(3,1fr);margin-top:16px">
+<div style="padding:16px;font-size:12px;color:var(--mute-1)">variant="ink"</div><div style="padding:16px;font-size:12px;color:var(--mute-1)">bands a single row</div><div style="padding:16px;font-size:12px;color:var(--mute-1)">in black rules</div>
+</div>
+</body></html>

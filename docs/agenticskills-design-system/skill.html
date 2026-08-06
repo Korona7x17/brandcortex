@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Find Skills — AgenticSkills</title>
+<link rel="stylesheet" href="monochrome.css"/>
+<style>
+  .skill-hero{padding:48px 0 56px;border-bottom:1px solid var(--line)}
+  .crumbs{margin-bottom:32px}
+  .skill-hero-grid{display:grid;grid-template-columns:1fr auto;gap:48px;align-items:start}
+  .skill-hero h1{font-size:clamp(40px,5.4vw,72px);font-weight:500;letter-spacing:-.03em;line-height:.98;margin:0}
+  .skill-hero h1 em{font-family:var(--serif);font-style:italic;font-weight:400}
+  .skill-hero .by{font-family:var(--mono);font-size:12px;color:var(--mute-2);text-transform:uppercase;letter-spacing:.12em;margin:18px 0 0;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .skill-hero .by .auth{color:var(--ink)}
+  .skill-hero .by .vrf{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--ink);padding:3px 7px;color:var(--ink)}
+  .skill-hero .lede{margin-top:28px;font-size:18px;color:var(--mute-1);max-width:62ch;line-height:1.55}
+  .skill-hero .meta-tags{margin-top:28px;display:flex;flex-wrap:wrap;gap:6px}
+  .panel{
+    border:1px solid var(--ink);background:var(--paper);min-width:340px;
+  }
+  .panel-h{display:flex;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute-2)}
+  .panel-h b{color:var(--ink);font-weight:500}
+  .panel-stats{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+  .panel-stats > div{padding:18px;border-right:1px solid var(--line)}
+  .panel-stats > div:last-child{border-right:none}
+  .panel-stats .v{font-family:var(--mono);font-size:24px;font-weight:500;letter-spacing:-.02em}
+  .panel-stats .l{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute-2);margin-top:4px}
+  .install{padding:18px}
+  .install .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute-2);margin-bottom:10px;display:flex;justify-content:space-between}
+  .install pre{background:var(--ink);color:var(--paper);padding:14px 16px;font-family:var(--mono);font-size:13px;margin:0;display:flex;align-items:center;justify-content:space-between;gap:12px;overflow-x:auto}
+  .install pre code{flex:1}
+  .install pre button{background:transparent;border:1px solid #2a2a2a;color:#9a9a9a;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;cursor:pointer}
+  .install pre button:hover{color:#fff;border-color:#444}
+  .install .alts{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:12px;border:1px solid var(--line)}
+  .install .alts button{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:8px;border:none;border-right:1px solid var(--line);background:var(--paper);cursor:pointer;color:var(--mute-2)}
+  .install .alts button:last-child{border-right:none}
+  .install .alts button.on{background:var(--ink);color:var(--paper)}
+
+  /* Body */
+  .body-grid{display:grid;grid-template-columns:1fr 320px;gap:64px;padding:80px 0;border-bottom:1px solid var(--line)}
+  .toc{position:sticky;top:80px;align-self:start}
+  .toc h4{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute-2);margin:0 0 14px;font-weight:500}
+  .toc ul{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+  .toc li{padding:8px 0 8px 14px;font-size:13px;color:var(--mute-1);border-left:2px solid transparent;margin-left:-1px;cursor:pointer}
+  .toc li.on{border-left-color:var(--ink);color:var(--ink)}
+  .prose h2{font-size:28px;font-weight:500;letter-spacing:-.02em;margin:48px 0 14px;line-height:1.2}
+  .prose h2:first-child{margin-top:0}
+  .prose h3{font-size:18px;font-weight:500;letter-spacing:-.01em;margin:32px 0 10px}
+  .prose p{font-size:16px;line-height:1.7;color:var(--ink-3);margin:0 0 14px}
+  .prose ul{padding:0;margin:0 0 16px;list-style:none}
+  .prose ul li{position:relative;padding:6px 0 6px 22px;border-bottom:1px dashed var(--line);font-size:15px;color:var(--ink-3)}
+  .prose ul li::before{content:"→";position:absolute;left:0;font-family:var(--mono);color:var(--mute-2)}
+  .prose pre{background:var(--paper-2);border:1px solid var(--line);padding:16px 18px;font-family:var(--mono);font-size:13px;line-height:1.6;overflow-x:auto;margin:18px 0}
+  .prose code{font-family:var(--mono);font-size:.9em;background:var(--paper-3);padding:1px 5px;border:1px solid var(--line-2)}
+  .prose pre code{background:transparent;border:none;padding:0}
+  blockquote{margin:24px 0;padding:14px 20px;border-left:2px solid var(--ink);background:var(--paper-2);font-family:var(--serif);font-style:italic;font-size:18px;color:var(--ink-2);line-height:1.55}
+
+  /* Platform compatibility */
+  .compat{padding:80px 0;background:var(--paper-2);border-bottom:1px solid var(--line)}
+  .compat-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+  .compat .pf{padding:18px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--paper)}
+  .compat .pf .nm{font-size:14px;font-weight:500}
+  .compat .pf .st{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute-2)}
+  .compat .pf.ok .st{color:var(--ink)}
+  .compat .pf .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mute-3);margin-right:6px}
+  .compat .pf.ok .dot{background:var(--ink)}
+
+  /* Related */
+  .related{padding:80px 0;border-bottom:1px solid var(--line)}
+  .related-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+  .rel{padding:24px;border-right:1px solid var(--line);background:var(--paper);min-height:200px;display:flex;flex-direction:column;gap:12px}
+  .rel:last-child{border-right:none}
+  .rel:hover{background:var(--paper-2)}
+  .rel h3{margin:0;font-size:18px;font-weight:500;letter-spacing:-.01em}
+  .rel .by{font-family:var(--mono);font-size:11px;color:var(--mute-2);text-transform:uppercase;letter-spacing:.1em}
+  .rel p{margin:0;font-size:13px;color:var(--mute-1);line-height:1.55}
+  .rel .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px dashed var(--line);font-family:var(--mono);font-size:11px;color:var(--mute-1)}
+
+  @media(max-width:980px){
+    .skill-hero-grid{grid-template-columns:1fr}
+    .body-grid{grid-template-columns:1fr;gap:32px}
+    .toc{position:static}
+    .compat-grid{grid-template-columns:repeat(2,1fr)}
+    .related-grid{grid-template-columns:1fr}
+    .rel{border-right:none;border-bottom:1px solid var(--line)}
+  }
+</style>
+</head>
+<body>
+
+<div data-mc="ticker"></div>
+<div data-mc="navbar"></div>
+
+<!-- HERO -->
+<section class="skill-hero">
+  <div class="wrap">
+    <div class="crumbs">
+      <a href="index.html">Index</a>
+      <span class="sep">/</span>
+      <a href="category.html">Productivity</a>
+      <span class="sep">/</span>
+      <span class="here">Find Skills</span>
+    </div>
+
+    <div class="skill-hero-grid">
+      <div>
+        <h1>Find <em>Skills</em></h1>
+        <div class="by">
+          <span>By <span class="auth">Vercel Labs</span></span>
+          <span class="vrf">✓&nbsp; Official partner</span>
+          <span>S-rank</span>
+          <span>MIT License</span>
+          <span>Updated 02.15.26</span>
+        </div>
+        <p class="lede">The meta-skill for skill discovery. Search, compare, and install across the entire AgenticSkills ecosystem from inside your agent — a package manager for AI capabilities.</p>
+        <div class="meta-tags">
+          <span class="tag solid">Productivity</span>
+          <span class="tag">Open Source</span>
+          <span class="tag">Discovery</span>
+          <span class="tag">Installation</span>
+          <span class="tag">Meta</span>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <div class="panel-h"><span>Distribution</span><b>Live</b></div>
+        <div class="panel-stats">
+          <div><div class="v">271K</div><div class="l">Installs</div></div>
+          <div><div class="v">3,240</div><div class="l">Stars</div></div>
+          <div><div class="v">98%</div><div class="l">Compat</div></div>
+          <div><div class="v">v3.2</div><div class="l">Latest</div></div>
+        </div>
+        <div class="install">
+          <div class="lbl"><span>Install</span><span>via CLI</span></div>
+          <pre><code id="installCmd">$ npx skills add vercel-labs/find-skills</code><button onclick="navigator.clipboard?.writeText(document.getElementById('installCmd').textContent.slice(2));this.textContent='Copied'">Copy</button></pre>
+          <div class="alts">
+            <button class="on" onclick="setCmd(this,'$ npx skills add vercel-labs/find-skills')">CLI</button>
+            <button onclick="setCmd(this,'# Drop SKILL.md into ~/.claude/skills/')">Manual</button>
+            <button onclick="setCmd(this,'$ git clone github.com/vercel-labs/find-skills')">Git</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- BODY + TOC -->
+<section class="wrap body-grid">
+  <article class="prose">
+    <h2 id="overview">Overview</h2>
+    <p>Find Skills enables your AI agent to discover, search, and install skills from the AgenticSkills index without leaving the conversation. It provides a unified interface for browsing categories, checking platform compatibility, and one-command installation across every supported agent.</p>
+    <p>Think of it as a package manager for AI agent capabilities — <code>npm</code> for prompts, but with quality ranking and platform-aware installation paths baked in.</p>
+
+    <blockquote>"The meta-skill that finally made our agent setup repeatable across teams. Onboarding a new dev now takes minutes." — Adoption note, infra team at Stripe</blockquote>
+
+    <h2 id="usage">Usage</h2>
+    <p>Once installed, ask your agent to find skills in plain language. It will query the index, return ranked matches, and offer to install on confirmation.</p>
+    <pre><code><span style="color:#888"># inside Claude Code, Cursor, Codex, etc.</span>
+> find a skill for postgres migrations
+→ 4 matches · sorted by quality
+
+  S  supabase-postgres        82,100 installs
+  A  prisma-best-practices    36,200 installs
+  A  using-neon               18,900 installs
+  B  raw-sql-helpers           4,800 installs
+
+> install supabase-postgres
+✓ skill installed → ~/.claude/skills/supabase-postgres</code></pre>
+
+    <h3 id="capabilities">What it gives your agent</h3>
+    <ul>
+      <li>Natural-language search across 143 indexed skills</li>
+      <li>Quality-aware ranking (S → C, weighted by installs and recency)</li>
+      <li>Per-platform install paths — knows where to drop SKILL.md for each agent</li>
+      <li>Conflict detection when two skills overlap in scope</li>
+      <li>Offline-first cache with weekly index refresh</li>
+    </ul>
+
+    <h2 id="compat">Compatibility</h2>
+    <p>Find Skills follows the open SKILL.md spec and works on any agent that supports it. Platform-specific install paths are detected automatically.</p>
+
+    <h2 id="contributors">Maintained by</h2>
+    <p>Vercel Labs, with contributions from the AgenticSkills community. Source on <a href="#" style="text-decoration:underline;text-underline-offset:3px">GitHub</a>. Issues triaged within 48 hours.</p>
+  </article>
+
+  <aside class="toc">
+    <h4>On this page</h4>
+    <ul>
+      <li class="on">Overview</li>
+      <li>Usage</li>
+      <li>Capabilities</li>
+      <li>Compatibility</li>
+      <li>Maintained by</li>
+    </ul>
+  </aside>
+</section>
+
+<!-- COMPAT -->
+<section class="compat">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:end;margin-bottom:32px">
+      <div>
+        <span class="micro">Compatibility</span>
+        <h2 style="font-size:32px;font-weight:500;letter-spacing:-.02em;margin:8px 0 0">Tested on <em style="font-family:var(--serif);font-style:italic;font-weight:400">9 platforms</em></h2>
+      </div>
+      <span class="micro">Last verified 04.30.26</span>
+    </div>
+    <div class="compat-grid">
+      <div class="pf ok"><span class="nm">Claude Code</span><span class="st"><span class="dot"></span>Verified</span></div>
+      <div class="pf ok"><span class="nm">OpenAI Codex</span><span class="st"><span class="dot"></span>Verified</span></div>
+      <div class="pf ok"><span class="nm">Cursor</span><span class="st"><span class="dot"></span>Verified</span></div>
+      <div class="pf ok"><span class="nm">Gemini CLI</span><span class="st"><span class="dot"></span>Verified</span></div>
+      <div class="pf ok"><span class="nm">GitHub Copilot</span><span class="st"><span class="dot"></span>Verified</span></div>
+      <div class="pf ok"><span class="nm">Windsurf</span><span class="st"><span class="dot"></span>Verified</span></div>
+      <div class="pf"><span class="nm">Cline</span><span class="st"><span class="dot"></span>Untested</span></div>
+      <div class="pf"><span class="nm">Aider</span><span class="st"><span class="dot"></span>Untested</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- RELATED -->
+<section class="related">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:end;margin-bottom:32px">
+      <div>
+        <span class="micro">Related</span>
+        <h2 style="font-size:32px;font-weight:500;letter-spacing:-.02em;margin:8px 0 0">Also <em style="font-family:var(--serif);font-style:italic;font-weight:400">in productivity</em></h2>
+      </div>
+      <a href="category.html" class="micro" style="color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:2px">All in category →</a>
+    </div>
+    <div class="related-grid">
+      <a class="rel" href="#"><h3>Skill Creator</h3><div class="by">By Anthropic</div><p>Meta-skill that helps you write a SKILL.md file that follows the spec.</p><div class="foot"><span>↓ 35K · ★ 492</span><span>A-rank</span></div></a>
+      <a class="rel" href="#"><h3>Brainstorming</h3><div class="by">By Patrick Collison</div><p>Structured ideation: divergent passes, then convergent ranking with criteria.</p><div class="foot"><span>↓ 38K · ★ 410</span><span>B-rank</span></div></a>
+      <a class="rel" href="#"><h3>Loki Mode</h3><div class="by">By Latent Labs</div><p>Plan-then-execute orchestration pattern for long-running agent tasks.</p><div class="foot"><span>↓ 22K · ★ 318</span><span>A-rank</span></div></a>
+    </div>
+  </div>
+</section>
+
+<div data-mc="newsletter"></div>
+<div data-mc="footer"></div>
+
+<script src="monochrome.js"></script>
+<script>
+  MonoChrome.mount({ active: 'skills' });
+  function setCmd(btn, cmd){
+    btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('installCmd').textContent = cmd;
+  }
+</script>
+</body></html>

@@ -1,0 +1,11 @@
+/* AgenticSkills Design System — global entry point.
+   Consumers link this one file. Imports only; never inline rules here. */
+@import url("tokens/fonts.css");
+@import url("tokens/colors.css");
+@import url("tokens/typography.css");
+@import url("tokens/spacing.css");
+@import url("tokens/borders.css");
+@import url("tokens/motion.css");
+@import url("styles/base.css");
+@import url("styles/primitives.css");
+@import url("styles/components.css");

@@ -1,0 +1,55 @@
+<!-- @dsCard group="Components" viewport="700x360" name="Layout" subtitle="HairlineGrid, SectionHead, StatRow, PageHead" -->
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<link rel="stylesheet" href="../../styles.css"/>
+<style>body{padding:20px;background:var(--paper)}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.lbl{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute-3);margin-bottom:8px}.stack{display:flex;flex-direction:column;gap:16px}</style>
+</head><body><div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="../../ds-preview.js"></script>
+<script type="text/babel">
+const NS = (() => {
+  const skip = new Set(['top','parent','self','window','frames','opener']);
+  for (const k of Object.keys(window)) {
+    if (skip.has(k)) continue;
+    try {
+      const v = window[k];
+      if (v && typeof v === 'object' && !Array.isArray(v) && v.Button && v.Tag) return v;
+    } catch (e) { /* cross-origin frame ref */ }
+  }
+  return {};
+})();
+
+const { HairlineGrid, SectionHead, StatRow } = NS;
+function Demo(){
+  return (
+    <div className="stack">
+      <SectionHead index="02 · Featured" title={<>Editor's <em>picks</em></>} cta="All featured →" />
+      <div><div className="lbl">HairlineGrid — hairline</div>
+        <HairlineGrid columns={4}>
+          {['Wrapper draws top + left','Cells draw right + bottom','gap is always 0','Cards carry no border']
+            .map(t=><div key={t} style={{padding:16,minHeight:70,fontSize:12,color:'var(--mute-1)',lineHeight:1.5}}>{t}</div>)}
+        </HairlineGrid>
+      </div>
+      <div><div className="lbl">HairlineGrid — ink</div>
+        <HairlineGrid columns={3} variant="ink">
+          {['banded row','black rules','top and bottom'].map(t=>
+            <div key={t} style={{padding:16,fontSize:12,color:'var(--mute-1)'}}>{t}</div>)}
+        </HairlineGrid>
+      </div>
+      <div><div className="lbl">StatRow</div>
+        <StatRow style={{marginTop:0}} items={[
+          {v:'143',l:'Skills'},{v:'16',l:'Categories'},{v:'18',l:'Platforms'},{v:'100%',l:'Open source'}]} />
+      </div>
+    </div>
+  );
+}
+const root = document.getElementById('root');
+if (Object.keys(NS).length === 0) {
+  root.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute-2);border:1px solid var(--line);padding:20px">Components unavailable — could not load component sources</div>';
+} else {
+  ReactDOM.createRoot(root).render(<Demo />);
+}
+</script></body></html>

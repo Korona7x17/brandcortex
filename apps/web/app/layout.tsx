@@ -1,5 +1,6 @@
 import { ClerkProvider, UserButton } from "@clerk/nextjs";
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 
 import { activeBrand } from "@/lib/api";
@@ -16,19 +17,24 @@ export const metadata: Metadata = {
   description: "Compose, review and publish brand content.",
 };
 
+const sans = Geist({ subsets: ["latin"], variable: "--font-sans" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Read the tenant rather than hardcode it. A dashboard with "ThaiSwim" written into a component is
   // a dashboard that needs editing to onboard brand #2.
   const brand = await activeBrand();
 
   const page = (
-    <html lang="en">
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
       <body>
         <div className="wrap">
           <header className="site">
             <Link href="/" className="mark">
               <span className="mark-dot" aria-hidden />
-              <span>BrandCortex</span>
+              <span>
+                Brand<span style={{ color: "var(--mute-2)" }}>Cortex</span>
+              </span>
             </Link>
 
             {brand ? (

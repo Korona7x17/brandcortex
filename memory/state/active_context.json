@@ -4,18 +4,19 @@
   "phase": "1 (MVP) — LIVE at https://brandcortex.app (production Clerk, own domain); cron worker + insights outstanding",
   "tenant": "thaiswim",
   "channel": "facebook",
-  "branch": "scaffold/thaiswim-facebook-mvp",
-  "head": "1093111",
-  "pushed": true,
+  "branch": "main (scaffold/thaiswim-facebook-mvp merged --no-ff 751ac81; branch still exists)",
+  "head": "751ac81",
+  "pushed": false,
   "topics": [
-    "monochrome design system applied",
+    "honorific rule live — no bare Thai names, validator-enforced",
+    "two caption registers (reporting / congratulatory), emoji ceiling 2",
+    "main now carries the whole scaffold — nothing pushed",
     "first production compose pending",
     "R2 + cron worker",
-    "insights fetcher",
-    "design-system folder untracked"
+    "insights fetcher"
   ],
   "tests": {
-    "passed": 165,
+    "passed": 190,
     "skipped": 9
   },
   "working_end_to_end": [
@@ -51,13 +52,22 @@
     {
       "what": "rotate the dev-instance Clerk secret key",
       "detail": "leaked into session-02 transcript; production is unaffected (new instance/keys) but dev rotation is one click"
+    },
+    {
+      "what": "nothing pushed",
+      "detail": "main at 751ac81 unpushed; origin/scaffold/thaiswim-facebook-mvp still at 1400de5. Decide the branch's fate after pushing main"
+    },
+    {
+      "what": "stray untracked apps/web/lib/*.ts",
+      "detail": "api.ts, diff.ts, server-auth.ts existed untracked on main before the merge and overlap in purpose with the apps/web code the merge brought in — reconcile before they drift"
     }
   ],
   "next_actions": [
+    "push main; decide whether scaffold/thaiswim-facebook-mvp keeps going or retires",
+    "reconcile the untracked apps/web/lib/*.ts against the merged apps/web",
     "user signs in at brandcortex.app, composes the first production draft",
     "R2 bucket -> ASSET_* -> cron worker service (*/5) — worker needs shared storage",
-    "insights fetcher (f4dcc669 audience data still uncaptured)",
-    "optional: api.brandcortex.app; custom Google OAuth for the sign-in button; push ~8 local commits"
+    "insights fetcher (f4dcc669 audience data still uncaptured)"
   ],
   "local_dev": {
     "postgres": "docker container brandcortex-pg — start it before the API after a reboot",
@@ -77,7 +87,9 @@
     "duplicate the ThaiSwim card engines — two definitions of the card would drift",
     "send the user around Meta's UI on unverified guesses — drive the browser or probe the API",
     "assume session_scope() commits — it never does; the caller owns the transaction",
-    "run pnpm build while next dev is live without restarting dev after — they share .next"
+    "run pnpm build while next dev is live without restarting dev after — they share .next",
+    "write a person's name without the brand's honorific — voice.check rejects it, caption and first comment alike",
+    "let a hardcoded threshold stand in a test that reads from brand_config — the emoji test would have gone silent when the ceiling moved"
   ],
   "credentials": {
     "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env / channel_tokens.",
@@ -113,5 +125,11 @@
   "design": {
     "guideline": "docs/agenticskills-design-system (untracked; user's AgenticSkills monochrome system)",
     "rules": "pure neutrals; hierarchy by weight/scale/hairlines; zero radius; no shadows; inversion = selection; Geist/Geist Mono via next/font + Noto Sans Thai fallback; serif accent and dark mode deliberately omitted"
+  },
+  "voice": {
+    "honorific": "brand_config.voice.honorific — prefix คุณ, locales [th], name_fields [name]. _person() is the only route a name takes into ThaiSwim copy; voice.check/check_names reject a bare one",
+    "registers": "REPORTING (plain, breadth, standout, club — no emoji) and CONGRATULATORY (sweep, longevity — 🏆 headline, ขอแสดงความยินดีกับ คุณ<name> จาก <club>, 👏, plain nudge). Register carries through caption AND first comment",
+    "max_emoji": 2,
+    "note": "voice.* is the owner's to change and structurally unproposable by the learning loop (§10.4). The 1->2 move was theirs, 2026-08-06"
   }
 }

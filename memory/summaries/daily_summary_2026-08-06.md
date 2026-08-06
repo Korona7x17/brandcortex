@@ -29,3 +29,19 @@ C: inversion is the only selection signal; Geist needs Noto Sans Thai fallback; 
 corrupts a live next dev (.next shared) — restart dev after local prod builds
 Q: commit the design-system folder or keep the pointer (user's call)
 →: R2 → cron worker → insights fetcher; first production compose still pending
+
+## Session 5 addendum
+Δ: Bare Thai names fixed at three levels — `_person()` is the only route a name takes into copy,
+`voice.Honorific`/`check_names()` REJECT a draft without `คุณ` (caption + first comment), prompt and
+approved example follow. Prefixed mentions stripped before looking, so a second bare mention still fails
+Δ: Congratulatory register added from the owner's own post (🏆 headline · ขอแสดงความยินดีกับ คุณ<name>
+จาก <club> · 👏) on `sweep`+`longevity`; four angles stay factual; two first-comment banks, register
+carried through both halves of a variant
+Δ: MERGED to main --no-ff (751ac81) — main went 2 tracked files -> 324. 190 pass / 9 skip
+C: emoji ceiling 2, both carrying the congratulation, nudge carries none; honorific is a config-declared
+voice rule scoped to declared locales; voice is the owner's to change, never the loop's (§10.4 holds)
+D: D-06 honorific enforced by validator not prompt; D-07 two registers + ceiling 1->2, guidance
+rewritten around respect not adjectives
+Q: nothing pushed (origin still at 1400de5, main unpushed); stray untracked apps/web/lib/*.ts now
+overlap the merged apps/web
+→: push main → R2 → cron worker → insights fetcher; first production compose still pending

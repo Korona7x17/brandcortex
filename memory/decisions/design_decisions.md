@@ -366,3 +366,36 @@ either way (assets.py dispatches on ASSET_BUCKET shape), so migration is a file 
 **Status:** Accepted
 **Date:** 2026-08-06
 **Ref:** services/assets.py; docs/deploy.md
+
+## D-2026-08-06-06 — The honorific is a config-declared voice rule, enforced by validator
+
+**Rationale:** Every profile post named masters swimmers — most of them decades older than the
+reviewer — with no `คุณ`, in the caption and again in the first comment, and the seed config's one
+approved example did it too, so the model was learning the mistake. A prompt instruction drifts and a
+template fix leaves the model path open, so it lands in three places: `_person()` as the only route a
+name takes into copy, `voice.Honorific` + `check_names()` rejecting a draft that drops it, and the
+prompt stating it. Prefix, locales and the `facts` keys holding names all come from `brand_config`,
+so core learns which fields are people without learning whose. Prefixed mentions are stripped before
+looking for a bare one, so one polite mention doesn't excuse a second.
+
+**Status:** Accepted
+**Date:** 2026-08-06
+**Ref:** core/generation/voice.py@4903de; adapters/source/thaiswim/templates.py@656eec;
+seeds/thaiswim.brand_config.json@0a0dc8; tests/unit/test_honorific.py
+
+## D-2026-08-06-07 — Two registers, and the emoji ceiling moves 1 -> 2 to admit the warm one
+
+**Rationale:** The owner found the generated copy dry and supplied a post they wrote by hand. Its
+shape became `sweep` and `longevity` (the angles it is written for); `plain`, `breadth`, `standout`
+and `club` stay factual, so the reviewer picks register as well as angle. Register carries through
+both halves of a variant — a warm caption over a flat first comment reads as two people writing one
+post. The ceiling settled at 2: 🏆 and 👏 carry the congratulation, the 👉/👇 arrows came off a nudge
+that already says where the link is. Guidance rewritten so warmth comes from respect and from the
+numbers, never from adjectives. **An owner decision, not the learning loop's** — §10.4 stands and
+`voice.*` remains structurally unproposable.
+
+**Status:** Accepted
+**Date:** 2026-08-06
+**Ref:** adapters/source/thaiswim/templates.py@656eec (_assemble_warm, COMMENTS_WARM_TH);
+seeds/thaiswim.brand_config.json@0a0dc8 (max_emoji 2, guidance, examples[1]);
+tests/unit/test_congratulatory_register.py

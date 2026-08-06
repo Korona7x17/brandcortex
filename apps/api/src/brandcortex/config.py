@@ -6,11 +6,12 @@ lives in the `brand_config` table, and per-channel credentials live encrypted in
 Settings here are infrastructure only.
 """
 
+import json
 from functools import lru_cache
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -57,8 +58,19 @@ class Settings(BaseSettings):
     # origin. Comma-separated. Defaults to local development; production sets the real host. Never a
     # wildcard: these endpoints approve and publish, so any page a reviewer has open would be able to
     # drive them.
-    cors_allow_origins: list[str] = Field(
+    cors_allow_origins: Annotated[list[str], NoDecode] = Field(
         default=["http://localhost:3000", "http://127.0.0.1:3000"], alias="CORS_ALLOW_ORIGINS"
+    )
+
+    # Session verification (see api/auth.py). Fail closed: with neither of these set, every route
+    # but health returns 503. CLERK_ISSUER is the instance's frontend API origin — the `iss` claim
+    # in its session tokens. AUTH_DISABLED=true is the explicit local-development opt-out.
+    clerk_issuer: str | None = Field(None, alias="CLERK_ISSUER")
+    auth_disabled: bool = Field(False, alias="AUTH_DISABLED")
+    # Origins allowed to have minted the session (the token's `azp`). Same idea as CORS above but
+    # enforced cryptographically; empty means any origin of this Clerk instance is accepted.
+    clerk_authorized_parties: Annotated[list[str], NoDecode] = Field(
+        default_factory=list, alias="CLERK_AUTHORIZED_PARTIES"
     )
 
     # Site analytics is the source of truth for traffic; FB's click count is not.
@@ -67,15 +79,19 @@ class Settings(BaseSettings):
     analytics_site_id: str | None = Field(None, alias="ANALYTICS_SITE_ID")
 
 
-    @field_validator("cors_allow_origins", mode="before")
+    @field_validator("cors_allow_origins", "clerk_authorized_parties", mode="before")
     @classmethod
     def _split_origins(cls, value: object) -> object:
         """Accept `a,b` as well as a JSON array.
 
-        pydantic-settings parses a list-typed variable as JSON, which makes the natural env spelling
-        — a comma-separated list — a startup crash rather than a setting.
+        pydantic-settings parses a list-typed variable as JSON *before* any validator runs, which
+        makes the natural env spelling — a comma-separated list — a startup crash rather than a
+        setting. `NoDecode` on the field hands the raw string here instead, so this validator owns
+        both spellings.
         """
-        if isinstance(value, str) and not value.strip().startswith("["):
+        if isinstance(value, str):
+            if value.strip().startswith("["):
+                return json.loads(value)
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
 

@@ -1,9 +1,15 @@
+import { ClerkProvider, UserButton } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { activeBrand } from "@/lib/api";
+import "@/lib/server-auth";
 
 import "./globals.css";
+
+// Clerk turns on with its publishable key and off without it (mirrors middleware.ts). The API is
+// what fails closed; this flag only decides whether the *pages* ask people to sign in.
+const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export const metadata: Metadata = {
   title: "BrandCortex — review",
@@ -15,7 +21,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // a dashboard that needs editing to onboard brand #2.
   const brand = await activeBrand();
 
-  return (
+  const page = (
     <html lang="en">
       <body>
         <div className="wrap">
@@ -41,6 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/">Queue</Link>
               {brand && <Link href="/new">New card</Link>}
               {brand && <Link href="/settings/voice">Voice</Link>}
+              {clerkConfigured && <UserButton />}
             </nav>
           </header>
           {children}
@@ -48,4 +55,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </body>
     </html>
   );
+
+  return clerkConfigured ? <ClerkProvider>{page}</ClerkProvider> : page;
 }

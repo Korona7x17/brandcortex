@@ -6,9 +6,10 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from brandcortex.api import auth
 from brandcortex.api.routes import brands, content_items, health, insights, playbook, posts
 from brandcortex.config import get_settings
 
@@ -61,12 +62,16 @@ def create_app() -> FastAPI:
             allow_headers=["*"],
         )
 
+    # Health is the one open surface — it is what the platform's checks and a locked-out operator
+    # both need first. Everything else can read drafts or publish to a live Page, so everything
+    # else requires a verified session (api/auth.py; fail closed).
     app.include_router(health.router)
-    app.include_router(brands.router)
-    app.include_router(content_items.router)
-    app.include_router(posts.router)
-    app.include_router(insights.router)
-    app.include_router(playbook.router)
+    session_required = [Depends(auth.require_session)]
+    app.include_router(brands.router, dependencies=session_required)
+    app.include_router(content_items.router, dependencies=session_required)
+    app.include_router(posts.router, dependencies=session_required)
+    app.include_router(insights.router, dependencies=session_required)
+    app.include_router(playbook.router, dependencies=session_required)
     return app
 
 

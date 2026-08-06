@@ -16,7 +16,16 @@ const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
 
 export default clerkConfigured
   ? clerkMiddleware(async (auth, request) => {
-      if (!isSignIn(request)) await auth.protect();
+      if (isSignIn(request)) return;
+      const { userId } = await auth();
+      if (userId) return;
+      // Signed out: send to /sign-in. The redirect_url return-address is kept only for deep links —
+      // landing on the homepage is the overwhelmingly common case, and its sign-in URL should read
+      // clean; a deep link (a post opened from elsewhere) still returns to where it pointed.
+      const signIn = new URL("/sign-in", request.url);
+      const { pathname, search } = request.nextUrl;
+      if (pathname !== "/") signIn.searchParams.set("redirect_url", pathname + search);
+      return NextResponse.redirect(signIn);
     })
   : () => NextResponse.next();
 

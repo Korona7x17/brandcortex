@@ -1,0 +1,23 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "_comment": [
+    "Build config as code, so it is reviewable and survives a service being recreated.",
+    "Read from the service's Root Directory (apps/api), which is a service-level setting and",
+    "therefore the one thing that cannot live here — it is what tells Railway where to find this file.",
+    "",
+    "Why it exists: the GitHub connection deployed on push and every build FAILED, because the",
+    "service had no root directory and Railpack analysed the repo root, found a pnpm workspace with",
+    "no app it recognised, and exited. The old container kept serving, so production looked merely",
+    "stale rather than broken."
+  ],
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 60,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}

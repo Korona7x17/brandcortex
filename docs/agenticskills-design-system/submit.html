@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Submit a Skill — AgenticSkills</title>
+<link rel="stylesheet" href="monochrome.css"/>
+<style>
+  .sb-hero{padding:80px 0 56px;border-bottom:1px solid var(--line)}
+  .sb-grid{display:grid;grid-template-columns:1fr 380px;gap:64px;padding:64px 0;border-bottom:1px solid var(--line)}
+  .sb h1{font-size:clamp(40px,5vw,72px);font-weight:500;letter-spacing:-.03em;line-height:.96;margin:14px 0 0;max-width:18ch}
+  .sb h1 em{font-family:var(--serif);font-style:italic;font-weight:400}
+  .sb .lede{margin-top:20px;font-size:17px;color:var(--mute-1);max-width:54ch;line-height:1.55}
+
+  .form{border-top:1px solid var(--line)}
+  .field{padding:24px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:240px 1fr;gap:32px;align-items:start}
+  .field label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);padding-top:10px}
+  .field label .req{color:var(--mute-2)}
+  .field .help{font-family:var(--mono);font-size:10px;color:var(--mute-2);text-transform:uppercase;letter-spacing:.1em;margin-top:6px;display:block}
+  .input{width:100%;border:1px solid var(--line);background:var(--paper);font-family:var(--sans);font-size:14px;padding:12px 14px;outline:none;color:var(--ink)}
+  .input:focus{border-color:var(--ink)}
+  textarea.input{min-height:96px;resize:vertical;line-height:1.55}
+  .seg{display:flex;border:1px solid var(--line);width:fit-content;background:var(--paper);flex-wrap:wrap}
+  .seg button{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:10px 14px;border:none;border-right:1px solid var(--line);background:transparent;cursor:pointer;color:var(--mute-1)}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .platform-checks{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);width:fit-content;background:var(--paper)}
+  .platform-checks label{display:flex;align-items:center;gap:8px;padding:10px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mute-1);cursor:pointer}
+  .platform-checks label:has(input:checked){background:var(--paper-2);color:var(--ink)}
+  .platform-checks input{accent-color:var(--ink)}
+
+  .submit-row{padding:32px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+
+  /* Sidebar */
+  .side{position:sticky;top:80px;align-self:start;display:flex;flex-direction:column;gap:24px}
+  .side .card{border:1px solid var(--line);background:var(--paper)}
+  .side .card h4{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute-2);margin:0;padding:14px 18px;border-bottom:1px solid var(--line);font-weight:500}
+  .side .card .body{padding:18px}
+  .side ol{margin:0;padding-left:20px;font-size:13px;color:var(--mute-1);line-height:1.7}
+  .side ol li{margin-bottom:6px}
+  .side .body p{margin:0 0 10px;font-size:13px;color:var(--mute-1);line-height:1.55}
+  .side .body p:last-child{margin-bottom:0}
+  .side .body code{font-family:var(--mono);font-size:12px;background:var(--paper-3);padding:1px 5px;border:1px solid var(--line-2)}
+  @media(max-width:980px){.sb-grid{grid-template-columns:1fr}.side{position:static}.field{grid-template-columns:1fr;gap:8px}}
+</style>
+</head>
+<body>
+<div data-mc="ticker"></div>
+<div data-mc="navbar"></div>
+
+<section class="sb-hero">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">Index</a><span class="sep">/</span><span class="here">Submit</span></div>
+    <span class="micro">Form 01 · Submission</span>
+    <h1 class="sb">Submit a <em>skill</em>.</h1>
+    <p class="lede sb">Free listings reviewed within 48 hours. We check for spec compliance, basic quality, and originality. No paywalls — featured placement is editorial.</p>
+  </div>
+</section>
+
+<section class="wrap sb-grid">
+  <form class="form" onsubmit="event.preventDefault();this.querySelector('button[type=submit]').textContent='Submitted ✓ — we\\'ll email you in 48h'">
+    <div class="field">
+      <label>Skill name <span class="req">— required</span><span class="help">Title case · max 60 char</span></label>
+      <input class="input" placeholder="e.g. React Best Practices" required/>
+    </div>
+    <div class="field">
+      <label>Author <span class="req">— required</span><span class="help">Person or org name</span></label>
+      <input class="input" placeholder="e.g. Vercel Labs"/>
+    </div>
+    <div class="field">
+      <label>GitHub URL <span class="req">— required</span><span class="help">SKILL.md must live in this repo</span></label>
+      <input class="input" placeholder="https://github.com/owner/repo"/>
+    </div>
+    <div class="field">
+      <label>Short description<span class="help">One sentence · 60–140 char</span></label>
+      <textarea class="input" placeholder="A one-sentence pitch for the skill — what does it do, who is it for?"></textarea>
+    </div>
+    <div class="field">
+      <label>Category<span class="help">Pick the closest match</span></label>
+      <div class="seg">
+        <button type="button" class="on">Web Dev</button>
+        <button type="button">Backend</button>
+        <button type="button">DevOps</button>
+        <button type="button">AI/ML</button>
+        <button type="button">Design</button>
+        <button type="button">Other</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Platforms<span class="help">Where you've tested it</span></label>
+      <div class="platform-checks">
+        <label><input type="checkbox" checked/> Claude Code</label>
+        <label><input type="checkbox" checked/> Codex</label>
+        <label><input type="checkbox"/> Cursor</label>
+        <label><input type="checkbox"/> Gemini CLI</label>
+        <label><input type="checkbox"/> GitHub Copilot</label>
+        <label><input type="checkbox"/> Windsurf</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>License<span class="help">Open source preferred</span></label>
+      <div class="seg">
+        <button type="button" class="on">MIT</button>
+        <button type="button">Apache 2.0</button>
+        <button type="button">BSD</button>
+        <button type="button">Other</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>Notes for the editor<span class="help">Optional</span></label>
+      <textarea class="input" placeholder="Anything we should know — known limitations, related skills to link, etc."></textarea>
+    </div>
+    <div class="submit-row">
+      <span class="micro">By submitting, you agree to the SKILL.md spec.</span>
+      <button class="btn" type="submit">Submit for review <span class="arrow">→</span></button>
+    </div>
+  </form>
+
+  <aside class="side">
+    <div class="card">
+      <h4>What we look for</h4>
+      <div class="body">
+        <ol>
+          <li>SKILL.md follows the open spec</li>
+          <li>Description matches behavior</li>
+          <li>No agent-slop or filler content</li>
+          <li>License is permissive (MIT, Apache, BSD)</li>
+          <li>Tested on at least one platform</li>
+        </ol>
+      </div>
+    </div>
+    <div class="card">
+      <h4>Timeline</h4>
+      <div class="body">
+        <p><b style="color:var(--ink)">Day 0</b> — Submitted. Auto-checks run.</p>
+        <p><b style="color:var(--ink)">Day 1–2</b> — Editor reviews, runs platform tests.</p>
+        <p><b style="color:var(--ink)">Day 2–3</b> — Indexed and live, or returned with notes.</p>
+      </div>
+    </div>
+    <div class="card">
+      <h4>Featured placement</h4>
+      <div class="body">
+        <p>Editorial only — we promote based on quality and fit, never paid placement.</p>
+        <p>If your skill solves a recurring need we hear in the index, we'll feature it.</p>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<div data-mc="footer"></div>
+
+<script src="monochrome.js"></script>
+<script>
+  MonoChrome.mount({});
+  // Toggle .on for segmented buttons
+  document.querySelectorAll('.seg').forEach(seg=>{
+    seg.addEventListener('click',e=>{
+      if(e.target.tagName!=='BUTTON')return;
+      seg.querySelectorAll('button').forEach(b=>b.classList.remove('on'));
+      e.target.classList.add('on');
+    });
+  });
+</script>
+</body></html>

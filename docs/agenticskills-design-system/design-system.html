@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AgenticSkills Design System</title>
+<link rel="stylesheet" href="styles.css"/>
+<style>
+  body{background:var(--paper-2)}
+  .head{background:var(--ink);color:var(--on-ink);padding:56px 0 48px}
+  .head h1{font-size:clamp(40px,5.5vw,72px);font-weight:500;letter-spacing:-.035em;line-height:.96;margin:14px 0 0}
+  .head p{color:var(--on-ink-3);max-width:62ch;margin:20px 0 0;font-size:16px;line-height:1.6}
+  .head .micro{color:var(--on-ink-mute)}
+  .notice{border:1px solid var(--on-ink-line-2);padding:16px 18px;margin-top:32px;display:flex;gap:14px;align-items:flex-start}
+  .notice b{color:var(--on-ink)}
+  .notice p{margin:0;color:var(--on-ink-3);font-size:13px;line-height:1.6}
+  .grp{padding:56px 0 8px;border-bottom:1px solid var(--line);background:var(--paper)}
+  .grp:nth-of-type(even){background:var(--paper-2)}
+  .grp h2{font-size:32px;font-weight:500;letter-spacing:-.025em;margin:8px 0 4px}
+  .grp .sub{color:var(--mute-1);font-size:14px;margin:0 0 32px;max-width:60ch;line-height:1.6}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:28px;padding-bottom:48px}
+  .card figcaption{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
+  .card .nm{font-size:14px;font-weight:500;letter-spacing:-.01em}
+  .card .st{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute-2);text-align:right}
+  .card iframe{width:100%;border:1px solid var(--line);background:var(--paper);display:block}
+  .card{margin:0}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:48px}
+  th{text-align:left;font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute-2);font-weight:500;padding:0 0 10px;border-bottom:1px solid var(--ink)}
+  td{padding:11px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  td:first-child{font-family:var(--font-mono);font-size:12px;width:180px}
+  td:nth-child(2){color:var(--mute-1);width:300px}
+  td:last-child{color:var(--mute-1)}
+  .files{columns:2;column-gap:40px;font-size:13px;padding-bottom:48px}
+  .files div{break-inside:avoid;margin-bottom:18px}
+  .files h4{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute-2);margin:0 0 8px;font-weight:500}
+  .files a{display:block;padding:4px 0;color:var(--ink-3);font-family:var(--font-mono);font-size:12px}
+  .files a:hover{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+  @media(max-width:720px){.files{columns:1}}
+</style>
+</head><body>
+
+<header class="head">
+  <div class="ds-wrap">
+    <span class="ds-micro micro">AgenticSkills · Design system</span>
+    <h1>Monochrome, <em class="ds-accent">editorial</em>.</h1>
+    <p>Pure neutrals, hairline grids, Geist + Geist Mono with one serif italic accent per headline. Built from the redesigned directory. This page is a plain-HTML overview — everything here also appears in the Design System tab once the file type is set.</p>
+    <div class="notice">
+      <span class="ds-dot ds-dot--live" style="background:var(--on-ink);margin-top:6px"></span>
+      <p><b>To get the Design System tab:</b> Share menu → File type → Design System. That also compiles the component bundle, which the component cards and UI kit need in order to render.</p>
+    </div>
+  </div>
+</header>
+
+<section class="grp">
+  <div class="ds-wrap">
+    <span class="ds-micro">01</span>
+    <h2>Colors</h2>
+    <p class="sub">Thirteen neutrals and no hue. Hierarchy comes from weight, scale and hairlines; emphasis comes from inverting to ink, never from tinting.</p>
+    <div class="cards" id="g-colors"></div>
+  </div>
+</section>
+
+<section class="grp">
+  <div class="ds-wrap">
+    <span class="ds-micro">02</span>
+    <h2>Type</h2>
+    <p class="sub">Geist for structure, Geist Mono for every piece of metadata, Instrument Serif italic for exactly one accent word per headline.</p>
+    <div class="cards" id="g-type"></div>
+  </div>
+</section>
+
+<section class="grp">
+  <div class="ds-wrap">
+    <span class="ds-micro">03</span>
+    <h2>Spacing</h2>
+    <p class="sub">One container at 1280/32. Section rhythm in four steps. Hairline grids use zero gap — separation is the border.</p>
+    <div class="cards" id="g-spacing"></div>
+  </div>
+</section>
+
+<section class="grp">
+  <div class="ds-wrap">
+    <span class="ds-micro">04</span>
+    <h2>Brand</h2>
+    <p class="sub">Square corners, no shadows, two ambient animations, and stripe placeholders where imagery would go.</p>
+    <div class="cards" id="g-brand"></div>
+  </div>
+</section>
+
+<section class="grp">
+  <div class="ds-wrap">
+    <span class="ds-micro">05</span>
+    <h2>Components</h2>
+    <p class="sub">27 primitives in six groups. Each has a props contract (<code style="font-family:var(--font-mono);font-size:12px">.d.ts</code>) and usage notes (<code style="font-family:var(--font-mono);font-size:12px">.prompt.md</code>). Live previews need the compiled bundle.</p>
+    <table>
+      <thead><tr><th>Group</th><th>Components</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td>core/</td><td>Button · Tag · Rank · MicroLabel · Monogram · Breadcrumbs · Icon</td><td>Atoms. Every label, chip and action in the product.</td></tr>
+        <tr><td>layout/</td><td>HairlineGrid · SectionHead · PageHead · StatRow</td><td>Page scaffolding. HairlineGrid wraps every card collection.</td></tr>
+        <tr><td>navigation/</td><td>Ticker · Navbar · Footer · TableOfContents</td><td>Persistent chrome plus the sticky in-page rail.</td></tr>
+        <tr><td>forms/</td><td>Input · FormField · SegmentedControl · SearchInput · NewsletterForm</td><td>SegmentedControl covers every single-select in the system.</td></tr>
+        <tr><td>content/</td><td>SkillCard · FeatureCard · CategoryCard · ArticleCard · StepCard</td><td>The five card shapes the directory needs.</td></tr>
+        <tr><td>code/</td><td>Terminal · InstallPanel</td><td>Inverted code surfaces for install demos and config.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="grp">
+  <div class="ds-wrap">
+    <span class="ds-micro">06</span>
+    <h2>Files</h2>
+    <p class="sub">Link <code style="font-family:var(--font-mono);font-size:12px">styles.css</code> and everything else follows.</p>
+    <div class="files">
+      <div><h4>Root</h4>
+        <a href="readme.md">readme.md — the design guide</a>
+        <a href="styles.css">styles.css — global entry point</a>
+        <a href="SKILL.md">SKILL.md — Claude Code manifest</a>
+      </div>
+      <div><h4>Tokens</h4>
+        <a href="tokens/colors.css">tokens/colors.css</a>
+        <a href="tokens/typography.css">tokens/typography.css</a>
+        <a href="tokens/spacing.css">tokens/spacing.css</a>
+        <a href="tokens/borders.css">tokens/borders.css</a>
+        <a href="tokens/motion.css">tokens/motion.css</a>
+        <a href="tokens/fonts.css">tokens/fonts.css</a>
+      </div>
+      <div><h4>Styles</h4>
+        <a href="styles/base.css">styles/base.css</a>
+        <a href="styles/primitives.css">styles/primitives.css</a>
+        <a href="styles/components.css">styles/components.css</a>
+      </div>
+      <div><h4>UI kit</h4>
+        <a href="ui_kits/directory/index.html">Directory site — 5 screens</a>
+        <a href="ui_kits/directory/README.md">Kit README</a>
+      </div>
+      <div><h4>Source designs</h4>
+        <a href="index.html">Homepage</a>
+        <a href="skill.html">Skill detail</a>
+        <a href="category.html">Category</a>
+        <a href="mcp.html">MCP directory</a>
+        <a href="workflows.html">Workflows</a>
+        <a href="learn.html">Learn</a>
+        <a href="submit.html">Submit</a>
+        <a href="about.html">About</a>
+        <a href="changelog.html">Changelog</a>
+      </div>
+      <div><h4>Assets</h4>
+        <a href="assets/README.md">assets/README.md — why it's empty</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+const CARDS = {
+  'g-colors':[
+    ['color-ink','Ink','Text and fills',150],
+    ['color-mute','Mute','De-emphasised text',150],
+    ['color-line','Line','Hairline rules',150],
+    ['color-paper','Paper','Surfaces',150],
+    ['color-inverse','On ink','Inside black bands',170],
+    ['color-semantic','Semantic aliases','Prefer over raw values',190]
+  ],
+  'g-type':[
+    ['type-display','Display','Fluid clamp sizes',260],
+    ['type-accent','Serif accent','One word per headline',150],
+    ['type-body','Body & lede','16/1.7 and 18/1.55',220],
+    ['type-mono','Mono labels','All metadata',200],
+    ['type-numerals','Numerals','Tabular figures',150],
+    ['type-weights','Weights','400 / 500 / 600 only',150]
+  ],
+  'g-spacing':[
+    ['spacing-scale','Scale','4 → 64px',180],
+    ['spacing-rhythm','Section rhythm','Four steps',180],
+    ['spacing-container','Container','1280 / 32',150]
+  ],
+  'g-brand':[
+    ['brand-grid','Hairline grid','The core layout device',200],
+    ['brand-buttons','Buttons','Ink and ghost',150],
+    ['brand-badges','Badges & pills','Emphasis by inversion',170],
+    ['brand-radius','Radius & elevation','Both are zero',170],
+    ['brand-placeholder','Image placeholder','Stripes, not filler',180],
+    ['brand-motion','Motion','Two loops and a nudge',160]
+  ]
+};
+for (const [id, list] of Object.entries(CARDS)) {
+  document.getElementById(id).innerHTML = list.map(([file, name, sub, h]) => `
+    <figure class="card">
+      <figcaption><span class="nm">${name}</span><span class="st">${sub}</span></figcaption>
+      <iframe src="guidelines/foundations/${file}.html" height="${h}" loading="lazy" title="${name}"></iframe>
+    </figure>`).join('');
+}
+</script>
+</body></html>

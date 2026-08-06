@@ -1,0 +1,117 @@
+{
+  "project": "brandcortex",
+  "updated": "2026-08-06",
+  "phase": "1 (MVP) — LIVE at https://brandcortex.app (production Clerk, own domain); cron worker + insights outstanding",
+  "tenant": "thaiswim",
+  "channel": "facebook",
+  "branch": "scaffold/thaiswim-facebook-mvp",
+  "head": "1093111",
+  "pushed": true,
+  "topics": [
+    "monochrome design system applied",
+    "first production compose pending",
+    "R2 + cron worker",
+    "insights fetcher",
+    "design-system folder untracked"
+  ],
+  "tests": {
+    "passed": 165,
+    "skipped": 9
+  },
+  "working_end_to_end": [
+    "compose a card from the dashboard against production thaiswim.com",
+    "model writes 6 caption variants; each checked for grounded numbers, notation and voice",
+    "pick a variant, edit, or regenerate with a per-post steer",
+    "approve and schedule with a policy-aware suggested slot and its reasons",
+    "publish path tested against a fake Graph AND now authorized against the real one: PAGE token stored encrypted, GET /health/channels ok",
+    "PRODUCTION: api-production-b008.up.railway.app (facebook channel ok, routes 401 bare) + brandcortex-ravenbone.vercel.app behind Clerk"
+  ],
+  "still_stubs": [
+    "insights fetcher",
+    "reflection agent",
+    "publisher cron worker on Railway"
+  ],
+  "blocked": [],
+  "resolved_2026-08-06": {
+    "what": "facebook page access token",
+    "how": "Login for Business injects the use case's permission bundle; pages_read_user_content was referenced by the Manage Pages use case but never Added to the app, invalidating every login. One '+ Add' click fixed it. Verified by reproducing the failure firsthand (browser driven via Claude-in-Chrome), then the same five-scope dialog succeeded.",
+    "token": "PAGE, page 1223598310834457, expires never, 7 scopes, encrypted in channel_tokens; .env token line cleared — DB is authoritative",
+    "lesson": "drive the browser or probe the API; never send the user around Meta's UI on guesses"
+  },
+  "open_questions": [
+    {
+      "what": "ruff line-length gate has never passed",
+      "detail": "281 E501s, all docstring prose at 101-104 against a 100 limit, repo-wide and predating 2026-08-05",
+      "options": [
+        "paragraph-level reflow",
+        "raise line-length"
+      ],
+      "do_not": "retry a line-by-line wrap — it orphans words; see R-2026-08-05-01"
+    },
+    {
+      "what": "rotate the dev-instance Clerk secret key",
+      "detail": "leaked into session-02 transcript; production is unaffected (new instance/keys) but dev rotation is one click"
+    }
+  ],
+  "next_actions": [
+    "user signs in at brandcortex.app, composes the first production draft",
+    "R2 bucket -> ASSET_* -> cron worker service (*/5) — worker needs shared storage",
+    "insights fetcher (f4dcc669 audience data still uncaptured)",
+    "optional: api.brandcortex.app; custom Google OAuth for the sign-in button; push ~8 local commits"
+  ],
+  "local_dev": {
+    "postgres": "docker container brandcortex-pg — start it before the API after a reboot",
+    "migrate": "uv run alembic upgrade head",
+    "seed": "uv run python -m brandcortex.db.seed seeds/thaiswim.brand_config.json",
+    "serve": "uv run uvicorn brandcortex.main:app --reload",
+    "web": "pnpm dev from apps/web (port 3000)",
+    "note": "config reads .env from the working directory; apps/api/.env is a symlink to the repo root .env; ASSET_BUCKET as a path means local disk"
+  },
+  "do_not": [
+    "modify ThaiSwim card engines",
+    "write anything to the brand DB",
+    "put links in the post caption",
+    "let the learning loop propose voice.* rules",
+    "hardcode locale to th",
+    "declare a status column as String — it loads back a bare str and breaks every `is` comparison",
+    "duplicate the ThaiSwim card engines — two definitions of the card would drift",
+    "send the user around Meta's UI on unverified guesses — drive the browser or probe the API",
+    "assume session_scope() commits — it never does; the caller owns the transaction",
+    "run pnpm build while next dev is live without restarting dev after — they share .next"
+  ],
+  "credentials": {
+    "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env / channel_tokens.",
+    "anthropic_api_key": {
+      "added": "2026-08-05",
+      "expires": "2026-11-03",
+      "rotate_by": "2026-10-27",
+      "where": ".env ANTHROPIC_API_KEY (gitignored, mode 600)",
+      "on_expiry": "caption drafting falls back to templates; the queue keeps working, the copy gets plainer"
+    },
+    "facebook_page_token": {
+      "added": "2026-08-06",
+      "expires": "never",
+      "where": "channel_tokens (encrypted at rest), tenant thaiswim",
+      "note": "PAGE token, 7 scopes; re-run authorize.py flow if Meta invalidates it (password change, App Review changes, data-access expiry)"
+    }
+  },
+  "production": {
+    "api": "https://api-production-b008.up.railway.app (Railway project b18f9576, service api, volume /data)",
+    "web": "https://brandcortex.app (Vercel project brandcortex; apex primary, no www; Clerk production instance on clerk.brandcortex.app)",
+    "db": "Railway Postgres, migrated + seeded, channel token installed (same Fernet key as local)",
+    "deploy_cmds": {
+      "api": "railway up apps/api --path-as-root --service api --detach   # from repo root; up roots at linked dir!",
+      "web": "cd apps/web && vercel deploy --prod --yes   # CLI-push only, git pushes do NOT deploy"
+    },
+    "gaps": [
+      "no cron worker service — scheduled posts do not fire in production (publish-now works)",
+      "cards on service volume — R2 required before the worker exists (volumes not shareable)",
+      "Google sign-in on production needs custom OAuth creds (email code works)"
+    ],
+    "clerk": "production instance, issuer https://clerk.brandcortex.app; localhost stays on the dev instance (test keys in .env; CLERK_SECRET_KEY_LIVE is Vercel-only)"
+  },
+  "design": {
+    "guideline": "docs/agenticskills-design-system (untracked; user's AgenticSkills monochrome system)",
+    "rules": "pure neutrals; hierarchy by weight/scale/hairlines; zero radius; no shadows; inversion = selection; Geist/Geist Mono via next/font + Noto Sans Thai fallback; serif accent and dark mode deliberately omitted"
+  }
+}

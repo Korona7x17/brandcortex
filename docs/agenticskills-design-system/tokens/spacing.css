@@ -1,0 +1,40 @@
+/* Spacing.
+   Hairline grids use gap:0 — separation is by border, never by gap. */
+:root{
+  --space-1:4px;
+  --space-2:6px;
+  --space-3:8px;
+  --space-4:10px;
+  --space-5:12px;
+  --space-6:14px;
+  --space-7:16px;
+  --space-8:18px;
+  --space-9:20px;
+  --space-10:22px;
+  --space-11:24px;
+  --space-12:28px;
+  --space-13:32px;
+  --space-14:36px;
+  --space-15:48px;
+  --space-16:64px;
+
+  /* Section rhythm */
+  --section-sm:64px;
+  --section-md:80px;
+  --section-lg:96px;
+  --section-xl:120px;
+
+  /* Card padding */
+  --pad-card-sm:18px;
+  --pad-card:24px;
+  --pad-card-lg:28px;
+  --pad-card-xl:32px;
+
+  /* Container */
+  --wrap-max:1280px;
+  --wrap-pad:32px;
+  --wrap-narrow:880px;
+
+  /* Sticky offset for TOCs and rails */
+  --sticky-top:80px;
+}

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MCP Server Directory — AgenticSkills</title>
+<link rel="stylesheet" href="monochrome.css"/>
+<style>
+  .mcp-hero{padding:96px 0 80px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+  .mcp-hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line-3) 1px,transparent 1px),linear-gradient(90deg,var(--line-3) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse at 60% 40%,#000 0%,#000 40%,transparent 75%);opacity:.7}
+  .mcp-hero-inner{position:relative;display:grid;grid-template-columns:1.4fr 1fr;gap:64px;align-items:center}
+  .mcp-hero h1{font-size:clamp(48px,6.4vw,88px);font-weight:500;letter-spacing:-.035em;line-height:.94;margin:18px 0 0}
+  .mcp-hero h1 em{font-family:var(--serif);font-style:italic;font-weight:400}
+  .mcp-hero .lede{margin-top:24px;font-size:18px;color:var(--mute-1);max-width:54ch;line-height:1.55}
+  .mcp-meta{margin-top:48px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+  .mcp-meta > div{padding:18px 16px 4px 0}
+  .mcp-meta .v{font-family:var(--mono);font-size:28px;font-weight:500;letter-spacing:-.02em}
+  .mcp-meta .l{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute-2);margin-top:6px}
+
+  .schema{
+    background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:13px;
+    padding:20px;line-height:1.65;
+  }
+  .schema-bar{display:flex;justify-content:space-between;border-bottom:1px solid #1f1f1f;padding-bottom:12px;margin-bottom:14px;font-size:11px;color:#7a7a7a;text-transform:uppercase;letter-spacing:.14em}
+  .schema .k{color:#bbb}.schema .s{color:#fff}.schema .c{color:#666}
+
+  .featured-mcp{padding:96px 0;border-bottom:1px solid var(--line)}
+  .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+  .feat{padding:28px;border-right:1px solid var(--line);background:var(--paper);display:flex;flex-direction:column;gap:14px;min-height:280px}
+  .feat:last-child{border-right:none}.feat:hover{background:var(--paper-2)}
+  .feat-h{display:flex;justify-content:space-between;align-items:flex-start}
+  .feat-logo{width:42px;height:42px;border:1px solid var(--ink);display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:14px}
+  .feat h3{margin:0;font-size:22px;font-weight:500;letter-spacing:-.02em}
+  .feat .by{font-family:var(--mono);font-size:11px;color:var(--mute-2);text-transform:uppercase;letter-spacing:.1em}
+  .feat p{margin:0;color:var(--mute-1);font-size:14px;line-height:1.55}
+  .feat .foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--mute-1)}
+
+  .mcp-grid-sec{padding:96px 0;background:var(--paper-2);border-bottom:1px solid var(--line)}
+  .mgrid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+  .m{padding:22px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper);display:flex;flex-direction:column;gap:12px;min-height:200px}
+  .m-h{display:flex;align-items:center;gap:12px}
+  .m-l{width:36px;height:36px;border:1px solid var(--ink);display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:13px;flex-shrink:0}
+  .m h3{margin:0;font-size:16px;font-weight:500}
+  .m .by{font-family:var(--mono);font-size:10px;color:var(--mute-2);text-transform:uppercase;letter-spacing:.1em}
+  .m p{margin:0;font-size:13px;color:var(--mute-1);line-height:1.5}
+  .m .foot{margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);font-family:var(--mono);font-size:11px;color:var(--mute-2);display:flex;justify-content:space-between}
+
+  .mcp-cats{padding:96px 0;border-bottom:1px solid var(--line)}
+  .cat-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+  .cat{padding:20px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper);display:flex;flex-direction:column;gap:8px;min-height:120px}
+  .cat:hover{background:var(--paper-3)}
+  .cat .nm{font-size:14px;font-weight:500}
+  .cat .ct{font-family:var(--mono);font-size:10px;color:var(--mute-2);letter-spacing:.1em;text-transform:uppercase;margin-top:auto}
+
+  .sec-head{display:grid;grid-template-columns:auto 1fr auto;align-items:end;gap:24px;margin-bottom:48px}
+  .sec-head h2{font-size:clamp(32px,4vw,48px);font-weight:500;letter-spacing:-.03em;line-height:1;margin:8px 0 0}
+  .sec-head h2 em{font-family:var(--serif);font-style:italic;font-weight:400}
+
+  @media(max-width:980px){.mcp-hero-inner{grid-template-columns:1fr}.feat-grid,.mgrid,.cat-grid{grid-template-columns:repeat(2,1fr)}.mcp-meta{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:640px){.feat-grid,.mgrid,.cat-grid{grid-template-columns:1fr}.sec-head{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div data-mc="ticker"></div>
+<div data-mc="navbar"></div>
+
+<section class="mcp-hero">
+  <div class="wrap mcp-hero-inner">
+    <div>
+      <span class="micro">02 · MCP Directory</span>
+      <h1>200+ trusted<br>MCP servers,<br><em>one index</em>.</h1>
+      <p class="lede">Official Model Context Protocol servers from GitHub, Stripe, AWS, Google, and 200+ more. Connect any tool to Claude, ChatGPT, Cursor, or any MCP-aware agent.</p>
+      <div class="mcp-meta">
+        <div><div class="v">214</div><div class="l">Servers</div></div>
+        <div><div class="v">22</div><div class="l">Categories</div></div>
+        <div><div class="v">68</div><div class="l">Official</div></div>
+        <div><div class="v">100%</div><div class="l">Verified</div></div>
+      </div>
+    </div>
+
+    <aside class="schema">
+      <div class="schema-bar"><span>mcp.json</span><span>schema</span></div>
+<pre style="margin:0;white-space:pre-wrap"><span class="c">// connect Stripe MCP server</span>
+{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"stripe"</span>: {
+      <span class="k">"command"</span>: <span class="s">"npx"</span>,
+      <span class="k">"args"</span>: [
+        <span class="s">"-y"</span>,
+        <span class="s">"@stripe/mcp"</span>
+      ],
+      <span class="k">"env"</span>: {
+        <span class="k">"STRIPE_API_KEY"</span>: <span class="s">"sk_live_..."</span>
+      }
+    }
+  }
+}</pre>
+    </aside>
+  </div>
+</section>
+
+<section class="featured-mcp">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="micro">03 · Featured</span>
+      <div><h2>Editor's <em>picks</em></h2></div>
+      <a class="micro" href="#" style="color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:2px">All featured →</a>
+    </div>
+    <div class="feat-grid">
+      <div class="feat">
+        <div class="feat-h"><div class="feat-logo">GH</div><span class="rank s">S-rank</span></div>
+        <div><h3>GitHub</h3><div class="by">By GitHub · Official</div></div>
+        <p>Read repos, manage issues, review PRs, and run Actions from any MCP-aware agent. The reference implementation.</p>
+        <div class="foot"><span>↓ 412K · ★ 8.2K</span><span>Open ↗</span></div>
+      </div>
+      <div class="feat">
+        <div class="feat-h"><div class="feat-logo">ST</div><span class="rank s">S-rank</span></div>
+        <div><h3>Stripe</h3><div class="by">By Stripe · Official</div></div>
+        <p>Query customers, refund charges, manage subscriptions, and read financial reports from inside the agent loop.</p>
+        <div class="foot"><span>↓ 218K · ★ 4.6K</span><span>Open ↗</span></div>
+      </div>
+      <div class="feat">
+        <div class="feat-h"><div class="feat-logo">AW</div><span class="rank s">S-rank</span></div>
+        <div><h3>AWS</h3><div class="by">By Anthropic · Official</div></div>
+        <p>S3, Lambda, RDS, and CloudWatch surfaces, scoped via IAM. Read-only by default; mutations behind explicit consent.</p>
+        <div class="foot"><span>↓ 184K · ★ 3.8K</span><span>Open ↗</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="mcp-grid-sec">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="micro">04 · Index</span>
+      <div><h2>Browse <em>servers</em></h2></div>
+      <span class="micro" style="color:var(--mute-1)">214 entries · sorted by installs</span>
+    </div>
+    <div class="mgrid" id="mgrid"></div>
+  </div>
+</section>
+
+<section class="mcp-cats">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="micro">05 · Categories</span>
+      <div><h2>By <em>integration</em></h2></div>
+      <span class="micro" style="color:var(--mute-1)">22 categories</span>
+    </div>
+    <div class="cat-grid" id="catgrid"></div>
+  </div>
+</section>
+
+<div data-mc="newsletter"></div>
+<div data-mc="footer"></div>
+
+<script src="monochrome.js"></script>
+<script>
+  MonoChrome.mount({active:'mcp'});
+  const ms = [
+    {n:"Linear",a:"Linear",d:"Issues, projects, and cycles. Read-write surface.",ic:"LN",inst:"96K",st:"1.4K"},
+    {n:"Notion",a:"Notion Labs",d:"Databases, pages, and blocks for knowledge work.",ic:"NT",inst:"82K",st:"1.2K"},
+    {n:"Slack",a:"Slack",d:"Channels, threads, and DMs. Posts behind explicit consent.",ic:"SL",inst:"71K",st:"980"},
+    {n:"PostgreSQL",a:"Anthropic",d:"Schema-aware querying with safe write modes.",ic:"PG",inst:"68K",st:"920"},
+    {n:"Sentry",a:"Sentry",d:"Issues, releases, and event triage from the agent.",ic:"SY",inst:"54K",st:"760"},
+    {n:"Vercel",a:"Vercel",d:"Deployments, env vars, logs, and project management.",ic:"VC",inst:"48K",st:"680"},
+    {n:"Figma",a:"Figma",d:"Read frames, components, and styles into agent context.",ic:"FG",inst:"42K",st:"612"},
+    {n:"Google Drive",a:"Google",d:"Read and search Drive files with scoped OAuth.",ic:"GD",inst:"38K",st:"540"},
+    {n:"Cloudflare",a:"Cloudflare",d:"Workers, KV, R2, and D1 management surface.",ic:"CF",inst:"34K",st:"490"},
+  ];
+  document.getElementById('mgrid').innerHTML = ms.map(s=>`
+    <a class="m" href="#">
+      <div class="m-h"><div class="m-l">${s.ic}</div><div><h3>${s.n}</h3><div class="by">By ${s.a}</div></div></div>
+      <p>${s.d}</p>
+      <div class="foot"><span>↓ ${s.inst} · ★ ${s.st}</span><span>Open ↗</span></div>
+    </a>
+  `).join('');
+  const cs = ["Developer Tools","Databases","Cloud","Communication","Productivity","Design","CRM","Analytics","Payments","Storage","AI/ML","Security","Knowledge","Marketing","Email","Calendar","Maps","Media","Search","Docs","Code Review","Monitoring"];
+  document.getElementById('catgrid').innerHTML = cs.map((c,i)=>`
+    <a class="cat" href="#">
+      <span class="micro">${String(i+1).padStart(2,'0')}</span>
+      <span class="nm">${c}</span>
+      <span class="ct">${4+Math.floor(Math.random()*18)} servers</span>
+    </a>
+  `).join('');
+</script>
+</body></html>

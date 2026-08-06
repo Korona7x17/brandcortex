@@ -1,0 +1,220 @@
+# =============================================================================
+# Secrets & environment  (nothing below this block is worth leaking)
+# =============================================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.keystore
+*.jks
+secrets/
+.secrets/
+credentials.json
+service-account*.json
+gha-creds-*.json
+# Meta / channel credentials and encrypted-token dumps
+channel_tokens*.json
+fb-token*.json
+*.fernet
+
+# =============================================================================
+# Python  (apps/api)
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+sdist/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtualenvs
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.pyright/
+.tox/
+.nox/
+.hypothesis/
+.ipynb_checkpoints/
+cython_debug/
+
+# Coverage & test artifacts
+.coverage
+.coverage.*
+coverage.xml
+coverage.json
+htmlcov/
+nosetests.xml
+junit*.xml
+report.xml
+.benchmarks/
+
+# uv / pip
+pip-log.txt
+pip-delete-this-directory.txt
+# uv.lock IS committed — reproducible API builds
+
+# =============================================================================
+# Node / Next.js  (apps/web, packages/*)
+# =============================================================================
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Build output
+.next/
+out/
+build/
+dist/
+.turbo/
+.swc/
+*.tsbuildinfo
+next-env.d.ts
+
+# Package manager noise (lockfiles ARE committed)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.npm
+.eslintcache
+.stylelintcache
+
+# Test / tooling output
+/coverage
+/playwright-report/
+/blob-report/
+/test-results/
+.playwright/
+.nyc_output/
+storybook-static/
+
+# Deploy platforms
+.vercel
+.netlify
+
+# =============================================================================
+# Database & migrations
+# =============================================================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.dump
+*.sql.gz
+pgdata/
+postgres-data/
+# Alembic versions ARE committed — never ignore apps/api/alembic/versions/
+
+# =============================================================================
+# Assets & generated media
+# =============================================================================
+# Card PNGs live in the shared bucket, never in the repo. Local mirrors only.
+.assets-local/
+/assets-cache/
+/media/
+*.mp4
+*.mov
+
+# =============================================================================
+# Infra & local orchestration
+# =============================================================================
+docker-compose.override.yml
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terragrunt-cache/
+kubeconfig
+*.kubeconfig
+
+# =============================================================================
+# Logs, runtime, scratch
+# =============================================================================
+*.log
+logs/
+pids/
+*.pid
+*.pid.lock
+*.seed
+tmp/
+temp/
+.tmp/
+.cache/
+scratch/
+scratchpad/
+
+# =============================================================================
+# Agent / assistant local state  (shared config IS committed)
+# =============================================================================
+.claude/settings.local.json
+.claude/*.local.json
+.agents/**/local/
+.aider*
+.cursorignore
+
+# =============================================================================
+# Editors & OS
+# =============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon?
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*~
+*.swp
+*.swo
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.shared.json
+*.sublime-workspace
+*.sublime-project
+.history/
+.direnv/
+
+# Local dev artifacts (assets captured to disk, scratch databases)
+.local/

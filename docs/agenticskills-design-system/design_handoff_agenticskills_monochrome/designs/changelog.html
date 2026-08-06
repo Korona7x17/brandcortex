@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Changelog — AgenticSkills</title>
+<link rel="stylesheet" href="monochrome.css"/>
+<style>
+  .cl-hero{padding:80px 0 56px;border-bottom:1px solid var(--line)}
+  .cl-hero h1{font-size:clamp(48px,6vw,80px);font-weight:500;letter-spacing:-.035em;line-height:.96;margin:18px 0 0}
+  .cl-hero h1 em{font-family:var(--serif);font-style:italic;font-weight:400}
+  .cl-hero .lede{margin-top:18px;font-size:17px;color:var(--mute-1);max-width:54ch;line-height:1.55}
+
+  .timeline{padding:64px 0}
+  .release{
+    display:grid;grid-template-columns:200px 1fr;gap:48px;
+    padding:48px 0;border-top:1px solid var(--line);align-items:start;
+  }
+  .release:last-child{border-bottom:1px solid var(--line)}
+  .release .meta{position:sticky;top:80px;align-self:start}
+  .release .v{font-family:var(--mono);font-size:24px;font-weight:500;letter-spacing:-.02em;color:var(--ink)}
+  .release .dt{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute-2);margin-top:6px}
+  .release .nm{margin-top:14px;font-family:var(--serif);font-style:italic;font-size:18px;color:var(--ink-3);line-height:1.3}
+
+  .release h3{margin:0 0 12px;font-size:22px;font-weight:500;letter-spacing:-.02em;line-height:1.2}
+  .release h3 em{font-family:var(--serif);font-style:italic;font-weight:400}
+  .release > div > p{font-size:15px;color:var(--mute-1);line-height:1.6;margin:0 0 24px;max-width:62ch}
+  .entries{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);background:var(--paper)}
+  .entry{display:grid;grid-template-columns:80px 1fr;gap:18px;padding:14px 18px;border-bottom:1px solid var(--line);align-items:start}
+  .entry:last-child{border-bottom:none}
+  .entry .kind{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:3px 0;border-bottom:1px solid var(--ink);align-self:start;color:var(--ink);width:fit-content}
+  .entry .kind.ad{color:var(--ink);border-color:var(--ink)}
+  .entry .kind.ch{color:var(--mute-1);border-color:var(--mute-1)}
+  .entry .kind.fx{color:var(--mute-2);border-color:var(--mute-2);border-style:dashed}
+  .entry .text{font-size:14px;color:var(--ink-3);line-height:1.55}
+  .entry .text code{font-family:var(--mono);font-size:.9em;background:var(--paper-3);padding:1px 5px;border:1px solid var(--line-2)}
+
+  .subscribe{padding:64px 0;background:var(--paper-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
+  .subscribe h3{font-size:24px;font-weight:500;letter-spacing:-.02em;margin:0 0 8px}
+  .subscribe p{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute-2);margin:0 0 24px}
+  .subscribe form{display:flex;max-width:420px;margin:0 auto;border:1px solid var(--ink);background:var(--paper)}
+  .subscribe input{flex:1;border:none;outline:none;font-size:14px;padding:0 14px;height:44px}
+  .subscribe button{background:var(--ink);color:var(--paper);border:none;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:0 22px;cursor:pointer}
+
+  @media(max-width:768px){.release{grid-template-columns:1fr;gap:18px}.release .meta{position:static}}
+</style>
+</head>
+<body>
+<div data-mc="ticker"></div>
+<div data-mc="navbar"></div>
+
+<section class="cl-hero">
+  <div class="wrap">
+    <div class="crumbs"><a href="index.html">Index</a><span class="sep">/</span><span class="here">Changelog</span></div>
+    <span class="micro">Releases · 2025–2026</span>
+    <h1>Public <em>changelog</em>.</h1>
+    <p class="lede">Every shipped change to the index — features, fixes, and editorial calls. Updated roughly weekly.</p>
+  </div>
+</section>
+
+<section class="timeline">
+  <div class="wrap" id="releases"></div>
+</section>
+
+<section class="subscribe">
+  <div class="wrap">
+    <h3>Get changelog in your inbox</h3>
+    <p>One mail per release · ~weekly</p>
+    <form onsubmit="event.preventDefault();this.querySelector('button').textContent='Subscribed ✓'">
+      <input type="email" placeholder="you@example.com"/>
+      <button type="submit">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<div data-mc="footer"></div>
+
+<script src="monochrome.js"></script>
+<script>
+  MonoChrome.mount({active:'changelog'});
+  const releases = [
+    { v:"v2.4.1", dt:"Apr 30, 2026", nm:"Indices in motion",
+      summary:"Quality-rank rebalance and faster index search. Plus the long-promised compatibility matrix on every skill page.",
+      entries:[
+        {k:"ad",t:"Per-skill <b>compatibility matrix</b> with platform-by-platform verification status."},
+        {k:"ad",t:"Realtime install ticker on the homepage (opt-out via <code>?ticker=off</code>)."},
+        {k:"ch",t:"Rebalanced quality ranks — 9 skills moved from B to A, 2 from A to S."},
+        {k:"fx",t:"Search returning duplicates on tag co-occurrence."}
+      ]
+    },
+    { v:"v2.4.0", dt:"Apr 18, 2026", nm:"The MCP era",
+      summary:"MCP server directory ships out of beta. 214 servers indexed across 22 categories, with the same editorial bar as skills.",
+      entries:[
+        {k:"ad",t:"<b>MCP Server Directory</b> at <code>/mcp</code> with 214 servers indexed."},
+        {k:"ad",t:"Workflows page — curated bundles combining skills and MCP servers."},
+        {k:"ch",t:"Newsletter cadence dropped from twice-weekly to weekly per reader feedback."}
+      ]
+    },
+    { v:"v2.3.0", dt:"Mar 28, 2026", nm:"Editorial reset",
+      summary:"Library relaunch. Five long-form pieces and a clearer editorial calendar.",
+      entries:[
+        {k:"ad",t:"<b>Learn</b> section with 5 inaugural long-form articles."},
+        {k:"ad",t:"Author pages — every skill author has a profile with their full catalog."},
+        {k:"fx",t:"Mobile rendering of the category grid on viewports below 380px."}
+      ]
+    },
+    { v:"v2.2.0", dt:"Mar 04, 2026", nm:"Open the spec",
+      summary:"SKILL.md spec moved to a public repo with versioning. 18 platform vendors signed on as adopters.",
+      entries:[
+        {k:"ad",t:"<b>SKILL.md spec v0.4</b> published with platform-aware install hints."},
+        {k:"ch",t:"Submission form rebuilt with platform-test attestation."},
+        {k:"fx",t:"License field accepting non-OSI licenses by mistake."}
+      ]
+    },
+    { v:"v2.1.0", dt:"Feb 12, 2026", nm:"Quality, properly",
+      summary:"Quality ranks (S/A/B/C) replaced star counts as the primary ranking signal.",
+      entries:[
+        {k:"ad",t:"<b>Quality ranks</b> on every skill, computed weekly from installs, recency, and editorial review."},
+        {k:"ch",t:"Removed star count from card UI — moved to detail page."},
+        {k:"fx",t:"Sort by &lsquo;newest&rsquo; respecting timezones."}
+      ]
+    }
+  ];
+  document.getElementById('releases').innerHTML = releases.map(r=>`
+    <div class="release">
+      <div class="meta">
+        <div class="v">${r.v}</div>
+        <div class="dt">${r.dt}</div>
+        <div class="nm">"${r.nm}"</div>
+      </div>
+      <div>
+        <h3>${r.nm}</h3>
+        <p>${r.summary}</p>
+        <div class="entries">
+          ${r.entries.map(e=>`
+            <div class="entry">
+              <span class="kind ${e.k}">${e.k==='ad'?'Added':e.k==='ch'?'Changed':'Fixed'}</span>
+              <div class="text">${e.t}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+</script>
+</body></html>

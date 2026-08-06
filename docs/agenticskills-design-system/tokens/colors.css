@@ -1,0 +1,56 @@
+/* Colors — pure neutrals. The system has NO hue anywhere.
+   Hierarchy is carried by weight, scale, and hairlines, never by color. */
+:root{
+  /* Ink — text and fills, darkest to lightest */
+  --ink:#0a0a0a;
+  --ink-2:#161616;
+  --ink-3:#262626;
+
+  /* Mute — de-emphasised text */
+  --mute-1:#3d3d3d;
+  --mute-2:#6b6b6b;
+  --mute-3:#9a9a9a;
+
+  /* Line — hairline rules, faintest to strongest */
+  --line-3:#f0f0f0;
+  --line-2:#dcdcdc;
+  --line:#e6e6e6;
+
+  /* Paper — surfaces, lightest to darkest */
+  --paper:#ffffff;
+  --paper-2:#fafafa;
+  --paper-3:#f4f4f4;
+  --paper-4:#ededed;
+
+  /* On-ink — values used inside black sections and terminals */
+  --on-ink:#ffffff;
+  --on-ink-2:#cfcfcf;
+  --on-ink-3:#a8a8a8;
+  --on-ink-mute:#888888;
+  --on-ink-faint:#666666;
+  --on-ink-line:#1f1f1f;
+  --on-ink-line-2:#2a2a2a;
+
+  /* ── Semantic aliases ── */
+  --text-primary:var(--ink);
+  --text-body:var(--ink-3);
+  --text-lede:var(--mute-1);
+  --text-meta:var(--mute-2);
+  --text-placeholder:var(--mute-3);
+  --text-inverse:var(--on-ink);
+
+  --surface-page:var(--paper);
+  --surface-alt:var(--paper-2);
+  --surface-sunken:var(--paper-3);
+  --surface-card:var(--paper);
+  --surface-card-hover:var(--paper-2);
+  --surface-inverse:var(--ink);
+
+  --rule:var(--line);
+  --rule-strong:var(--ink);
+  --rule-faint:var(--line-3);
+  --rule-inverse:var(--on-ink-line);
+
+  --status-on:var(--ink);
+  --status-off:var(--mute-3);
+}

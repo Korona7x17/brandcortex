@@ -1,0 +1,13 @@
+/* Motion. Deliberately minimal — the page should read as a document,
+   not an experience. No scroll-jacking, no parallax, no reveal-on-scroll. */
+:root{
+  --dur-fast:150ms;
+  --dur-base:200ms;
+  --ease:ease;
+  --ease-out:cubic-bezier(.2,.6,.2,1);
+  --nudge:2px;
+}
+
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes blink{50%{opacity:0}}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}

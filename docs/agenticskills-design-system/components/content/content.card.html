@@ -1,0 +1,61 @@
+<!-- @dsCard group="Components" viewport="700x430" name="Content" subtitle="SkillCard, FeatureCard, CategoryCard, ArticleCard, StepCard" -->
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<link rel="stylesheet" href="../../styles.css"/>
+<style>body{padding:20px;background:var(--paper)}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.lbl{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute-3);margin-bottom:8px}.stack{display:flex;flex-direction:column;gap:16px}</style>
+</head><body><div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="../../ds-preview.js"></script>
+<script type="text/babel">
+const NS = (() => {
+  const skip = new Set(['top','parent','self','window','frames','opener']);
+  for (const k of Object.keys(window)) {
+    if (skip.has(k)) continue;
+    try {
+      const v = window[k];
+      if (v && typeof v === 'object' && !Array.isArray(v) && v.Button && v.Tag) return v;
+    } catch (e) { /* cross-origin frame ref */ }
+  }
+  return {};
+})();
+
+const { HairlineGrid, SkillCard, FeatureCard, CategoryCard, StepCard, Icon } = NS;
+function Demo(){
+  return (
+    <div className="stack">
+      <div><div className="lbl">FeatureCard — ink grid</div>
+        <HairlineGrid columns={2} variant="ink">
+          <FeatureCard name="Find Skills" author="Vercel Labs" rank="S" status="Official"
+            description="The meta-skill for skill discovery."
+            platforms={['Claude','Codex','+5']} installs="271.4K" stars="3.2K" />
+          <FeatureCard name="Frontend Design" author="Anthropic" rank="S" status="Official"
+            description="Aesthetic direction for production frontends."
+            platforms={['Claude','Cursor','+3']} installs="184.0K" stars="2.1K" />
+        </HairlineGrid>
+      </div>
+      <div><div className="lbl">SkillCard · CategoryCard · StepCard</div>
+        <HairlineGrid columns={3}>
+          <SkillCard name="React Best Practices" author="Vercel Labs" official rank="A"
+            description="Hooks, composition, performance, server components."
+            category="Web Dev" platforms={['Claude','Cursor']} installs="198K" stars="2.4K" />
+          <CategoryCard index="C01" name="Web Development" count={15}
+            description="Frontend frameworks and modern web tooling."
+            topSkills={['react-best-practices','frontend-design']} icon={<Icon name="layout" />} />
+          <StepCard step="Step 02" title="Install" glyph={<Icon name="terminal" size={22} />}
+            description="One command, or drop SKILL.md into your agent's folder."
+            command="$ npx skills add author/skill" />
+        </HairlineGrid>
+      </div>
+    </div>
+  );
+}
+const root = document.getElementById('root');
+if (Object.keys(NS).length === 0) {
+  root.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute-2);border:1px solid var(--line);padding:20px">Components unavailable — could not load component sources</div>';
+} else {
+  ReactDOM.createRoot(root).render(<Demo />);
+}
+</script></body></html>

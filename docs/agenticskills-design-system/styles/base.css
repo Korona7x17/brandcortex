@@ -1,0 +1,15 @@
+/* Base reset + document defaults */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--surface-page);
+  color:var(--text-primary);
+  font-family:var(--font-sans);
+  line-height:var(--lh-tight);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+a{color:inherit;text-decoration:none}
+a:hover{color:var(--ink)}
+button{font-family:inherit}
+img{max-width:100%;display:block}

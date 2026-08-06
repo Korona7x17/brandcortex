@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brandcortex.app/schemas/content-item/v1.json",
+  "title": "Content Item Envelope (v1)",
+  "description": "The one interface between a brand's source adapter and the BrandCortex core. Everything the generation engine needs is denormalized here; the core never reads a brand's raw tables. Treat this as versioned — evolve by publishing v2, not by editing v1.",
+  "type": "object",
+  "required": [
+    "content_id",
+    "brand",
+    "source_type",
+    "locale",
+    "asset",
+    "canonical_link",
+    "facts",
+    "generated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "content_id": {
+      "type": "string",
+      "description": "Stable id owned by the brand. BrandCortex references it and never mints its own. For ThaiSwim this is the `card_renders.id` cuid — not a UUID, so the type is a plain string."
+    },
+    "brand": {
+      "type": "string",
+      "description": "Tenant key, e.g. \"thaiswim\". A keyed column, not a tenancy subsystem."
+    },
+    "source_type": {
+      "type": "string",
+      "description": "Brand-defined item kind, e.g. \"swimmer\" or \"event\" for ThaiSwim (mirrors `card_renders.kind`). The core treats this as an opaque label used for alternation and feature attribution.",
+      "minLength": 1
+    },
+    "locale": {
+      "type": "string",
+      "description": "BCP-47-ish locale driving the generation branch, e.g. \"th\" or \"en\".",
+      "minLength": 2
+    },
+    "asset": {
+      "type": "object",
+      "description": "How to obtain the image. Exactly one of `render_url` or `storage_key` must be present. ThaiSwim renders on demand and needs no bucket; a future brand that writes PNGs to shared storage would use `storage_key` instead.",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "anyOf": [{ "required": ["render_url"] }, { "required": ["storage_key"] }],
+      "properties": {
+        "kind": { "type": "string", "enum": ["image"] },
+        "render_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Public, CORS-open URL that renders the image deterministically from its query params. Fetched at publish time. NOTE: a live render reflects data at fetch time, so it can drift from the `facts` captured at draft time — compare before publishing (see docs/thaiswim-integration.md)."
+        },
+        "storage_key": {
+          "type": "string",
+          "description": "Key within a shared asset bucket, for brands that persist rendered images instead of rendering on demand."
+        },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Omitted when the render height is variable. ThaiSwim swimmer cards are a fixed 1080x1350; event cards are 1080 x (452 + rows*130 + 176)."
+        }
+      }
+    },
+    "canonical_link": {
+      "type": "string",
+      "format": "uri",
+      "description": "The link this post points at. UTM params are appended by the core, not the adapter. Goes in the FIRST COMMENT, never the post body."
+    },
+    "facts": {
+      "type": "object",
+      "description": "Denormalized, brand-shaped facts the generation engine renders from. Free-form by design: the core passes it to the brand's voice templates without interpreting the keys. For ThaiSwim this is `card_renders.snapshot` verbatim — resolved server-side from the same builders the PNG uses, so it is by construction what the image displayed. `wow_factor` (0..1) is the one generic hint the core does read, for opportunity scanning; the adapter computes it.",
+      "properties": {
+        "wow_factor": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": true
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the brand rendered the item (`card_renders.createdAt`). Means 'content generated / available' — never 'posted to channel', which is BrandCortex's own state."
+    }
+  },
+  "examples": [
+    {
+      "content_id": "clzq8x1v40000abcd1234efgh",
+      "brand": "thaiswim",
+      "source_type": "swimmer",
+      "locale": "th",
+      "asset": {
+        "kind": "image",
+        "render_url": "https://thaiswim.com/api/card/swimmer?slug=rin-suebsanguan",
+        "width": 1080,
+        "height": 1350
+      },
+      "canonical_link": "https://thaiswim.com/swimmers/rin-suebsanguan",
+      "facts": {
+        "name": "ริน สืบสงวน",
+        "romanized": "Rin Suebsanguan",
+        "club": "สมาคมราชกรีฑาสโมสร",
+        "province": "สุราษฎร์ธานี",
+        "ageGroups": ["55-59"],
+        "goldCount": 9,
+        "goldStrokes": 4,
+        "multiGold": true,
+        "rankedCount": 9,
+        "topRank": 1,
+        "rows": [
+          {
+            "stroke": "backstroke",
+            "distance": 50,
+            "course": "LCM",
+            "rank": 1,
+            "timeMs": 42060,
+            "time": "42.06",
+            "ageGroup": "55-59"
+          }
+        ],
+        "wow_factor": 0.82
+      },
+      "generated_at": "2026-08-04T09:03:00+07:00"
+    },
+    {
+      "content_id": "clzq8x1v40001abcd5678ijkl",
+      "brand": "thaiswim",
+      "source_type": "event",
+      "locale": "th",
+      "asset": {
+        "kind": "image",
+        "render_url": "https://thaiswim.com/api/card/event?stroke=backstroke&dist=50&gender=F&age=55-59&course=LCM&n=10&lang=th",
+        "width": 1080
+      },
+      "canonical_link": "https://thaiswim.com/rankings?stroke=backstroke&dist=50&gender=F&age=55-59&course=LCM",
+      "facts": {
+        "stroke": "backstroke",
+        "distance": 50,
+        "gender": "F",
+        "ageGroup": "55-59",
+        "course": "LCM",
+        "n": 10,
+        "rowCount": 10,
+        "season": "2025-2026",
+        "rows": [
+          {
+            "rank": 1,
+            "timeMs": 42060,
+            "time": "42.06",
+            "name": "ริน สืบสงวน",
+            "club": "สมาคมราชกรีฑาสโมสร",
+            "province": "สุราษฎร์ธานี",
+            "isRelayLeadoff": false
+          }
+        ],
+        "wow_factor": 0.4
+      },
+      "generated_at": "2026-08-04T09:05:00+07:00"
+    }
+  ]
+}

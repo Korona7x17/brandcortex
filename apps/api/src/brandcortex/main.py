@@ -68,8 +68,24 @@ def _seed_brand_configs() -> None:
         logger.exception("brand_config bootstrap failed; the API is serving whatever the row holds")
 
 
+def _configure_logging(level: str) -> None:
+    """Give `brandcortex.*` loggers somewhere to go.
+
+    Without this, nothing below WARNING reaches the platform log: uvicorn configures its own loggers
+    and leaves the root one at its default. The first production boot of `bootstrap_config` printed
+    nothing at all for that reason — a subsystem whose whole purpose is preventing silent no-ops,
+    silent when it works. `force=True` because uvicorn may have installed a root handler first.
+    """
+    logging.basicConfig(
+        level=getattr(logging, level.upper(), logging.INFO),
+        format="%(levelname)s [%(name)s] %(message)s",
+        force=True,
+    )
+
+
 def create_app() -> FastAPI:
     settings = get_settings()
+    _configure_logging(settings.log_level)
     app = FastAPI(
         title="BrandCortex",
         description=(

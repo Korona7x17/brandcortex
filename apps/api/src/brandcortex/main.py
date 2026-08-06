@@ -30,11 +30,42 @@ async def lifespan(app: FastAPI):
     """
     from brandcortex.adapters import registry
 
+    _seed_brand_configs()
+
     try:
         registry.bootstrap()
     except Exception:  # noqa: BLE001 — see docstring
         logger.exception("adapter bootstrap failed; brand and channel routes are unavailable")
     yield
+
+
+def _seed_brand_configs() -> None:
+    """Bring `brand_config` up to date with the reviewed seed files, unless it has been edited.
+
+    Voice used to live in a file that shipped with every deploy and in a row nothing updated, so a
+    reviewed change could be merged, deployed and tested green while every post the product made
+    still used the old rules. This closes that gap. It refuses to overwrite a row that was edited in
+    the app — see `db.bootstrap_config` for why that case belongs to a human.
+
+    Logged and swallowed, like the adapter bootstrap below: a config that cannot be applied is worth
+    an API that starts and tells you so.
+    """
+    settings = get_settings()
+    if not settings.seed_on_boot:
+        return
+    try:
+        from pathlib import Path
+
+        from brandcortex.db import bootstrap_config
+        from brandcortex.db.session import session_scope
+
+        with session_scope() as session:
+            results = bootstrap_config.apply_all(session, Path(settings.seed_dir))
+            session.commit()
+        for line in results:
+            logger.info("brand_config bootstrap: %s", line)
+    except Exception:  # noqa: BLE001 — see docstring
+        logger.exception("brand_config bootstrap failed; the API is serving whatever the row holds")
 
 
 def create_app() -> FastAPI:

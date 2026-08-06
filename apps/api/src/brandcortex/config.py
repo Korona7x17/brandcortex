@@ -25,6 +25,12 @@ class Settings(BaseSettings):
     # BrandCortex's own database — the only one we write.
     database_url: str = Field(..., alias="DATABASE_URL")
 
+    # Apply `seeds/*.brand_config.json` on start-up, so a reviewed voice change reaches production
+    # with the deploy that carries it rather than waiting on someone to remember the seed command.
+    # Never overwrites a row edited through the app; see `db.bootstrap_config`.
+    seed_on_boot: bool = Field(True, alias="SEED_ON_BOOT")
+    seed_dir: str = Field("seeds", alias="SEED_DIR")
+
     # The brand DB seam. Read-only by contract: we select from `card_renders` and never write back.
     # Bind a genuinely read-only role here so the contract is enforced by the database, not by habit.
     brand_db_url: str | None = Field(None, alias="BRAND_DB_URL")

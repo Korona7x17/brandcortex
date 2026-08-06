@@ -16,7 +16,7 @@ import json
 import sys
 from pathlib import Path
 
-from brandcortex.core import brand_config as brand_config_store
+from brandcortex.db import bootstrap_config
 from brandcortex.db.session import session_scope
 
 
@@ -35,7 +35,13 @@ def main(argv: list[str] | None = None) -> int:
     with session_scope() as session:
         for path in args.files:
             document = load_document(path)
-            brand_config_store.save(session, document)
+            # Stamped, like a boot-time seed, and for the same reason. An unstamped row looks to
+            # `bootstrap_config` like one of unknown provenance, which it refuses to touch — so a
+            # hand-run seed would otherwise switch boot-seeding off for that brand permanently.
+            # This command still overrides an operator's edits: a person typed it.
+            bootstrap_config.write_stamped(
+                session, document, bootstrap_config.fingerprint(document)
+            )
             print(f"seeded brand_config for {document['brand']} from {path}")
         session.commit()
     return 0

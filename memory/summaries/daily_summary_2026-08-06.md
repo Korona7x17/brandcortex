@@ -12,3 +12,11 @@ brandcortex-ravenbone.vercel.app (Clerk wall). Prod DB seeded, token row copied
 Q: brandcortex.app DNS unpointed; no cron worker yet (scheduled posts won't fire — publish-now
 works); Vercel is CLI-push only; rotate Clerk secret (leaked into session transcript, my grep)
 →: Sign in on prod, compose first production draft → R2 + cron worker → insights fetcher → DNS
+
+## Session 3 addendum
+Δ: brandcortex.app LIVE with production Clerk (issuer clerk.brandcortex.app, 5 CNAMEs at
+Namecheap, certs issued); clean /sign-in URL deployed; both platforms redeployed post-JWKS
+C: prod Clerk refuses localhost — .env keeps test pair + CLERK_SECRET_KEY_LIVE (Vercel-only);
+DNS checkers lie after changes — dig @1.1.1.1 + curl --resolve are the truth
+Q: Google button needs custom OAuth creds on prod (email code fine); dev secret rotation open
+→: first production compose → R2 → cron worker → insights fetcher

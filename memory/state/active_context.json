@@ -1,7 +1,7 @@
 {
   "project": "brandcortex",
   "updated": "2026-08-06",
-  "phase": "1 (MVP) — DEPLOYED: API on Railway, dashboard on Vercel, both behind auth; first production compose pending",
+  "phase": "1 (MVP) — LIVE at https://brandcortex.app (production Clerk, own domain); cron worker + insights outstanding",
   "tenant": "thaiswim",
   "channel": "facebook",
   "branch": "scaffold/thaiswim-facebook-mvp",
@@ -50,15 +50,15 @@
       "do_not": "retry a line-by-line wrap — it orphans words; see R-2026-08-05-01"
     },
     {
-      "what": "rotate the Clerk secret key",
-      "detail": "it surfaced in the session transcript via my unredacted grep of .env; dev-mode rotation is one click, then update .env and Vercel env"
+      "what": "rotate the dev-instance Clerk secret key",
+      "detail": "leaked into session-02 transcript; production is unaffected (new instance/keys) but dev rotation is one click"
     }
   ],
   "next_actions": [
-    "user signs in on the production dashboard and composes the first production draft",
-    "R2 bucket -> ASSET_* on Railway -> cron worker service (*/5, python -m brandcortex.workers.publisher)",
-    "insights fetcher (published post f4dcc669's audience data is still uncaptured)",
-    "DNS: brandcortex.app -> Vercel, api.brandcortex.app -> Railway; then swap CORS/azp/API_URL to real domains"
+    "user signs in at brandcortex.app, composes the first production draft",
+    "R2 bucket -> ASSET_* -> cron worker service (*/5) — worker needs shared storage",
+    "insights fetcher (f4dcc669 audience data still uncaptured)",
+    "optional: api.brandcortex.app; custom Google OAuth for the sign-in button; push ~8 local commits"
   ],
   "local_dev": {
     "postgres": "docker container brandcortex-pg — start it before the API after a reboot",
@@ -97,7 +97,7 @@
   },
   "production": {
     "api": "https://api-production-b008.up.railway.app (Railway project b18f9576, service api, volume /data)",
-    "web": "https://brandcortex-ravenbone.vercel.app (Vercel project brandcortex, team ravenbone; deployment protection OFF — Clerk is the wall)",
+    "web": "https://brandcortex.app (Vercel project brandcortex; apex primary, no www; Clerk production instance on clerk.brandcortex.app)",
     "db": "Railway Postgres, migrated + seeded, channel token installed (same Fernet key as local)",
     "deploy_cmds": {
       "api": "railway up apps/api --path-as-root --service api --detach   # from repo root; up roots at linked dir!",
@@ -106,8 +106,8 @@
     "gaps": [
       "no cron worker service — scheduled posts do not fire in production (publish-now works)",
       "cards on service volume — R2 required before the worker exists (volumes not shareable)",
-      "brandcortex.app DNS not pointed",
-      "clerk instance is Development mode; production instance is a later step"
-    ]
+      "Google sign-in on production needs custom OAuth creds (email code works)"
+    ],
+    "clerk": "production instance, issuer https://clerk.brandcortex.app; localhost stays on the dev instance (test keys in .env; CLERK_SECRET_KEY_LIVE is Vercel-only)"
   }
 }

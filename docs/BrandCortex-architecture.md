@@ -139,7 +139,7 @@ Six angles, differing in **shape** as well as in what they notice:
 | `longevity` | reporting | one prose sentence: in this age group, {name} from {club} still holds N |
 | `breadth` | reporting | counts headline → swimmer's line (the inverse order of `plain`) |
 | `standout` | reporting | one swim — stroke · distance · pool · time · rank → swimmer's line |
-| `club` | congratulatory | `🏆` **club** + count → `ขอแสดงความยินดีกับ คุณ{name}` + age group + `👏` |
+| `club` | congratulatory | `🏆` **`คุณ{name}`** + count → club · age group + `👏` — the only headline carrying the swimmer's name; the club is prominent on line two, never first |
 
 **First comment:** rotate the matching bank in §6.5, in the same register as the caption. Always `คุณ`
 before a person's name.

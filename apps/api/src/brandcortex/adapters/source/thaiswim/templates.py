@@ -401,10 +401,13 @@ def _standout_th(*, facts, intro, config, closing=3):
 
 
 def _club_th(*, facts, intro, config, closing=4):
-    """Lead with the club or provincial team — the version a club Page will share.
+    """The version a club Page will share — but the post is still about the swimmer.
 
-    The second congratulatory variant, and the only one whose trophy line names the club. A club
-    reposting this sees its own name first, which is the entire reason the angle exists.
+    The only angle whose headline carries the swimmer's own name, which is what distinguishes it from
+    `sweep`. The club sits on the second line, named plainly and in full: prominent enough that the
+    club has a reason to repost, without the post reading as though the club did the swimming. That
+    ordering is the owner's call — an earlier version led with the club and was wrong about whose
+    achievement this is.
     """
     club = facts.get("club") or (f"ทีม{facts['province']}" if facts.get("province") else None)
     if not club:
@@ -417,21 +420,21 @@ def _club_th(*, facts, intro, config, closing=4):
     achievement = (
         f"อันดับ 1 ของประเทศไทย {golds} รายการ" if golds else f"ติดอันดับประเทศไทย {ranked} รายการ"
     )
-    age = _age_line(facts)
+    ages = facts.get("ageGroups") or []
+    age = f"รุ่นอายุ {_age(ages[0])} ปี" if ages else None
     return (
         "\n".join(
             x
             for x in [
-                f"🏆 {club} · {achievement}",
-                " ".join(x for x in ["ขอแสดงความยินดีกับ", person, f"รุ่น {age.split()[-1]} ปี" if age else None] if x)
-                + " 👏",
+                f"🏆 {person} · {achievement}",
+                " · ".join(x for x in [club, age] if x) + " 👏",
                 NUDGES_TH[2],
                 _hashtags(config),
             ]
             if x
         ),
         _swimmer_comment(facts, config, closing, warm=True),
-        "club_first",
+        "club_share",
     )
 
 

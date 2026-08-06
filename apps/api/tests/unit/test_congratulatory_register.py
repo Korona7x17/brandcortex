@@ -58,12 +58,18 @@ def test_sweep_shape(config: dict) -> None:
 
 
 def test_club_shape(config: dict) -> None:
-    """Four lines, and the club is named before the swimmer — the whole point of the angle."""
+    """Four lines. The SWIMMER heads the post and the club follows on line two.
+
+    The club is prominent enough to give it a reason to repost, and never so prominent that the post
+    reads as the club's achievement rather than the swimmer's. An earlier version led with the club
+    and was wrong about whose post this is.
+    """
     caption, _ = _render("club", config)
     lines = caption.split("\n")
     assert len(lines) == 4
-    assert lines[0].startswith("🏆") and FACTS["club"] in lines[0]
-    assert lines[1].startswith("ขอแสดงความยินดีกับ คุณ") and lines[1].endswith("👏")
+    assert lines[0].startswith("🏆") and f"คุณ{FACTS['name']}" in lines[0]
+    assert FACTS["club"] not in lines[0]
+    assert lines[1].startswith(FACTS["club"]) and lines[1].endswith("👏")
     assert lines[3].startswith("#")
 
 

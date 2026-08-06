@@ -166,7 +166,7 @@
       },
       {
         "key": "club",
-        "instruction": "CONGRATULATORY register. A 🏆 headline naming the CLUB first and the count, then 'ขอแสดงความยินดีกับ คุณ<name>' with their age group, closing on 👏. Four lines. The club's own Page should see its name before the swimmer's."
+        "instruction": "CONGRATULATORY register, and the only angle whose headline carries the swimmer's own NAME — that is what distinguishes it from `sweep`. 🏆 headline: คุณ<name> · the count. Second line: the club in full · age group, closing on 👏. Four lines. The club is named prominently so it has a reason to repost, but the post is about the swimmer and never reads as the club's achievement — never lead with the club."
       }
     ],
     "examples": [

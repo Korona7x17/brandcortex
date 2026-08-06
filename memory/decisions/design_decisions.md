@@ -414,9 +414,19 @@ file — `to_document` returns columns the file never mentions, so the single-ha
 untouched row look edited and refused every change. A test caught that; the logic read fine.
 `db.seed` stamps too, or a hand-run seed disables boot-seeding for that brand forever.
 
+**Amended same day (adopt rule):** the first production boot refused with
+`file=34b942d201fc row=34b942d201fc expected=(none)` — identical content, refused on provenance
+alone, because the row had been seeded by hand before stamping existed. Refusing every unstamped row
+leaves boot-seeding inert until someone runs the manual command it replaces. An unstamped row is now
+adopted and stamped when applying the file would change nothing; one that differs is still refused.
+"Would applying this change anything?" is computed against what the row would become
+(`_projected`), not against the raw file — `save` overwrites only the columns a document names, so
+for a partial seed file those differ. `brand_config._COLUMNS` is now public `COLUMNS`.
+
 **Status:** Accepted
 **Date:** 2026-08-06
-**Ref:** db/bootstrap_config.py@2f7468; main.py@b03734; db/seed.py; tests/unit/test_bootstrap_config.py
+**Ref:** db/bootstrap_config.py@34dac7; main.py@10632c; core/brand_config.py@b653b6; db/seed.py;
+tests/unit/test_bootstrap_config.py
 
 ## D-2026-08-06-09 — No opener, no sign-off; variants differ by form, and the club never leads
 

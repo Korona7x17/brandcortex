@@ -1,6 +1,6 @@
 # Project Snapshot — BrandCortex
 
-Last updated: 2026-08-06 (session 06)
+Last updated: 2026-08-06 (session 07)
 
 AI content engine that generates, publishes and self-improves brand content across channels.
 Home `brandcortex.app`. Tenant #1 **ThaiSwim** (`dev/thaiswim`). Channel #1 **Facebook**.
@@ -33,7 +33,11 @@ Working conventions in `CLAUDE.md`.
   prominent on line two, which is reason enough for it to repost.
 - **Deploying code and applying config are separate acts.** `brand_config` is a database row and the
   seed JSON is only its reviewed source. Seed-on-boot (D-2026-08-06-08) closes the gap, but refuses
-  to overwrite a row edited in `/settings/voice` — that conflict belongs to a human.
+  to overwrite a row edited in `/settings/voice` — that conflict belongs to a human. Armed in
+  production 2026-08-06; each boot logs what it did.
+- **Verify a deploy by an artifact only the new build contains.** `/health` and any log line the
+  previous build also emits answer for the old container too — that produced two wrong conclusions
+  in one session. `railway ssh --service api "grep -c '<new symbol>' <file>"` is the check.
 - **North star = UTM sessions + amplification.** Reactions recorded, weighted 0.0, never targeted.
 - **Brand DB is read-only to us.** Never write a `posted` flag back. `card_renders` already means
   "generated/available"; "posted to channel" is ours alone.
@@ -91,7 +95,7 @@ store. Canonical links and `season` are derived by the adapter.
 
 ## Current Focus
 
-**199 pass / 9 skip.** Now LIVE at brandcortex.app; everything merged to `main` and pushed
+**201 pass / 9 skip.** Now LIVE at brandcortex.app; everything merged to `main` and pushed
 (5d744d4). Vercel auto-deploys from main; Railway is still effectively manual (`railway up`). Working end to end and *persisted*: `card_renders` row → content
 item → checked Thai copy → `posts` row with captured card, frozen facts, UTM campaign and features →
 review API (queue, diff, card bytes, edit, approve, publish). Verified against a real migrated SQLite

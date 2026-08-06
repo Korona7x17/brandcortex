@@ -62,3 +62,19 @@ Q: Railway git connection did not fire on push (container lacked the new module)
 Q: prod row has no _seeded_from stamp, so boot-seeding will refuse until db.seed runs once there
 Q: existing drafts keep frozen post_text — old queue rows still show old copy by design
 →: confirm the in-flight railway up; run the one-time stamped seed in prod; then R2 → cron worker
+
+## Session 7 addendum
+Δ: Adopt rule (D-08 amended) — an UNSTAMPED brand_config row is adopted+stamped when applying the
+file is a no-op; a differing unstamped row is still refused. Prod's own row was refused with
+file==row, expected=(none), which would have left boot-seeding inert forever
+Δ: `_projected(current, document)` mirrors store.save, so "would this change anything?" is right for
+partial seed files too; brand_config._COLUMNS -> public COLUMNS
+Δ: Logging configured from BRANDCORTEX_LOG_LEVEL — boot-seeding logged NOTHING before (uvicorn owns
+its loggers, root left at default, so only WARNING escaped). Now visible:
+"INFO [brandcortex.main] brand_config bootstrap: unchanged thaiswim"
+Δ: PROD verified: stamp present, apply_seed -> unchanged, คุณ live, max_emoji 2
+C: verify a deploy by an artifact only the new build has (`railway ssh ... grep <new symbol>`), never
+by /health or a log line the old build also emits — I twice concluded wrongly from both
+C: Railway marks all stderr severity=error; Python logging defaults there, so INFO looks red
+Q: Railway git connection still does not deploy on push — API changes need `railway up`
+→: fix/verify Railway git connection; R2 -> cron worker -> insights fetcher

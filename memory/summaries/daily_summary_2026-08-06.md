@@ -45,3 +45,20 @@ rewritten around respect not adjectives
 Q: nothing pushed (origin still at 1400de5, main unpushed); stray untracked apps/web/lib/*.ts now
 overlap the merged apps/web
 →: push main → R2 → cron worker → insights fetcher; first production compose still pending
+
+## Session 6 addendum
+Δ: Copy rewritten — promo scaffolding (rotating opener + inspirational sign-off) CUT; variants now
+3–5 lines differing by FORM not wording; club angle leads with คุณ{name}, club on line two
+Δ: PRODUCTION finally emits คุณ — needed BOTH `railway up` AND a seed run inside the container
+(`uv run python -m brandcortex.db.seed`); verified against the prod row from inside Railway
+Δ: Seed-on-boot added (D-08): two fingerprints, file vs row, refuses to clobber a /settings/voice edit
+Δ: Vercel connected to GitHub properly (was CLI-upload-only; the branch shown in its dashboard was a
+stamp on the upload, not an integration). root=apps/web, prodBranch=main
+Δ: .gitignore's bare `lib/` had hidden apps/web/lib/*.ts from the repo entirely — first git build
+failed on @/lib/api; anchored the pattern and committed the three files
+C: brand_config is a DB row, not code — deploying code and applying config are separate acts
+C: no scene-setter, no sign-off; variants differ in shape; the club never leads a swimmer's post
+Q: Railway git connection did not fire on push (container lacked the new module) — check dashboard
+Q: prod row has no _seeded_from stamp, so boot-seeding will refuse until db.seed runs once there
+Q: existing drafts keep frozen post_text — old queue rows still show old copy by design
+→: confirm the in-flight railway up; run the one-time stamped seed in prod; then R2 → cron worker

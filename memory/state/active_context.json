@@ -4,19 +4,19 @@
   "phase": "1 (MVP) — LIVE at https://brandcortex.app (production Clerk, own domain); cron worker + insights outstanding",
   "tenant": "thaiswim",
   "channel": "facebook",
-  "branch": "main (scaffold/thaiswim-facebook-mvp merged --no-ff 751ac81; branch still exists)",
-  "head": "751ac81",
-  "pushed": false,
+  "branch": "main (scaffold branch deleted local+remote; main is the GitHub default)",
+  "head": "5d744d4",
+  "pushed": true,
   "topics": [
-    "honorific rule live — no bare Thai names, validator-enforced",
-    "two caption registers (reporting / congratulatory), emoji ceiling 2",
-    "main now carries the whole scaffold — nothing pushed",
-    "first production compose pending",
+    "copy rewritten — promo scaffolding cut, variants differ by form",
+    "honorific live in production (verified inside the Railway container)",
+    "seed-on-boot: config ships with its deploy, never clobbers an app edit",
+    "Railway git connection did not fire on push — unverified",
     "R2 + cron worker",
     "insights fetcher"
   ],
   "tests": {
-    "passed": 190,
+    "passed": 199,
     "skipped": 9
   },
   "working_end_to_end": [
@@ -60,14 +60,27 @@
     {
       "what": "stray untracked apps/web/lib/*.ts",
       "detail": "api.ts, diff.ts, server-auth.ts existed untracked on main before the merge and overlap in purpose with the apps/web code the merge brought in — reconcile before they drift"
+    },
+    {
+      "what": "Railway git deploys unverified",
+      "detail": "connected, but the 5d744d4 push did not produce a deploy — container had no bootstrap_config.py. Check root directory (must be apps/api) and watch paths in the Railway dashboard."
+    },
+    {
+      "what": "prod brand_config has no _seeded_from stamp",
+      "detail": "it predates stamping, so boot-seeding will REFUSE (by design: unknown provenance). Run `railway ssh --service api \"uv run python -m brandcortex.db.seed seeds/thaiswim.brand_config.json\"` once with the new code deployed to arm it."
+    },
+    {
+      "what": "old drafts keep old copy",
+      "detail": "post_text is frozen at draft time by design; existing queue rows must be regenerated to pick up new copy."
     }
   ],
   "next_actions": [
-    "push main; decide whether scaffold/thaiswim-facebook-mvp keeps going or retires",
-    "reconcile the untracked apps/web/lib/*.ts against the merged apps/web",
-    "user signs in at brandcortex.app, composes the first production draft",
-    "R2 bucket -> ASSET_* -> cron worker service (*/5) — worker needs shared storage",
-    "insights fetcher (f4dcc669 audience data still uncaptured)"
+    "confirm the in-flight `railway up` landed and boot-seeding logged",
+    "run the one-time stamped seed in production to arm boot-seeding",
+    "verify Railway deploys on push, or fix root directory / watch paths",
+    "user composes the first production draft (old drafts need regenerating)",
+    "R2 bucket -> ASSET_* -> cron worker service (*/5)",
+    "insights fetcher"
   ],
   "local_dev": {
     "postgres": "docker container brandcortex-pg — start it before the API after a reboot",
@@ -89,7 +102,10 @@
     "assume session_scope() commits — it never does; the caller owns the transaction",
     "run pnpm build while next dev is live without restarting dev after — they share .next",
     "write a person's name without the brand's honorific — voice.check rejects it, caption and first comment alike",
-    "let a hardcoded threshold stand in a test that reads from brand_config — the emoji test would have gone silent when the ceiling moved"
+    "let a hardcoded threshold stand in a test that reads from brand_config — the emoji test would have gone silent when the ceiling moved",
+    "assume a code deploy changes the copy — brand_config is a database row and must be applied separately (or carried by seed-on-boot)",
+    "lead a swimmer's post with the club — it is the swimmer's achievement; the club goes on line two",
+    "use a bare directory name in .gitignore (`lib/`) — it matches at any depth and silently drops source"
   ],
   "credentials": {
     "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env / channel_tokens.",
@@ -128,8 +144,13 @@
   },
   "voice": {
     "honorific": "brand_config.voice.honorific — prefix คุณ, locales [th], name_fields [name]. _person() is the only route a name takes into ThaiSwim copy; voice.check/check_names reject a bare one",
-    "registers": "REPORTING (plain, breadth, standout, club — no emoji) and CONGRATULATORY (sweep, longevity — 🏆 headline, ขอแสดงความยินดีกับ คุณ<name> จาก <club>, 👏, plain nudge). Register carries through caption AND first comment",
+    "registers": "REPORTING (plain, longevity, breadth, standout — no emoji) and CONGRATULATORY (sweep, club — 🏆 + 👏). Variants are 3-5 short lines and differ in SHAPE. No scene-setting opener, no inspirational sign-off — those were the promo. intro_bank is unused by swimmer posts.",
     "max_emoji": 2,
     "note": "voice.* is the owner's to change and structurally unproposable by the learning loop (§10.4). The 1->2 move was theirs, 2026-08-06"
+  },
+  "deploy": {
+    "_lesson": "Deploying CODE and applying CONFIG are separate acts. brand_config is a DB row; the seed JSON is only its reviewed source. Seed-on-boot (D-08) closes this, but only for rows carrying a _seeded_from stamp.",
+    "vercel": "github-connected 2026-08-06: Korona7x17/brandcortex, prodBranch main, root apps/web. Pushes deploy. Before this it was CLI-upload-only, and `vercel deploy` stamps the local branch onto an upload — the dashboard shows that identically to a real integration, so check `link` via the REST API, never the deployment meta.",
+    "railway": "connected to GitHub by the user 2026-08-06, but a push did NOT produce a deploy (container lacked the new module). Manual fallback: `railway up apps/api --path-as-root --service api --detach`. Run anything DB-side with `railway ssh --service api \"uv run python -m ...\"` — postgres.railway.internal does not resolve from outside, and the container needs `uv run`."
   }
 }

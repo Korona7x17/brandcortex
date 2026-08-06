@@ -399,3 +399,38 @@ numbers, never from adjectives. **An owner decision, not the learning loop's** �
 **Ref:** adapters/source/thaiswim/templates.py@656eec (_assemble_warm, COMMENTS_WARM_TH);
 seeds/thaiswim.brand_config.json@0a0dc8 (max_emoji 2, guidance, examples[1]);
 tests/unit/test_congratulatory_register.py
+
+## D-2026-08-06-08 — Seed `brand_config` on boot, gated by two fingerprints
+
+**Rationale:** A voice change could be written, tested, committed and deployed while every post
+ignored it, because `brand_config` is a database row and the seed file is only its reviewed source.
+That shape of bug is the worst kind — file, code and tests all say fixed. The API now applies
+`seeds/*.brand_config.json` at start-up. The constraint that makes it safe: `/settings/voice` writes
+the same row, and a deploy silently reverting someone's tuning is the worse bug, because they have no
+reason to look. So each row carries `file_sha256` (has the file changed?) and `row_sha256` (has
+anyone written to the row since?). File changed + row pristine → apply; both changed → refuse, log
+both hashes, leave it to a human. Two hashes rather than one because a row does not round-trip to its
+file — `to_document` returns columns the file never mentions, so the single-hash version made every
+untouched row look edited and refused every change. A test caught that; the logic read fine.
+`db.seed` stamps too, or a hand-run seed disables boot-seeding for that brand forever.
+
+**Status:** Accepted
+**Date:** 2026-08-06
+**Ref:** db/bootstrap_config.py@2f7468; main.py@b03734; db/seed.py; tests/unit/test_bootstrap_config.py
+
+## D-2026-08-06-09 — No opener, no sign-off; variants differ by form, and the club never leads
+
+**Rationale:** Four of six variants were one skeleton with a single line swapped, and the skeleton's
+two fixed lines — a rotating scene-setter and an inspirational closing — were the advertising voice
+the brand is defined against: they tell the reader how to feel about a fact the card already shows.
+Both cut. Variants are now 3–5 short lines and differ in shape (record-card chain, trophy
+congratulation, one prose sentence, counts headline, the swim itself, name-led), because a different
+opener over the same skeleton is one variant written twice. The club angle leads with `คุณ{name}`,
+not the club: it is the swimmer's achievement, and the club is prominent on line two so it still has
+a reason to repost. Consequence: `intro_bank`/`intro_rotation` are unused by swimmer posts; the
+mechanism stays and the engine records an `intro_line` only when the caption opens with one.
+
+**Status:** Accepted (supersedes the intro-rotation half of §6.2/§6.4)
+**Date:** 2026-08-06
+**Ref:** adapters/source/thaiswim/templates.py@99ed18; seeds/thaiswim.brand_config.json@4cde02;
+docs/BrandCortex-architecture.md §6.1–6.5

@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from brandcortex.core.orchestrator import Orchestrator, PublishFailed
+from brandcortex.core.orchestrator import InvalidTransition, Orchestrator, PublishFailed
 from brandcortex.db.models import Post, PostStatus
 from brandcortex.db.session import session_scope
 
@@ -83,9 +83,30 @@ def run_once(
             try:
                 driver.publish(post.id)
                 counts["published"] += 1
-            except PublishFailed as exc:
+            except (PublishFailed, InvalidTransition) as exc:
+                # InvalidTransition here is a pre-flight refusal (stale links, missing pieces): the
+                # post stays scheduled and visible rather than failed, but it must not take the rest
+                # of the cycle down with it.
                 counts["failed"] += 1
                 logger.error("publish failed for %s: %s", post.id, exc)
 
     logger.info("publish cycle: %s", counts)
     return counts
+
+
+def main() -> int:
+    """`python -m brandcortex.workers.publisher` — one cycle, for a cron schedule.
+
+    A loop with a sleep would also work, but a cron running one cycle is the same behaviour with
+    the platform owning the restart policy — and a crash loses one cycle, not the schedule.
+    """
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    from brandcortex.adapters import registry
+
+    registry.bootstrap()
+    counts = run_once()
+    return 1 if counts["failed"] else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

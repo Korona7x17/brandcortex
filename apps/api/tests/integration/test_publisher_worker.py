@@ -81,6 +81,19 @@ def test_a_long_outage_does_not_dump_a_backlog_on_the_audience(scheduled) -> Non
     assert post.status is PostStatus.SCHEDULED, "still publishable once someone reschedules it"
 
 
+def test_a_preflight_refusal_does_not_stop_the_cycle(scheduled) -> None:
+    """The stale-link guard raises InvalidTransition before any channel I/O. A worker cycle must
+    absorb that exactly like a channel failure — one bad post, not a dead cycle — while the post
+    itself stays scheduled and visible for a person to fix."""
+    session, post, driver = scheduled
+    post.first_comment_text = "http://localhost:9000/swimmers/rin-suebsanguan"
+
+    counts = publisher.run_once(now=SLOT, session=session, orchestrator=driver)
+
+    assert counts["failed"] == 1
+    assert post.status is PostStatus.SCHEDULED
+
+
 def test_a_failure_leaves_the_post_recoverable(session, fake_capture) -> None:
     brand_config_store.save(session, json.loads(SEED.read_text()))
     session.commit()

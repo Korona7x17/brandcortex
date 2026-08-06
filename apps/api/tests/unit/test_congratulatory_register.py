@@ -20,7 +20,7 @@ from brandcortex.core.generation import claims, voice
 
 CONFIG_PATH = Path(__file__).resolve().parents[2] / "seeds" / "thaiswim.brand_config.json"
 
-WARM_ANGLES = ("sweep", "longevity")
+WARM_ANGLES = ("sweep", "club")
 
 FACTS = {
     "name": "ดวง คงเจริญ",
@@ -45,10 +45,9 @@ def _render(angle: str, config: dict) -> tuple[str, str]:
     return caption, comment
 
 
-@pytest.mark.parametrize("angle", WARM_ANGLES)
-def test_shape(angle: str, config: dict) -> None:
-    """Headline -> congratulation -> achievement -> nudge -> hashtags, on single lines."""
-    caption, _ = _render(angle, config)
+def test_sweep_shape(config: dict) -> None:
+    """The owner's own five-line shape: headline -> congratulation -> achievement -> nudge -> tags."""
+    caption, _ = _render("sweep", config)
     lines = caption.split("\n")
     assert len(lines) == 5
     assert lines[0].startswith("🏆")
@@ -56,6 +55,25 @@ def test_shape(angle: str, config: dict) -> None:
     assert lines[2].endswith("👏")
     assert lines[3] == "ดูสถิติและโปรไฟล์ทั้งหมดได้จากลิงก์ในคอมเมนต์แรก"
     assert lines[4].startswith("#")
+
+
+def test_club_shape(config: dict) -> None:
+    """Four lines, and the club is named before the swimmer — the whole point of the angle."""
+    caption, _ = _render("club", config)
+    lines = caption.split("\n")
+    assert len(lines) == 4
+    assert lines[0].startswith("🏆") and FACTS["club"] in lines[0]
+    assert lines[1].startswith("ขอแสดงความยินดีกับ คุณ") and lines[1].endswith("👏")
+    assert lines[3].startswith("#")
+
+
+def test_the_two_warm_angles_are_not_the_same_post(config: dict) -> None:
+    """`longevity` used to be a second trophy-headline congratulation, which made it `sweep` with
+    different words. The reviewer is meant to be choosing between shapes, not paraphrases."""
+    sweep, _ = _render("sweep", config)
+    club, _ = _render("club", config)
+    assert sweep.split("\n")[0] != club.split("\n")[0]
+    assert len(sweep.split("\n")) != len(club.split("\n"))
 
 
 @pytest.mark.parametrize("angle", WARM_ANGLES)
@@ -92,6 +110,6 @@ def test_ignores_the_dealt_intro(angle: str, config: dict) -> None:
 
 def test_reporting_angles_stayed_plain(config: dict) -> None:
     """The point of raising the ceiling was one register, not all of them."""
-    for angle in ("plain", "breadth", "standout", "club"):
+    for angle in ("plain", "breadth", "standout", "longevity"):
         caption, _ = _render(angle, config)
         assert "🏆" not in caption and "👏" not in caption

@@ -116,6 +116,8 @@ Consumes a content item + `brand_config` + the active `playbook`, returns `{ pos
 ### 6.1 House voice (ThaiSwim config)
 Understated, factual, warm. Recognition, not advertising. No superlative drumroll, no cheesy lines. Never repeat the asset's own on-image tagline (e.g. "อายุเป็นเพียงตัวเลข") in the copy.
 
+**Never open with a scene-setting line, never close with an inspirational one.** Both tell the reader how to feel about a fact the card already shows them, which is the advertising voice this brand exists in opposition to. A post is a fact, a person, a nudge, and then it stops.
+
 Two registers are in use, and the reviewer picks between them per post:
 
 - **Reporting** — no emoji, no congratulation. The fact stated and left to stand.
@@ -124,21 +126,32 @@ Two registers are in use, and the reviewer picks between them per post:
 Emoji ceiling is **2** (raised from 1 to admit the congratulatory shape). Both emoji carry the congratulation; the nudge carries none, because a line that already says where the link is doesn't need decorating. The reporting angles still carry no emoji at all. Warmth comes from respect and from the numbers, never from adjectives — neither register dramatises, and neither addresses the swimmer in the second person.
 
 ### 6.2 Profile post structure
-**Reporting angles** (`plain`, `breadth`, `standout`, `club`): rotating soft intro (from the bank; not the previous profile's) → name + club · team + age group → achievement in plain numbers → one closing line from the rotation → "link in first comment" nudge → hashtags.
+No scene-setting opener and no inspirational sign-off — both were cut on 2026-08-06 as advertising
+voice, and they were also why four of six variants were one post with a line swapped. Every variant is
+now **3–5 short lines**: fact, person, nudge, hashtags. Single newlines, not blank lines.
 
-**Congratulatory angles** (`sweep`, `longevity`): `🏆` headline → `ขอแสดงความยินดีกับ คุณ{name} จาก {club}` → achievement + `👏` → `ดูสถิติและโปรไฟล์ทั้งหมดได้จากลิงก์ในคอมเมนต์แรก` → hashtags. Single newlines, no soft intro — these open on the achievement itself, so the dealt intro line goes unused and is **not** recorded to `intro_history`.
+Six angles, differing in **shape** as well as in what they notice:
 
-**First comment:** rotate the matching bank in §6.5, in the same register as the caption. Always `คุณ` before a person's name.
+| angle | register | shape |
+|---|---|---|
+| `plain` | reporting | swimmer's line · then the achievement in plain numbers |
+| `sweep` | congratulatory | `🏆` count headline → `ขอแสดงความยินดีกับ คุณ{name} จาก {club}` → achievement + `👏` |
+| `longevity` | reporting | one prose sentence: in this age group, {name} from {club} still holds N |
+| `breadth` | reporting | counts headline → swimmer's line (the inverse order of `plain`) |
+| `standout` | reporting | one swim — stroke · distance · pool · time · rank → swimmer's line |
+| `club` | congratulatory | `🏆` **club** + count → `ขอแสดงความยินดีกับ คุณ{name}` + age group + `👏` |
+
+**First comment:** rotate the matching bank in §6.5, in the same register as the caption. Always `คุณ`
+before a person's name.
 
 ### 6.3 Event post structure
 Category (season, stroke + distance + course, gender, age group) → "10 อันดับแรกของประเทศในฤดูกาลนี้" → personal hook "เวลาของคุณอยู่อันดับไหน?" (the card already shows the names — tease the reader's own rank) → link-in-comment nudge → hashtags. **First comment:** `{rankings_link}`.
 
-### 6.4 Intro rotation bank (extend over time)
-- ทุกฤดูกาลมีนักว่ายน้ำที่ทำให้เราต้องหยุดมอง
-- บางคนไม่เคยหยุดพัฒนา ไม่ว่าอายุจะเท่าไหร่
-- อีกหนึ่งชื่อที่คนรักว่ายน้ำควรรู้จัก
-- นักว่ายน้ำมาสเตอร์ที่พิสูจน์ว่าการฝึกซ้อมไม่มีวันสาย
-- ในสระว่ายน้ำ ประสบการณ์คือพลังอย่างหนึ่ง
+### 6.4 Intro rotation bank — **retired for swimmer posts**
+The rotating opener was the brand's advertising voice ("ทุกฤดูกาลมีนักว่ายน้ำที่ทำให้เราต้องหยุดมอง") and is
+no longer used by any swimmer angle. The bank, `intro_history` and `intro_rotation` all remain: the
+mechanism is sound and another structure may want one. The engine records an `intro_line` only when
+the caption actually opens with it, so an unused line is never retired from the rotation.
 
 ### 6.5 First-comment bank (profile posts)
 The line above the link, rotated with the closings so six variants don't all end the same way. Named and general lines alternate: the named ones carry the honorific, the general ones are right when the caption has already named the swimmer twice — and are the only option when the card carries no name.

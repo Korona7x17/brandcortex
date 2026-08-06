@@ -67,52 +67,37 @@ def _person(facts: dict[str, Any], config: dict[str, Any]) -> str:
 
 
 def swimmer_th(*, facts: dict[str, Any], intro: str, config: dict[str, Any]) -> tuple[str, str, str]:
-    """Swimmer card caption (§6.2). Returns (caption, first_comment_body, hook_style).
+    """Swimmer card caption (§6.2), plainest form. Returns (caption, first_comment_body, hook_style).
 
-    Structure: rotating intro -> name + club · team + age group -> the achievement in plain numbers
-    -> one warm closing line -> link nudge -> hashtags.
+    Who, then what they did, then where the link is. Three lines and the hashtags.
+
+    `intro` is accepted and unused, like every swimmer angle here. The rotating opener and the warm
+    sign-off that used to wrap this shape were the brand's advertising voice leaking back in — "every
+    season there is a swimmer who makes us stop and look" is a line written to sell the post, and the
+    owner's own hand-written posts carry nothing like it. See the note above `SWIMMER_ANGLES_TH`.
 
     `goldStrokes` is stated as a count rather than by naming the strokes. Naming them would mean the
     copy asserting which four, and the snapshot's `rows` only carry the top sixteen events — so a
     fifteen-event swimmer could be described wrongly. The count is always true.
     """
-    person = _person(facts, config)
-    club = facts.get("club")
-    province = facts.get("province")
-    # The province is a provincial TEAM affiliation, shown as "ทีม{province}" so it doesn't read as a
-    # location — the same treatment the card itself uses.
-    identity = " · ".join(x for x in [person, club, f"ทีม{province}" if province else None] if x)
-
-    ages = facts.get("ageGroups") or []
-    age_line = f"รุ่น {_age(ages[0])}" if ages else None
-
     golds = facts.get("goldCount") or 0
     strokes = facts.get("goldStrokes") or 0
     ranked = facts.get("rankedCount") or 0
 
     if golds and strokes >= 2:
-        achievement = f"อันดับ 1 ของประเทศ {golds} รายการ ครบ {strokes} ท่า"
+        achievement = f"อันดับ 1 ของประเทศไทย {golds} รายการ ครบ {strokes} ท่า"
         hook = "multi_gold"
     elif golds:
-        achievement = f"อันดับ 1 ของประเทศ {golds} รายการ จาก {ranked} รายการที่ติดอันดับ"
+        achievement = f"อันดับ 1 ของประเทศไทย {golds} รายการ จาก {ranked} รายการที่ติดอันดับ"
         hook = "gold_count"
     else:
-        achievement = f"ติดอันดับประเทศ {ranked} รายการ"
+        achievement = f"ติดอันดับประเทศไทย {ranked} รายการ"
         hook = "ranked_breadth"
 
-    closing = "สถิติที่สะสมมาทีละรายการ ไม่ได้มาในวันเดียว"
-
-    caption = "\n\n".join(
-        x
-        for x in [
-            intro,
-            " · ".join(x for x in [identity, age_line] if x),
-            achievement,
-            closing,
-            "สถิติทั้งหมดอยู่ในคอมเมนต์แรก",
-            _hashtags(config),
-        ]
-        if x
+    caption = _lines(
+        [" · ".join(x for x in [_identity(facts, config), _age_line(facts)] if x), achievement],
+        config,
+        nudge=0,
     )
     return caption, _swimmer_comment(facts, config), hook
 
@@ -179,15 +164,27 @@ def register(templates_module: Any) -> None:
 # fifteen-event swimmer wrongly. No number appears that is not in `facts`; `claims.check` enforces
 # that afterwards regardless of what is written here.
 #
-# The closing lines vary too. One hardcoded sign-off across every post is the same form-letter
-# problem the intro rotation exists to solve.
+# **No rotating intro, and no sign-off line.** Both were removed on the owner's judgement that the
+# copy read as promotion. They were also the reason four of six variants were the same post: one
+# skeleton — opener, identity chain, one claim, sign-off, nudge — with a single line swapped. The
+# lines themselves ("ทุกฤดูกาลมีนักว่ายน้ำที่ทำให้เราต้องหยุดมอง", "เบื้องหลังคือการซ้อมที่ไม่มีใครเห็น") are
+# advertising copy: they tell the reader how to feel about a fact the card already shows them.
+#
+# What replaced them is the shape of the owner's own posts — a fact, a person, a nudge, and stop.
+# The angles now differ in FORM as well as content: a record-card chain, a congratulation, a single
+# prose sentence, a counts headline, a swim, a club-first line. Lengths run 3 to 5 lines. Two carry
+# the congratulatory frame; the rest report.
+#
+# `intro_bank` and `intro_rotation` are therefore unused by swimmer posts. Left in place: the event
+# structures may want them, the mechanism is sound, and the engine only records an `intro_line` when
+# the caption actually opens with it.
 
-CLOSINGS_TH: tuple[str, ...] = (
-    "สถิติที่สะสมมาทีละรายการ ไม่ได้มาในวันเดียว",
-    "เบื้องหลังคือการซ้อมที่ไม่มีใครเห็น",
-    "ระยะทางในสระวัดกันที่ความสม่ำเสมอ",
-    "ชื่อที่คนในวงการว่ายน้ำรู้จักกันดี",
-    "ผลงานที่พูดแทนตัวเองได้",
+#: The link nudge, plainly. Three phrasings so six variants don't close on one identical sentence —
+#: but none of them sells anything, which is the whole point of the rewrite.
+NUDGES_TH: tuple[str, ...] = (
+    "สถิติทั้งหมดอยู่ในคอมเมนต์แรก",
+    "โปรไฟล์และสถิติทั้งหมดอยู่ในคอมเมนต์แรก",
+    "ดูสถิติและโปรไฟล์ทั้งหมดได้จากลิงก์ในคอมเมนต์แรก",
 )
 
 
@@ -206,8 +203,15 @@ def _age_line(facts: dict[str, Any]) -> str | None:
     return f"รุ่น {_age(ages[0])}" if ages else None
 
 
-def _assemble(parts: list[str | None], config: dict[str, Any]) -> str:
-    return "\n\n".join(x for x in [*parts, "สถิติทั้งหมดอยู่ในคอมเมนต์แรก", _hashtags(config)] if x)
+def _lines(parts: list[str | None], config: dict[str, Any], *, nudge: int = 0) -> str:
+    """Content lines, then the nudge, then the hashtags — single newlines throughout.
+
+    Single rather than blank lines because that is how the owner writes these by hand, and because a
+    three-line post separated by blank lines occupies a screen it hasn't earned.
+    """
+    return "\n".join(
+        x for x in [*parts, NUDGES_TH[nudge % len(NUDGES_TH)], _hashtags(config)] if x
+    )
 
 
 #: Openers for the first comment, the line that sits above the link. Rotated with the closings so six
@@ -322,27 +326,29 @@ def _sweep_th(*, facts, intro, config, closing=0):
 
 
 def _longevity_th(*, facts, intro, config, closing=1):
-    """Still at national level in this age group. The angle that travels furthest with masters.
+    """Still at national level in this age group — the angle that travels furthest with masters.
 
-    Warm, and leading with the age group, because that is the fact the audience reacts to. The intro
-    is unused for the same reason as in `_sweep_th`.
+    One sentence, no headline, no emoji. The shortest variant on offer and the only one written as
+    prose: `sweep` already congratulates from a trophy line, and a second post in that shape would be
+    the sameness the reviewer is meant to be choosing away from.
     """
     ages = facts.get("ageGroups") or []
     if not ages:
         raise _NotApplicable("no age group on the card")
     golds = facts.get("goldCount") or 0
     ranked = facts.get("rankedCount") or 0
-    headline = f"🏆 อันดับ 1 ของประเทศไทย ในรุ่นอายุ {_age(ages[0])} ปี" if golds else (
-        f"🏆 ติดอันดับประเทศไทย ในรุ่นอายุ {_age(ages[0])} ปี"
-    )
-    claim = (
-        f"ยังครองอันดับ 1 ของประเทศไทยถึง {golds} รายการ 👏"
+    person = _person(facts, config)
+    if not person:
+        raise _NotApplicable("a prose sentence needs a name to be about")
+    achievement = (
+        f"ยังครองอันดับ 1 ของประเทศไทย {golds} รายการ"
         if golds
-        else f"ติดอันดับประเทศไทย {ranked} รายการ 👏"
+        else f"ยังติดอันดับประเทศไทย {ranked} รายการ"
     )
+    who = " ".join(x for x in [person, _from(facts)] if x)
     return (
-        _assemble_warm(headline, claim, facts, config),
-        _swimmer_comment(facts, config, closing, warm=True),
+        _lines([f"ในรุ่นอายุ {_age(ages[0])} ปี {who} {achievement}"], config, nudge=1),
+        _swimmer_comment(facts, config, closing),
         "longevity",
     )
 
@@ -353,16 +359,18 @@ def _breadth_th(*, facts, intro, config, closing=2):
     if ranked < 3:
         raise _NotApplicable("too few ranked events to call it breadth")
     golds = facts.get("goldCount") or 0
-    claim = (
-        f"ติดอันดับประเทศ {ranked} รายการ และเป็นอันดับ 1 ถึง {golds} รายการ"
+    # Counts first, person second — the inverse of `plain`, so the two read differently even though
+    # both are three lines of fact.
+    headline = (
+        f"ติดอันดับประเทศไทย {ranked} รายการ · เป็นอันดับ 1 ถึง {golds} รายการ"
         if golds
-        else f"ติดอันดับประเทศ {ranked} รายการ"
+        else f"ติดอันดับประเทศไทย {ranked} รายการ"
     )
     return (
-        _assemble(
-            [intro, " · ".join(x for x in [_identity(facts, config), _age_line(facts)] if x), claim,
-             CLOSINGS_TH[closing % len(CLOSINGS_TH)]],
+        _lines(
+            [headline, " · ".join(x for x in [_identity(facts, config), _age_line(facts)] if x)],
             config,
+            nudge=2,
         ),
         _swimmer_comment(facts, config, closing),
         "ranked_breadth",
@@ -378,15 +386,14 @@ def _standout_th(*, facts, intro, config, closing=3):
     stroke = STROKE_TH.get(best.get("stroke", ""), best.get("stroke", ""))
     course = COURSE_TH.get(best.get("course", ""), "")
     unit = (config.get("unit_labels") or {}).get("metre_short", "ม.")
-    line = f"{stroke} {best['distance']} {unit} · {course} · {best['time']}"
-    rank_line = (
-        f"อันดับ {best['rank']} ของประเทศ" if best.get("rank") else "หนึ่งในสถิติที่ทำไว้"
-    )
+    rank = f"อันดับ {best['rank']} ของประเทศไทย" if best.get("rank") else None
+    # The swim is the headline: a stroke, a distance, a pool and a time, in the card's own notation.
+    swim = " · ".join(x for x in [f"{stroke} {best['distance']} {unit}", course, best["time"], rank] if x)
     return (
-        _assemble(
-            [intro, " · ".join(x for x in [_identity(facts, config), _age_line(facts)] if x),
-             f"{line}\n{rank_line}", CLOSINGS_TH[closing % len(CLOSINGS_TH)]],
+        _lines(
+            [swim, " · ".join(x for x in [_identity(facts, config), _age_line(facts)] if x)],
             config,
+            nudge=0,
         ),
         _swimmer_comment(facts, config, closing),
         "standout_swim",
@@ -394,23 +401,36 @@ def _standout_th(*, facts, intro, config, closing=3):
 
 
 def _club_th(*, facts, intro, config, closing=4):
-    """Lead with the club or provincial team — the version a club Page will share."""
-    club = facts.get("club") or facts.get("province")
+    """Lead with the club or provincial team — the version a club Page will share.
+
+    The second congratulatory variant, and the only one whose trophy line names the club. A club
+    reposting this sees its own name first, which is the entire reason the angle exists.
+    """
+    club = facts.get("club") or (f"ทีม{facts['province']}" if facts.get("province") else None)
     if not club:
         raise _NotApplicable("no club or province on the card")
+    person = _person(facts, config)
+    if not person:
+        raise _NotApplicable("nobody to congratulate")
     golds = facts.get("goldCount") or 0
     ranked = facts.get("rankedCount") or 0
-    person = _person(facts, config)
-    claim = (
-        f"อันดับ 1 ของประเทศ {golds} รายการ" if golds else f"ติดอันดับประเทศ {ranked} รายการ"
+    achievement = (
+        f"อันดับ 1 ของประเทศไทย {golds} รายการ" if golds else f"ติดอันดับประเทศไทย {ranked} รายการ"
     )
+    age = _age_line(facts)
     return (
-        _assemble(
-            [intro, club, " · ".join(x for x in [person, _age_line(facts)] if x), claim,
-             CLOSINGS_TH[closing % len(CLOSINGS_TH)]],
-            config,
+        "\n".join(
+            x
+            for x in [
+                f"🏆 {club} · {achievement}",
+                " ".join(x for x in ["ขอแสดงความยินดีกับ", person, f"รุ่น {age.split()[-1]} ปี" if age else None] if x)
+                + " 👏",
+                NUDGES_TH[2],
+                _hashtags(config),
+            ]
+            if x
         ),
-        _swimmer_comment(facts, config, closing),
+        _swimmer_comment(facts, config, closing, warm=True),
         "club_first",
     )
 

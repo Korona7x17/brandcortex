@@ -43,7 +43,7 @@
     }
   },
   "intro_bank": {
-    "_comment": "Rotating soft intros for swimmer posts (§6.4). Meant to grow; the reflection agent tracks fatigue per line.",
+    "_comment": "Rotating soft intros (§6.4). NO LONGER USED BY SWIMMER POSTS — the opener was cut as advertising voice on 2026-08-06. Kept for structures that may want one; the engine records an intro_line only when the caption actually opens with it.",
     "th": [
       "ทุกฤดูกาลมีนักว่ายน้ำที่ทำให้เราต้องหยุดมอง",
       "บางคนไม่เคยหยุดพัฒนา ไม่ว่าอายุจะเท่าไหร่",
@@ -141,12 +141,12 @@
   },
   "writer": {
     "_comment": "What the model is briefed with. Editable in the app — angles, examples and guidance are the brand's, not the code's. The hard rules (numbers must exist in facts, no link in the caption, the emoji ceiling) are enforced after the model answers and cannot be edited away from here.",
-    "guidance": "ThaiSwim recognises masters swimmers — often 40 to 80 years old — who are still ranked nationally. The reader is usually a swimmer themselves, or someone's family, and they already know what these times cost. Write as someone glad to see it: name the achievement, say it kindly, and trust it to land. The warmth comes from respect and from the numbers themselves, never from adjectives — no สุดยอด, no น่าทึ่ง, no exclamation marks stacked up, nothing a stranger would say. Two registers are in use and the reviewer picks between them. REPORTING: no emoji, no congratulation — the fact stated and left to stand. CONGRATULATORY: a 🏆 headline carrying the number, then 'ขอแสดงความยินดีกับ คุณ<name> จาก <club>', then the achievement closing on 👏, then a plain line saying the link is in the first comment. Two emoji in total is the ceiling; the nudge carries none. Neither register dramatises, and neither addresses the swimmer in the second person — you are telling the reader about them, not speaking to them. Thai copy is first-class, not translated from English.",
+    "guidance": "ThaiSwim recognises masters swimmers — often 40 to 80 years old — who are still ranked nationally. The reader is usually a swimmer themselves, or someone's family, and they already know what these times cost. Write as someone glad to see it: name the achievement, say it kindly, and trust it to land.\n\nNEVER open with a scene-setting line ('every season there is a swimmer who makes us stop and look') and NEVER close with an inspirational one ('behind it is training nobody sees'). Both are advertising: they tell the reader how to feel about a fact the card already shows them. Posts are 3 to 5 short lines — a fact, a person, a nudge, and stop. The warmth comes from respect and from the numbers, never from adjectives — no สุดยอด, no น่าทึ่ง, no stacked exclamation marks, nothing a stranger would say.\n\nTwo registers are in use and the reviewer picks between them. REPORTING: no emoji, no congratulation — the fact stated and left to stand. CONGRATULATORY: a 🏆 headline carrying the number, then 'ขอแสดงความยินดีกับ คุณ<name> จาก <club>', then the achievement closing on 👏, then a plain line saying the link is in the first comment. Two emoji in total is the ceiling; the nudge carries none.\n\nVariants must differ in SHAPE, not only in wording — a different opener over the same skeleton is one variant, not two. Neither register dramatises, and neither addresses the swimmer in the second person: you are telling the reader about them, not speaking to them. Thai copy is first-class, not translated from English.",
     "max_variants": 6,
     "angles": [
       {
         "key": "plain",
-        "instruction": "State the achievement in the plainest possible numbers. No framing at all."
+        "instruction": "REPORTING register. The swimmer's line first — name · club · team · age group — then the achievement in the plainest possible numbers. No framing at all. Three lines and the hashtags."
       },
       {
         "key": "sweep",
@@ -154,19 +154,19 @@
       },
       {
         "key": "longevity",
-        "instruction": "CONGRATULATORY register. Lead with a 🏆 headline naming the age group, then congratulate the swimmer by name and club, then that they are still holding national #1 at that age. The angle that travels furthest with masters swimmers."
+        "instruction": "REPORTING register, and the shortest variant: ONE prose sentence, no headline, no emoji — in this age group, <name> from <club> still holds N national #1s. Then the nudge and the hashtags."
       },
       {
         "key": "breadth",
-        "instruction": "Lead with how many events they are ranked in, rather than how many they win."
+        "instruction": "REPORTING register. Counts first as the headline — how many events ranked, and how many of those are #1 — then the swimmer's line. The inverse order of `plain`, so the two read differently."
       },
       {
         "key": "standout",
-        "instruction": "Lead with one concrete swim: the distance, the stroke, the course and the time."
+        "instruction": "REPORTING register. The swim IS the headline: stroke, distance, pool and time in the card's notation, then the national rank. Then the swimmer's line."
       },
       {
         "key": "club",
-        "instruction": "Lead with the club or provincial team, so the club's own Page has a reason to share it."
+        "instruction": "CONGRATULATORY register. A 🏆 headline naming the CLUB first and the count, then 'ขอแสดงความยินดีกับ คุณ<name>' with their age group, closing on 👏. Four lines. The club's own Page should see its name before the swimmer's."
       }
     ],
     "examples": [

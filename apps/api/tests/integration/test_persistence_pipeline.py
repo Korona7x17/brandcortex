@@ -143,12 +143,31 @@ class TestIngest:
         assert "http" not in post.post_text
 
     def test_intro_is_recorded_so_the_next_post_rotates_away(self, orchestrator, item, configured):
+        """Only when the caption actually opens with one.
+
+        ThaiSwim's swimmer structures stopped using the intro bank when the rotating opener was cut
+        as advertising voice, so they record nothing — recording a line no reader saw would retire it
+        from a rotation it never entered. A structure that *does* open with one still rotates.
+        """
+
+        def opens_with_the_intro(*, facts, intro, config):
+            return f"{intro}\n\nอันดับ 1 ของประเทศไทย 9 รายการ", "", "hook"
+
+        templates.register("swimmer", "th", opens_with_the_intro)
         post = orchestrator.ingest(item, channel=CHANNEL)
         history = configured.scalars(
             select(IntroHistory).order_by(IntroHistory.used_at.desc())
         ).all()
 
+        assert post.features.intro_line
         assert [row.intro_line for row in history] == [post.features.intro_line]
+
+    def test_a_structure_without_an_intro_records_none(self, orchestrator, item, configured):
+        """The ThaiSwim swimmer angles as they actually ship."""
+        post = orchestrator.ingest(item, channel=CHANNEL)
+
+        assert post.features.intro_line is None
+        assert configured.scalars(select(IntroHistory)).all() == []
 
     def test_redelivery_returns_the_same_post(self, orchestrator, item):
         first = orchestrator.ingest(item, channel=CHANNEL)

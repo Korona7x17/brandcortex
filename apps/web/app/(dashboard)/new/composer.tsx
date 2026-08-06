@@ -108,7 +108,7 @@ export function Composer({ brand }: { brand: Brand }) {
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="ริน…"
+                  placeholder="ชื่อ…"
                   autoComplete="off"
                 />
               </div>

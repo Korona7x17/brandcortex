@@ -75,7 +75,7 @@ header.site {
   margin-bottom: 40px;
   border-bottom: 1px solid var(--line);
 }
-header.site .mark {
+.mark {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -84,7 +84,7 @@ header.site .mark {
   letter-spacing: -0.02em;
   color: var(--ink);
 }
-header.site .mark-dot {
+.mark-dot {
   width: 28px;
   height: 28px;
   border-radius: 0;
@@ -95,8 +95,19 @@ header.site .mark-dot {
   font-size: 14px;
   font-weight: 500;
 }
-header.site .mark-dot::after { content: "B"; }
-header.site .mark > span:last-child { color: var(--ink); }
+.mark-dot::after { content: "B"; }
+.mark > span:last-child { color: var(--ink); }
+
+/* Sign-in: the lockup and the box, centered on paper. Renders with no session and no API. */
+.auth {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 32px;
+}
 
 header.site .tenant {
   display: flex;

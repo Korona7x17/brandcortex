@@ -22,6 +22,25 @@ def ready() -> dict:
     raise NotImplementedError
 
 
+@router.get("/health/assets")
+def asset_health() -> dict:
+    """Whether the captured cards are reachable where this deployment thinks they are.
+
+    Pointing a deployment at a new bucket is the kind of change whose symptoms all arrive later —
+    a capture that silently writes to a container disk, a publish that cannot open the bytes it is
+    supposed to send. This answers it directly, and is the artifact to check after switching
+    `ASSET_*` rather than waiting for a post to fail.
+
+    Reports the backend and what is wrong with it, never the endpoint, the bucket or a key.
+    """
+    from brandcortex.services import assets
+
+    store = assets.get_store()
+    backend = "filesystem" if isinstance(store, assets.FilesystemStore) else "s3"
+    problems = store.problems()
+    return {"backend": backend, "ok": not problems, "problems": problems}
+
+
 @router.get("/health/channels")
 def channel_health() -> dict:
     """Whether each registered channel could publish right now.

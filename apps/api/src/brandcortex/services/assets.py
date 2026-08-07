@@ -47,6 +47,19 @@ class ObjectStore(Protocol):
 
     def exists(self, key: str) -> bool: ...
 
+    def problems(self) -> list[str]:
+        """What is wrong with this store right now, in words, or an empty list.
+
+        Separate from `exists` on purpose: `exists` answers about one object and cannot tell a
+        missing key from missing credentials, which is the distinction that matters when a
+        deployment has just been pointed at a new bucket.
+
+        These strings are served by `/health/assets`, which is unauthenticated. Name the
+        *condition*, never the bucket, endpoint, path or key — whoever is reading already knows
+        what `ASSET_BUCKET` is set to, and nobody else should learn it from us.
+        """
+        ...
+
 
 class FilesystemStore:
     """Local directory backing. For development and tests; keys are paths under `root`."""
@@ -72,6 +85,22 @@ class FilesystemStore:
 
     def exists(self, key: str) -> bool:
         return self._path(key).exists()
+
+    def problems(self) -> list[str]:
+        """Conditions, not paths — see the note on the Protocol about who reads these."""
+        root = self._root.expanduser()
+        if not root.exists():
+            # Not an error by itself — `put` creates it. It is worth saying, because on a container
+            # it usually means the volume did not mount and the next capture writes to a disk that
+            # disappears on redeploy.
+            return ["asset root does not exist yet (on a container: the volume did not mount)"]
+        if not root.is_dir():
+            return ["asset root is not a directory"]
+        import os
+
+        if not os.access(root, os.W_OK):
+            return ["asset root is not writable"]
+        return []
 
 
 class S3Store:
@@ -108,10 +137,41 @@ class S3Store:
             return False
         return True
 
+    def problems(self) -> list[str]:
+        """`HeadBucket` — one cheap, read-only call that exercises endpoint, credentials and grant.
 
-def get_store() -> ObjectStore:
-    """Resolve the configured store. A path-shaped `ASSET_BUCKET` means local disk."""
-    bucket = get_settings().asset_bucket
+        Read-only deliberately: `/health/assets` is unauthenticated, and a probe that wrote an
+        object would let anyone run up storage operations on the bucket.
+        """
+        from botocore.exceptions import BotoCoreError, ClientError
+
+        try:
+            self._client.head_bucket(Bucket=self._bucket)
+        except ClientError as exc:
+            status = exc.response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+            code = exc.response.get("Error", {}).get("Code", "unknown")
+            # Three distinct wrong turns — wrong bucket, wrong token, wrong endpoint — and each
+            # sends the reader somewhere different, which is the only reason to separate them.
+            if status == 404:
+                return ["bucket does not exist at this endpoint"]
+            if status in (401, 403):
+                return [f"credentials rejected ({code})"]
+            return [f"bucket unreachable ({code})"]
+        except BotoCoreError as exc:
+            # Endpoint typo, DNS, TLS. The exception's own text carries the endpoint URL, so only
+            # its type crosses out.
+            return [f"cannot reach the object store: {type(exc).__name__}"]
+        return []
+
+
+def get_store(bucket: str | None = None) -> ObjectStore:
+    """Resolve a store. A path-shaped bucket means local disk; anything else is S3-compatible.
+
+    `bucket` defaults to `ASSET_BUCKET`. It is an argument at all so a migration can hold the old
+    store and the new one at once — the S3 credentials still come from settings, since a deployment
+    only ever has one set.
+    """
+    bucket = bucket if bucket is not None else get_settings().asset_bucket
     if bucket.startswith("file://"):
         return FilesystemStore(Path(bucket[len("file://") :]))
     if bucket.startswith(("/", "./", "../", "~")):

@@ -32,6 +32,36 @@ Auth is fail-closed end to end: an API deployed with no `CLERK_ISSUER` serves no
    - `ASSET_ACCESS_KEY_ID` / `ASSET_SECRET_ACCESS_KEY` from the token
    - `ASSET_REGION=auto`
 
+### 2b. Switching an existing deployment from the volume to R2
+
+The key format is identical on both backends, so nothing is rewritten and no `posts` row is
+touched — this is a copy, not a migration. Order matters, because the destination's credentials
+come from settings and a deployment only ever holds one set:
+
+```bash
+railway variables --service api \
+  --set ASSET_BUCKET=brandcortex-cards \
+  --set ASSET_ENDPOINT_URL=https://<account-id>.r2.cloudflarestorage.com \
+  --set ASSET_ACCESS_KEY_ID=... --set ASSET_SECRET_ACCESS_KEY=... --set ASSET_REGION=auto
+
+curl -s https://<api-host>/health/assets     # expect {"backend":"s3","ok":true,"problems":[]}
+
+railway ssh --service api \
+  "uv run python -m brandcortex.services.migrate_assets --source /data/cards --dry-run"
+railway ssh --service api \
+  "uv run python -m brandcortex.services.migrate_assets --source /data/cards"
+```
+
+Between the first and last commands the existing cards are unreadable: seconds of a missing
+dashboard thumbnail, and no published post. Run the copy **while the volume is still mounted** —
+detach it only after the counts come back clean. `missing` or `mismatch` in those counts exits
+non-zero and needs a person; re-running is safe and skips what already arrived.
+
+`/health/assets` is the artifact to check, not a post that fails later. It is unauthenticated and
+names conditions rather than the bucket, endpoint or path: `credentials rejected` means the token,
+`bucket does not exist at this endpoint` means the name or the account id, and
+`cannot reach the object store` means the endpoint URL.
+
 ## 3. Railway — API + Postgres + worker
 
 1. New project → **Postgres** (one click). Copy its `DATABASE_URL` (use the private/internal URL).
@@ -49,8 +79,12 @@ Auth is fail-closed end to end: an API deployed with no `CLERK_ISSUER` serves no
    > `ASSET_BUCKET` is a bucket rather than a path, the API publishes from inside its own process
    > (`workers/publisher_loop.py`, every `PUBLISHER_INTERVAL_SECONDS`), which is the process that
    > has the volume mounted. It takes a Postgres advisory lock, so adding replicas is safe.
-   > Creating the worker service above is step one of retiring that loop; step two is deleting the
-   > module and setting `PUBLISHER_ENABLED=false` on the API.
+   >
+   > **Retiring it, once §2b is done:** create the service above → confirm one cycle in its logs →
+   > `railway variables --service api --set PUBLISHER_ENABLED=false` → delete
+   > `workers/publisher_loop.py`, its start-up call in `main.py`, and `tests/unit/test_publisher_loop.py`.
+   > In that order: the API keeps publishing until the cron has demonstrably taken over, and the
+   > advisory lock means both running briefly is safe rather than a double post.
 4. Environment variables, both services (Railway shared variables fit this):
 
    | Variable | Value |

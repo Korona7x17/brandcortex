@@ -1,0 +1,26 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "_comment": [
+    "Build config for the `publisher` cron service. Same repo and same root directory as the API,",
+    "so it needs its own file rather than its own directory — the service points at this path via",
+    "`railwayConfigFile`.",
+    "",
+    "Two differences from railway.json, both because a cron run is a process that finishes:",
+    "  - no healthcheck. `/health` belongs to a server that keeps listening; a cron container exits",
+    "    as soon as the cycle is done, so a healthcheck would fail every successful run.",
+    "  - restartPolicyType NEVER. A finished run must not be restarted — the schedule is what starts",
+    "    the next one, and a restart loop would publish repeatedly. A failed cycle is left failed and",
+    "    the next tick retries it; `run_once` already absorbs per-post failures.",
+    "",
+    "The start command overrides the Dockerfile's CMD (migrate + serve). Migrations stay with the",
+    "API: two services racing `alembic upgrade head` on the same database is a lock, not a feature."
+  ],
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "uv run python -m brandcortex.workers.publisher",
+    "restartPolicyType": "NEVER"
+  }
+}

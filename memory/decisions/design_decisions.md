@@ -461,3 +461,44 @@ what tells Railway where to find that file.
 **Status:** Accepted
 **Date:** 2026-08-07
 **Ref:** apps/api/railway.json@99c321; deployment 6dc2fed (BUILDING → DEPLOYING root=apps/api → SUCCESS)
+
+## D-2026-08-07-02 — Server code reaches the API through the module that registers its token source
+
+**Rationale:** `lib/api.ts` is shared with client components and so may not import
+`@clerk/nextjs/server` (it poisons a client bundle at build time). Its server-side token source was
+therefore registered by a bare side-effect import in the root layout — making correctness depend on
+an unrelated module being evaluated first. Next renders only the changed segment on a client-side
+navigation, so an instance whose first request was a soft nav had never evaluated the layout, sent
+no `Authorization` header, and got `401 unauthorized: missing bearer token`; a hard refresh rendered
+the layout and the same page then worked, which is what made it read as intermittent. The fix
+removes the ordering question instead of fixing the order: `lib/api-server.ts` registers the source
+**and re-exports the client**, so server code cannot obtain `api` without having run the
+registration. Silent nulls became loud with it — an unregistered server call raises a named error,
+and a failing `auth()` is no longer caught and reported as "no token", because a wiring bug must not
+read as a signed-out visitor.
+
+**Status:** Accepted
+**Date:** 2026-08-07
+**Ref:** apps/web/lib/api-server.ts@0cf2f4; apps/web/lib/api.ts@87e0ad; commit 60c7862
+
+## D-2026-08-07-03 — Publish from inside the API process until assets leave the volume
+
+**Rationale:** Scheduled posts had never fired: `workers/publisher.py` was complete and cron-shaped,
+but nothing ran it, and the blocker is physical rather than code. A Railway cron is a separate
+service and a Railway volume attaches to exactly one, so a cron container cannot read the card PNGs
+it would publish (`ASSET_BUCKET=/data/cards`). The process that already has the volume mounted is
+the one that can publish, and posts firing is worth more than the cleaner topology. `run_once` is
+untouched — it takes its schedule from the database, so moving to a cron service after R2 is a
+deployment change, not a rewrite. Two guarantees while it runs: a Postgres session-level advisory
+lock on a *dedicated* connection makes the fleet size irrelevant (the orchestrator commits per post,
+and a pooled connection that has committed may not come back), and a failed cycle logs and retries
+rather than ending the loop. `PUBLISHER_ENABLED` unset follows `BRANDCORTEX_ENV`: a deployment
+publishes, a laptop does not — a laptop posting to a live Page is the worse failure, and a deploy
+that quietly publishes nothing is the bug this fixes. Both branches log at boot, because silence is
+what made the missing worker hard to see.
+
+**Status:** Accepted — explicitly temporary; retire with R2 (delete the module, set
+`PUBLISHER_ENABLED=false`, create the cron service in docs/deploy.md §3.3)
+**Date:** 2026-08-07
+**Ref:** apps/api/src/brandcortex/workers/publisher_loop.py@f752c2; docs/deploy.md@933cee;
+first automatic publish 2026-08-07 04:34:06Z (due:1 published:1 failed:0)

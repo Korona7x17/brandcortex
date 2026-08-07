@@ -1,22 +1,22 @@
 {
   "project": "brandcortex",
   "updated": "2026-08-07",
-  "phase": "1 (MVP) — LIVE at https://brandcortex.app (production Clerk, own domain); cron worker + insights outstanding",
+  "phase": "1 (MVP) — LIVE at https://brandcortex.app; scheduling fires (in-process publisher); R2 + cron service and insights outstanding",
   "tenant": "thaiswim",
   "channel": "facebook",
   "branch": "main (scaffold branch deleted local+remote; main is the GitHub default)",
-  "head": "6dc2fed",
+  "head": "6b77160",
   "pushed": true,
   "topics": [
+    "scheduled posts fire — first automatic publish 2026-08-07 04:34:06Z",
+    "publisher runs IN the API process; R2 is what retires it",
     "both platforms deploy on push (Railway fixed 2026-08-07)",
     "seed-on-boot armed; config ships with its deploy",
-    "honorific + rewritten copy live in production",
-    "R2 + cron worker",
-    "insights fetcher",
-    "first production compose still pending"
+    "R2 + cron service",
+    "insights fetcher"
   ],
   "tests": {
-    "passed": 201,
+    "passed": 214,
     "skipped": 9
   },
   "working_end_to_end": [
@@ -25,12 +25,12 @@
     "pick a variant, edit, or regenerate with a per-post steer",
     "approve and schedule with a policy-aware suggested slot and its reasons",
     "publish path tested against a fake Graph AND now authorized against the real one: PAGE token stored encrypted, GET /health/channels ok",
-    "PRODUCTION: api-production-b008.up.railway.app (facebook channel ok, routes 401 bare) + brandcortex-ravenbone.vercel.app behind Clerk"
+    "PRODUCTION: api-production-b008.up.railway.app (facebook channel ok, routes 401 bare) + brandcortex-ravenbone.vercel.app behind Clerk",
+    "PRODUCTION: a scheduled slot publishes on its own within 60s — photo + first comment, verified 2026-08-07 04:34:06Z by row state (channel_post_id + channel_comment_id) and Graph 200s"
   ],
   "still_stubs": [
     "insights fetcher",
-    "reflection agent",
-    "publisher cron worker on Railway"
+    "reflection agent"
   ],
   "blocked": [],
   "resolved_2026-08-06": {
@@ -54,21 +54,16 @@
       "detail": "leaked into session-02 transcript; production is unaffected (new instance/keys) but dev rotation is one click"
     },
     {
-      "what": "nothing pushed",
-      "detail": "main at 751ac81 unpushed; origin/scaffold/thaiswim-facebook-mvp still at 1400de5. Decide the branch's fate after pushing main"
-    },
-    {
-      "what": "stray untracked apps/web/lib/*.ts",
-      "detail": "api.ts, diff.ts, server-auth.ts existed untracked on main before the merge and overlap in purpose with the apps/web code the merge brought in — reconcile before they drift"
-    },
-    {
       "what": "old drafts keep old copy",
       "detail": "post_text is frozen at draft time by design; existing queue rows must be regenerated to pick up new copy."
+    },
+    {
+      "what": "the publisher restarts with the API",
+      "detail": "a deploy during a slot publishes on the next boot rather than missing it — acceptable now, gone once the cron service exists"
     }
   ],
   "next_actions": [
-    "user composes the first production draft (old drafts keep frozen text, need regenerating)",
-    "R2 bucket -> ASSET_* -> cron worker service (*/5)",
+    "R2 bucket -> ASSET_* -> cron service (*/5) -> delete workers/publisher_loop.py, set PUBLISHER_ENABLED=false",
     "insights fetcher",
     "remove the committed .DS_Store at the repo root"
   ],
@@ -96,7 +91,10 @@
     "assume a code deploy changes the copy — brand_config is a database row and must be applied separately (or carried by seed-on-boot)",
     "lead a swimmer's post with the club — it is the swimmer's achievement; the club goes on line two",
     "use a bare directory name in .gitignore (`lib/`) — it matches at any depth and silently drops source",
-    "conclude a deploy never happened because the running container lacks the new code — Railway keeps the old container serving when a build fails; read the deployment's `status`"
+    "conclude a deploy never happened because the running container lacks the new code — Railway keeps the old container serving when a build fails; read the deployment's `status`",
+    "let correctness depend on module evaluation order — Next renders only the changed segment on a soft nav, so a root-layout side-effect import may never have run",
+    "hold a Postgres advisory lock on a pooled session that commits — take a dedicated engine.connect() and unlock in finally",
+    "deploy a publisher without checking what is already sitting in a slot — it fires within 60s of boot"
   ],
   "credentials": {
     "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env / channel_tokens.",
@@ -119,15 +117,16 @@
     "web": "https://brandcortex.app (Vercel project brandcortex; apex primary, no www; Clerk production instance on clerk.brandcortex.app)",
     "db": "Railway Postgres, migrated + seeded, channel token installed (same Fernet key as local)",
     "deploy_cmds": {
+      "_note": "Both platforms deploy on push to main since 2026-08-07. These are manual fallbacks only.",
       "api": "railway up apps/api --path-as-root --service api --detach   # from repo root; up roots at linked dir!",
-      "web": "cd apps/web && vercel deploy --prod --yes   # CLI-push only, git pushes do NOT deploy"
+      "web": "cd apps/web && vercel deploy --prod --yes"
     },
     "gaps": [
-      "no cron worker service — scheduled posts do not fire in production (publish-now works)",
-      "cards on service volume — R2 required before the worker exists (volumes not shareable)",
+      "cards on a service volume — R2 required before a cron worker can exist (volumes attach to one service)",
       "Google sign-in on production needs custom OAuth creds (email code works)"
     ],
-    "clerk": "production instance, issuer https://clerk.brandcortex.app; localhost stays on the dev instance (test keys in .env; CLERK_SECRET_KEY_LIVE is Vercel-only)"
+    "clerk": "production instance, issuer https://clerk.brandcortex.app; localhost stays on the dev instance (test keys in .env; CLERK_SECRET_KEY_LIVE is Vercel-only)",
+    "publisher": "workers/publisher_loop.py runs publisher.run_once every PUBLISHER_INTERVAL_SECONDS (60) inside the API process, because a Railway cron is a separate service and the volume attaches to only one. Postgres advisory lock on a dedicated connection so replicas cannot double-publish. PUBLISHER_ENABLED=true on Railway; unset it and BRANDCORTEX_ENV decides (deployment yes, laptop no)."
   },
   "design": {
     "guideline": "docs/agenticskills-design-system (untracked; user's AgenticSkills monochrome system)",

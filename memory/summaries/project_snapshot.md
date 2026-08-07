@@ -1,6 +1,6 @@
 # Project Snapshot — BrandCortex
 
-Last updated: 2026-08-07 (session 01)
+Last updated: 2026-08-07 (session 02)
 
 AI content engine that generates, publishes and self-improves brand content across channels.
 Home `brandcortex.app`. Tenant #1 **ThaiSwim** (`dev/thaiswim`). Channel #1 **Facebook**.
@@ -35,6 +35,15 @@ Working conventions in `CLAUDE.md`.
   seed JSON is only its reviewed source. Seed-on-boot (D-2026-08-06-08) closes the gap, but refuses
   to overwrite a row edited in `/settings/voice` — that conflict belongs to a human. Armed in
   production 2026-08-06; each boot logs what it did.
+- **Correctness may never depend on module evaluation order.** Next renders only the changed segment
+  on a client-side navigation, so a side-effect import in the root layout is not guaranteed to have
+  run — that is how server pages sent no bearer token on a soft nav and 401'd, while a hard refresh
+  "fixed" it. Server code gets the API from the module that registers its token source, and an
+  unregistered call raises instead of quietly sending nothing.
+- **Only one publisher, whatever the fleet size.** Double-publishing is not recoverable: the Page
+  gets two photos and the audience two notifications. A Postgres advisory lock on a *dedicated*
+  connection makes replica count irrelevant — a pooled connection that has committed may not be the
+  one that comes back.
 - **Verify a deploy by its `status`, not by any symptom.** Railway keeps the previous container
   serving when a build fails, so `/health`, existing log lines *and the running container's own
   contents* all answer for the old build — a failed deploy and an absent one are indistinguishable
@@ -68,6 +77,9 @@ foreign-host links · -05 volume now, R2 before the cron worker · **-06 honorif
 voice rule enforced by validator, not prompt** · **-07 two registers, emoji ceiling 1→2** ·
 **-08 seed brand_config on boot behind two fingerprints** · **-09 no opener/sign-off, variants
 differ by form, the club never leads**.
+D-2026-08-07-01 Railway builds `apps/api`, build config pinned in the repo · **-02 server code gets
+the API from the module that registers its token source** · **-03 publish in-process behind a fleet
+lock until assets leave the volume (explicitly temporary; retire with R2)**.
 Stack: T01 FastAPI+Next.js · T02 permutation test · T03 Meta Dev mode, System User is the token path ·
 T04 tests build SQLite from models; `alembic check` is the migration contract.
 Full text in `memory/decisions/`.
@@ -96,8 +108,9 @@ store. Canonical links and `season` are derived by the adapter.
 
 ## Current Focus
 
-**201 pass / 9 skip.** Now LIVE at brandcortex.app; everything merged to `main` and pushed
-(5d744d4). Both platforms deploy on push to `main`; the API applies `brand_config` at boot and logs it. Working end to end and *persisted*: `card_renders` row → content
+**214 pass / 9 skip.** Now LIVE at brandcortex.app; everything merged to `main` and pushed
+(6b77160). Both platforms deploy on push to `main`; the API applies `brand_config` at boot and logs it. **Scheduling fires**: the first automatic publish went out 2026-08-07 04:34:06Z (photo + first
+comment, `due:1 published:1 failed:0`). Working end to end and *persisted*: `card_renders` row → content
 item → checked Thai copy → `posts` row with captured card, frozen facts, UTM campaign and features →
 review API (queue, diff, card bytes, edit, approve, publish). Verified against a real migrated SQLite
 database, not only fixtures.
@@ -109,10 +122,12 @@ Alembic baseline exists and `alembic check` reports no drift. Seed loader:
 comment, expired tokens, rate limits, and the photo-live-comment-dead case). The scheduler honours
 the brand's own policy and returns its reasons. The model writes captions with templates as fallback.
 
-Still stubs: insights fetcher, reflection agent, publisher cron worker. **A real Page has been
-reached** (2026-08-06) — the Meta wall fell to one "+ Add" on `pages_read_user_content`, the PAGE
-token is encrypted in `channel_tokens` and never expires, and a post went live. Scheduled posts still
-do not fire in production: no cron worker, and cards sit on a service volume that cannot be shared.
+Still stubs: insights fetcher, reflection agent. **A real Page has been reached** (2026-08-06) — the
+Meta wall fell to one "+ Add" on `pages_read_user_content`, the PAGE token is encrypted in
+`channel_tokens` and never expires, and a post went live. Scheduled posts now fire from
+`workers/publisher_loop.py` **inside the API process**, because a Railway cron is a separate service
+and the card volume attaches to only one. That is temporary by design: R2 → cron service (*/5) →
+delete the module and set `PUBLISHER_ENABLED=false`. `publisher.run_once` is the same either way.
 
 Credentials in `.env` (gitignored, 600): App ID `1278952477505548`, App Secret set, Fernet key
 generated, Page ID `1223598310834457` (ThaiSwim.com, user is full admin).

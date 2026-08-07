@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { api, cardUrl, type PostSummary } from "@/lib/api";
+import { api, cardUrl, type PostSummary } from "@/lib/api-server";
 
 export const dynamic = "force-dynamic";
 

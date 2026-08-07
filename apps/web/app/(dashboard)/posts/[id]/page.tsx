@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { ApiError, api, cardUrl } from "@/lib/api";
+import { ApiError, api, cardUrl } from "@/lib/api-server";
 
 import { Reviewer } from "./reviewer";
 

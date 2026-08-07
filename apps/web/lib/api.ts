@@ -100,8 +100,12 @@ export class ApiError extends Error {
  * The two sides get their token differently, and this module is imported by both — so it may not
  * import `@clerk/nextjs/server`, which poisons a client bundle at build time even behind a runtime
  * guard. The browser asks the Clerk instance on `window`; the server side is *registered* by
- * `lib/server-auth.ts` (a `server-only` module imported from the root layout and the card proxy),
- * which closes over `auth()` without this file ever naming it.
+ * `lib/api-server.ts`, a `server-only` module that closes over `auth()` without this file ever
+ * naming it, and that re-exports everything here so server code cannot reach `api` without it.
+ *
+ * An unregistered server call is a wiring bug, not a signed-out visitor, so it raises rather than
+ * returning null. Silently sending no token produced a 401 that read as an auth problem and sent
+ * two debugging sessions after the wrong thing.
  */
 let serverTokenSource: (() => Promise<string | null>) | null = null;
 
@@ -111,7 +115,15 @@ export function registerServerTokenSource(source: () => Promise<string | null>) 
 
 export async function sessionToken(): Promise<string | null> {
   if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) return null;
-  if (typeof window === "undefined") return serverTokenSource ? serverTokenSource() : null;
+  if (typeof window === "undefined") {
+    if (!serverTokenSource) {
+      throw new Error(
+        "no server token source: server components and route handlers must import the API from" +
+          " '@/lib/api-server', not '@/lib/api'",
+      );
+    }
+    return serverTokenSource();
+  }
   type ClerkOnWindow = { session?: { getToken(): Promise<string | null> } };
   return (await (window as { Clerk?: ClerkOnWindow }).Clerk?.session?.getToken()) ?? null;
 }

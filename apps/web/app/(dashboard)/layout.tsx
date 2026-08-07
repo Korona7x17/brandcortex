@@ -1,7 +1,7 @@
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 
-import { activeBrand } from "@/lib/api";
+import { activeBrand } from "@/lib/api-server";
 
 // Clerk components render only when the provider exists (see the root layout).
 const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);

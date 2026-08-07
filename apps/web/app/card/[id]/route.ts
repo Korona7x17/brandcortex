@@ -7,8 +7,7 @@
  */
 import { NextResponse } from "next/server";
 
-import { API_URL, sessionToken } from "@/lib/api";
-import "@/lib/server-auth";
+import { API_URL, sessionToken } from "@/lib/api-server";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

@@ -1,4 +1,4 @@
-import { activeBrand, brandApi } from "@/lib/api";
+import { activeBrand, brandApi } from "@/lib/api-server";
 
 import { BriefEditor } from "./editor";
 

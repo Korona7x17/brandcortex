@@ -1,4 +1,4 @@
-import { activeBrand } from "@/lib/api";
+import { activeBrand } from "@/lib/api-server";
 
 import { Composer } from "./composer";
 

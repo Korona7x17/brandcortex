@@ -38,11 +38,19 @@ Auth is fail-closed end to end: an API deployed with no `CLERK_ISSUER` serves no
 2. **API service**: New service → GitHub repo → root directory `apps/api` (it has the Dockerfile;
    the start command migrates then serves). Networking → Generate domain, or attach
    `api.brandcortex.app`.
-3. **Worker service**: same repo and root directory, but override the start command:
-   `uv run python -m brandcortex.workers.publisher`
+3. **Worker service** — *not what runs today; see the note below.* Same repo and root directory,
+   but override the start command: `uv run python -m brandcortex.workers.publisher`
    and set a **cron schedule** of `*/5 * * * *`. One cycle per run; the platform owns the restart
    policy. (Slots have minute precision, so five-minute polling publishes at most ~5 min late —
    well inside the 6h lateness ceiling.)
+
+   > **While assets live on a volume, there is no worker service.** A Railway volume attaches to
+   > exactly one service, so a cron container cannot read the card PNGs it would publish. Until
+   > `ASSET_BUCKET` is a bucket rather than a path, the API publishes from inside its own process
+   > (`workers/publisher_loop.py`, every `PUBLISHER_INTERVAL_SECONDS`), which is the process that
+   > has the volume mounted. It takes a Postgres advisory lock, so adding replicas is safe.
+   > Creating the worker service above is step one of retiring that loop; step two is deleting the
+   > module and setting `PUBLISHER_ENABLED=false` on the API.
 4. Environment variables, both services (Railway shared variables fit this):
 
    | Variable | Value |
@@ -59,6 +67,8 @@ Auth is fail-closed end to end: an API deployed with no `CLERK_ISSUER` serves no
    | `CORS_ALLOW_ORIGINS` | `https://brandcortex.app` |
 
    Never set `AUTH_DISABLED` here. Its absence is what keeps the fail-closed default in force.
+   `PUBLISHER_ENABLED` is the same shape in reverse: leaving it unset is what lets a deployment
+   publish, and `BRANDCORTEX_ENV=local` is what stops a laptop doing the same.
 
 5. Seed the production DB once (Railway shell or locally against the public `DATABASE_URL`):
    `uv run python -m brandcortex.db.seed seeds/thaiswim.brand_config.json`

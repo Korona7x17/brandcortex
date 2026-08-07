@@ -3,8 +3,9 @@
     uv run uvicorn brandcortex.main:app --reload
 """
 
+import asyncio
 import logging
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,16 +28,31 @@ async def lifespan(app: FastAPI):
 
     Workers call `registry.bootstrap()` directly and do let it raise: a publisher with no channel
     adapter has nothing useful to do.
+
+    The publisher loop starts last and only if the registry is up, since publishing without a
+    channel adapter is the same nothing — and it is cancelled on shutdown so a deploy does not
+    leave a cycle half-run.
     """
     from brandcortex.adapters import registry
+    from brandcortex.workers import publisher_loop
 
     _seed_brand_configs()
 
+    publishing = None
     try:
         registry.bootstrap()
     except Exception:  # noqa: BLE001 — see docstring
         logger.exception("adapter bootstrap failed; brand and channel routes are unavailable")
-    yield
+    else:
+        publishing = publisher_loop.start()
+
+    try:
+        yield
+    finally:
+        if publishing is not None:
+            publishing.cancel()
+            with suppress(asyncio.CancelledError):
+                await publishing
 
 
 def _seed_brand_configs() -> None:

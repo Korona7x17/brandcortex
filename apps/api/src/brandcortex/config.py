@@ -31,6 +31,20 @@ class Settings(BaseSettings):
     seed_on_boot: bool = Field(True, alias="SEED_ON_BOOT")
     seed_dir: str = Field("seeds", alias="SEED_DIR")
 
+    # Publish scheduled posts from inside the API process (workers/publisher_loop.py), because a
+    # Railway cron is a separate service and the card volume attaches to only one. Left unset it
+    # follows `env`: a deployed environment publishes, a laptop does not. Neither default is safe
+    # as a constant — a machine that publishes to a live Page by accident is the worse failure, and
+    # a production deploy that quietly publishes nothing is the bug this exists to fix.
+    publisher_enabled_override: bool | None = Field(None, alias="PUBLISHER_ENABLED")
+    publisher_interval_seconds: int = Field(60, alias="PUBLISHER_INTERVAL_SECONDS")
+
+    @property
+    def publisher_enabled(self) -> bool:
+        if self.publisher_enabled_override is not None:
+            return self.publisher_enabled_override
+        return self.env != "local"
+
     # The brand DB seam. Read-only by contract: we select from `card_renders` and never write back.
     # Bind a genuinely read-only role here so the contract is enforced by the database, not by habit.
     brand_db_url: str | None = Field(None, alias="BRAND_DB_URL")

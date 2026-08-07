@@ -1,22 +1,21 @@
 {
   "project": "brandcortex",
   "updated": "2026-08-07",
-  "phase": "1 (MVP) — LIVE at https://brandcortex.app; scheduling fires (in-process publisher); R2 + cron service and insights outstanding",
+  "phase": "1 (MVP) — LIVE at https://brandcortex.app; scheduling fires from a cron service; cards in R2; insights outstanding",
   "tenant": "thaiswim",
   "channel": "facebook",
   "branch": "main (scaffold branch deleted local+remote; main is the GitHub default)",
-  "head": "6b77160",
+  "head": "cf4a256",
   "pushed": true,
   "topics": [
-    "scheduled posts fire — first automatic publish 2026-08-07 04:34:06Z",
-    "publisher runs IN the API process; R2 is what retires it",
-    "both platforms deploy on push (Railway fixed 2026-08-07)",
-    "seed-on-boot armed; config ships with its deploy",
-    "R2 + cron service",
+    "cards live in R2; volume kept mounted as rollback",
+    "publisher is its own */5 cron service; PUBLISHER_ENABLED=false on api",
+    "publisher_loop.py dormant — delete after one real cron publish",
+    "INCIDENT 2026-08-07: 3 secrets printed into the transcript; rotation declined, transcript to be deleted",
     "insights fetcher"
   ],
   "tests": {
-    "passed": 214,
+    "passed": 230,
     "skipped": 9
   },
   "working_end_to_end": [
@@ -26,7 +25,8 @@
     "approve and schedule with a policy-aware suggested slot and its reasons",
     "publish path tested against a fake Graph AND now authorized against the real one: PAGE token stored encrypted, GET /health/channels ok",
     "PRODUCTION: api-production-b008.up.railway.app (facebook channel ok, routes 401 bare) + brandcortex-ravenbone.vercel.app behind Clerk",
-    "PRODUCTION: a scheduled slot publishes on its own within 60s — photo + first comment, verified 2026-08-07 04:34:06Z by row state (channel_post_id + channel_comment_id) and Graph 200s"
+    "PRODUCTION: a scheduled slot publishes on its own within 60s — photo + first comment, verified 2026-08-07 04:34:06Z by row state (channel_post_id + channel_comment_id) and Graph 200s",
+    "PRODUCTION: assets on R2 (/health/assets -> backend s3, ok true) and a */5 cron service publishing independently of the API's deploy cycle"
   ],
   "still_stubs": [
     "insights fetcher",
@@ -58,14 +58,15 @@
       "detail": "post_text is frozen at draft time by design; existing queue rows must be regenerated to pick up new copy."
     },
     {
-      "what": "the publisher restarts with the API",
-      "detail": "a deploy during a slot publishes on the next boot rather than missing it — acceptable now, gone once the cron service exists"
+      "what": "duplicated secrets across two services",
+      "detail": "api and publisher each hold their own copy of DATABASE_URL, ASSET_*, TOKEN_ENCRYPTION_KEY, FACEBOOK_*. Railway project-level shared variables would give one source of truth; worth doing before a third service exists"
     }
   ],
   "next_actions": [
-    "R2 bucket -> ASSET_* -> cron service (*/5) -> delete workers/publisher_loop.py, set PUBLISHER_ENABLED=false",
+    "watch a scheduled post publish via the cron, then delete workers/publisher_loop.py + its main.py call + tests",
     "insights fetcher",
-    "remove the committed .DS_Store at the repo root"
+    "owner: delete the session transcript ~/.claude/projects/-Users-sutiteeraniti-dev-brandcortex/8d427dc5-*.jsonl",
+    "consider project-level shared variables — api and publisher now duplicate every shared secret"
   ],
   "local_dev": {
     "postgres": "docker container brandcortex-pg — start it before the API after a reboot",
@@ -94,7 +95,11 @@
     "conclude a deploy never happened because the running container lacks the new code — Railway keeps the old container serving when a build fails; read the deployment's `status`",
     "let correctness depend on module evaluation order — Next renders only the changed segment on a soft nav, so a root-layout side-effect import may never have run",
     "hold a Postgres advisory lock on a pooled session that commits — take a dedicated engine.connect() and unlock in finally",
-    "deploy a publisher without checking what is already sitting in a slot — it fires within 60s of boot"
+    "print a command's output when a secret was passed to it — every CLI echoes its arguments; Railway echoes --variables KEY=VALUE. Success is returncode == 0; redact before printing any failure",
+    "expect railwayConfigFile to be root-directory-relative — it resolves from the REPO ROOT",
+    "give a cron service a server's healthcheck or restart policy — it exits by design, so both fail every successful run",
+    "use `railway redeploy` to pick up changed service settings — it reuses the old build config; serviceInstanceDeployV2 does",
+    "reset the Facebook CLIENT TOKEN thinking it is the app secret — different credential, nothing here uses it"
   ],
   "credentials": {
     "_note": "Dates only. No key material is ever written to memory, or anywhere outside .env / channel_tokens.",
@@ -122,11 +127,11 @@
       "web": "cd apps/web && vercel deploy --prod --yes"
     },
     "gaps": [
-      "cards on a service volume — R2 required before a cron worker can exist (volumes attach to one service)",
       "Google sign-in on production needs custom OAuth creds (email code works)"
     ],
     "clerk": "production instance, issuer https://clerk.brandcortex.app; localhost stays on the dev instance (test keys in .env; CLERK_SECRET_KEY_LIVE is Vercel-only)",
-    "publisher": "workers/publisher_loop.py runs publisher.run_once every PUBLISHER_INTERVAL_SECONDS (60) inside the API process, because a Railway cron is a separate service and the volume attaches to only one. Postgres advisory lock on a dedicated connection so replicas cannot double-publish. PUBLISHER_ENABLED=true on Railway; unset it and BRANDCORTEX_ENV decides (deployment yes, laptop no)."
+    "publisher": "Railway service `publisher` (05b86fa1), cron */5, rootDirectory apps/api, railwayConfigFile apps/api/railway.worker.json (no healthcheck, restartPolicyType NEVER — a cron container exits by design). PUBLISHER_ENABLED=false on api; workers/publisher_loop.py dormant pending one real cron publish, then delete.",
+    "assets": "Cloudflare R2 bucket brandcortex-cards, account dda36b16b6ecb7f4078e8e69853c95bf, ASSET_REGION=auto, token scoped Object Read & Write to that bucket. Check /health/assets after any ASSET_* change. Railway volume /data still mounted as rollback — detach once R2 has proved itself. Copy tool: python -m brandcortex.services.migrate_assets --source /data/cards [--dry-run]"
   },
   "design": {
     "guideline": "docs/agenticskills-design-system (untracked; user's AgenticSkills monochrome system)",
@@ -143,5 +148,15 @@
     "vercel": "github-connected 2026-08-06: Korona7x17/brandcortex, prodBranch main, root apps/web. Pushes deploy. Before this it was CLI-upload-only, and `vercel deploy` stamps the local branch onto an upload — the dashboard shows that identically to a real integration, so check `link` via the REST API, never the deployment meta.",
     "railway": "FIXED 2026-08-07 — deploys on push to main. It was never disconnected: every push built at the REPO ROOT and failed (Railpack found no app), while the old container kept serving. rootDirectory=apps/api, dockerfilePath=Dockerfile, watchPatterns=['apps/api/**']. Build/health config in apps/api/railway.json; Root Directory is service-level and cannot live there. Manual fallback if ever needed: `railway up apps/api --path-as-root --service api --detach`. DB work: `railway ssh --service api \"uv run python -m ...\"`. VERIFY A DEPLOY by its `status` field — /health, existing log lines and the container's contents all answer for the old build; a failed deploy and an absent one look identical from outside. GraphQL: backboard.railway.com/graphql/v2, CLI token from ~/.railway/config.json, MUST send a User-Agent header or Cloudflare 403s (1010). serviceInstance(environmentId, serviceId) has rootDirectory/builder/dockerfilePath/watchPatterns; service(id).deployments has status + meta.",
     "logging": "Root logging is configured in create_app from BRANDCORTEX_LOG_LEVEL. Before that, uvicorn owned its loggers and root stayed at default, so brandcortex.* INFO never reached Railway — a refusal was visible only because WARNING clears the bar. Railway shows all stderr as severity=error."
-  }
+  },
+  "incidents": [
+    {
+      "date": "2026-08-07",
+      "what": "DATABASE_URL password, FACEBOOK_APP_SECRET and TOKEN_ENCRYPTION_KEY printed into the session transcript",
+      "how": "railway add --variables KEY=VALUE echoes every value to stdout even when passed as a flag; the last 500 chars of that output were printed to confirm success. The same rule had been applied correctly to `railway variables --set` 20 minutes earlier.",
+      "blast_radius": "local transcript file + Anthropic-side conversation storage. Postgres has no TCP proxy, so the password and Fernet key are unusable from outside; FACEBOOK_APP_SECRET is the only remotely usable one and it cannot post to the Page (that needs the Page token, encrypted in the unreachable DB).",
+      "resolution": "rotation judged disproportionate; owner deletes the transcript. Rule written to the global ~/.claude/CLAUDE.md (D-2026-08-07-05).",
+      "note": "Meta no longer exposes a Reset control on App settings Basic/Advanced — it appears only after Show + password. The visible Reset on Advanced is the CLIENT TOKEN, a different credential; do not touch it."
+    }
+  ]
 }

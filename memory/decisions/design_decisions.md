@@ -497,8 +497,53 @@ publishes, a laptop does not — a laptop posting to a live Page is the worse fa
 that quietly publishes nothing is the bug this fixes. Both branches log at boot, because silence is
 what made the missing worker hard to see.
 
-**Status:** Accepted — explicitly temporary; retire with R2 (delete the module, set
-`PUBLISHER_ENABLED=false`, create the cron service in docs/deploy.md §3.3)
+**Status:** Superseded → D-2026-08-07-04 (same day; R2 arrived and the cron service took over.
+`PUBLISHER_ENABLED=false`, module dormant pending one real publish through the cron)
 **Date:** 2026-08-07
 **Ref:** apps/api/src/brandcortex/workers/publisher_loop.py@f752c2; docs/deploy.md@933cee;
 first automatic publish 2026-08-07 04:34:06Z (due:1 published:1 failed:0)
+
+## D-2026-08-07-04 — Cards live in R2; publishing is its own cron service
+
+**Rationale:** The volume was the only thing keeping the publisher inside the API — a Railway volume
+attaches to exactly one service, so a cron container could not read the PNGs it would publish. With
+`ASSET_BUCKET` an S3-compatible bucket, that constraint is gone and publishing moves to a `*/5`
+cron service, independent of the API's deploy cycle. Latency goes from ≤60s to ≤5min, well inside
+the 6h lateness ceiling. Verifiability came first and deliberately: `/health/assets` reports the
+backend and what is wrong with it (one read-only `HeadBucket`, unauthenticated, so it names
+conditions and never the bucket, endpoint or key), and `services.migrate_assets` copies only the keys
+`posts.asset_storage_key` still names, exiting non-zero on bytes the old store lacks or a key that
+differs on both sides. The key format is identical on both backends, so nothing was rewritten and no
+row was touched. The volume stays mounted as a rollback. Two Railway facts the move surfaced:
+`railwayConfigFile` is repo-root-relative, and a cron service needs its own config file — sharing the
+API's would give it a healthcheck that a container exiting by design fails on every successful run.
+
+**Status:** Accepted (supersedes D-2026-08-07-03). `publisher_loop.py` stays dormant in the tree
+until one real post publishes through the cron; deletion is the irreversible step.
+**Date:** 2026-08-07
+**Ref:** services/assets.py@752daa; services/migrate_assets.py@704fe5; api/routes/health.py@b78a71;
+apps/api/railway.worker.json@fe4191; docs/deploy.md@e1e3e8 §2b; commits bd7417b, cf4a256
+
+## D-2026-08-07-05 — A command handed a secret never has its output printed
+
+**Rationale:** Written from an incident, not a principle. `railway add --variables KEY=VALUE` echoes
+every value back to stdout as `> Enter a variable KEY=VALUE` even when it arrives as a flag; printing
+the last 500 characters of that output to confirm success put the production Postgres password, the
+Facebook app secret and the Fernet key that decrypts the live Page token into the session transcript.
+The same rule had been applied correctly to `railway variables --set` twenty minutes earlier and was
+simply not carried to the next command. So: assume every CLI echoes its arguments — verifying that a
+particular one is quiet is worth nothing the one time you are wrong. Success is `returncode == 0`;
+that is the whole check. Redact every value you passed before printing any failure output. This
+covers log exports, `env`, and `cat` of a dotenv, not only commands. If it happens anyway, say so
+immediately, name which secrets and where they landed, and give the rotation order — do not bury it
+under the task in progress.
+
+Assessment after checking rather than ranking from memory: Postgres has no TCP proxy, so the password
+and the Fernet key are unusable by anyone holding only the transcript; the app secret is the only one
+with public reach, and it cannot post to the Page. Rotation was judged disproportionate against a
+local-file exposure; deleting the transcript is the agreed fix.
+
+**Status:** Accepted — recorded in the global `~/.claude/CLAUDE.md`, above the memory rules, so it
+applies to every project rather than this one
+**Date:** 2026-08-07
+**Ref:** memory/sessions/2026-08-07_session-03-r2-cron-publisher-and-a-secret-leak.md

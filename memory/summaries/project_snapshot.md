@@ -1,6 +1,6 @@
 # Project Snapshot — BrandCortex
 
-Last updated: 2026-08-07 (session 02)
+Last updated: 2026-08-07 (session 03)
 
 AI content engine that generates, publishes and self-improves brand content across channels.
 Home `brandcortex.app`. Tenant #1 **ThaiSwim** (`dev/thaiswim`). Channel #1 **Facebook**.
@@ -35,6 +35,11 @@ Working conventions in `CLAUDE.md`.
   seed JSON is only its reviewed source. Seed-on-boot (D-2026-08-06-08) closes the gap, but refuses
   to overwrite a row edited in `/settings/voice` — that conflict belongs to a human. Armed in
   production 2026-08-06; each boot logs what it did.
+- **A command handed a secret never has its output printed.** Every CLI echoes its arguments —
+  Railway echoes `--variables KEY=VALUE` straight back to stdout. Success is `returncode == 0`;
+  redact every value you passed before printing any failure. Covers log exports, `env`, and `cat` of
+  a dotenv too. Learned by leaking three production secrets into a transcript on 2026-08-07, twenty
+  minutes after applying the same rule correctly to a different command.
 - **Correctness may never depend on module evaluation order.** Next renders only the changed segment
   on a client-side navigation, so a side-effect import in the root layout is not guaranteed to have
   run — that is how server pages sent no bearer token on a soft nav and 401'd, while a hard refresh
@@ -78,8 +83,9 @@ voice rule enforced by validator, not prompt** · **-07 two registers, emoji cei
 **-08 seed brand_config on boot behind two fingerprints** · **-09 no opener/sign-off, variants
 differ by form, the club never leads**.
 D-2026-08-07-01 Railway builds `apps/api`, build config pinned in the repo · **-02 server code gets
-the API from the module that registers its token source** · **-03 publish in-process behind a fleet
-lock until assets leave the volume (explicitly temporary; retire with R2)**.
+the API from the module that registers its token source** · -03 publish in-process behind a fleet
+lock (superseded same day) · **-04 cards in R2, publishing is its own `*/5` cron service** ·
+**-05 a command handed a secret never has its output printed**.
 Stack: T01 FastAPI+Next.js · T02 permutation test · T03 Meta Dev mode, System User is the token path ·
 T04 tests build SQLite from models; `alembic check` is the migration contract.
 Full text in `memory/decisions/`.
@@ -124,10 +130,14 @@ the brand's own policy and returns its reasons. The model writes captions with t
 
 Still stubs: insights fetcher, reflection agent. **A real Page has been reached** (2026-08-06) — the
 Meta wall fell to one "+ Add" on `pages_read_user_content`, the PAGE token is encrypted in
-`channel_tokens` and never expires, and a post went live. Scheduled posts now fire from
-`workers/publisher_loop.py` **inside the API process**, because a Railway cron is a separate service
-and the card volume attaches to only one. That is temporary by design: R2 → cron service (*/5) →
-delete the module and set `PUBLISHER_ENABLED=false`. `publisher.run_once` is the same either way.
+`channel_tokens` and never expires, and a post went live. **Scheduled posts fire from the `publisher`
+cron service** (`*/5`, root `apps/api`, `railway.worker.json`), which R2 unblocked — a volume attaches
+to one service, a bucket does not. `PUBLISHER_ENABLED=false` on the API; `workers/publisher_loop.py`
+is dormant in the tree until one real post publishes through the cron, then it goes.
+
+Captured cards live in **R2** (`brandcortex-cards`). `/health/assets` is the artifact to check after
+any `ASSET_*` change — unauthenticated, so it names conditions and never the bucket or endpoint. The
+Railway volume is still mounted as a rollback and can be detached once R2 has proved itself.
 
 Credentials in `.env` (gitignored, 600): App ID `1278952477505548`, App Secret set, Fernet key
 generated, Page ID `1223598310834457` (ThaiSwim.com, user is full admin).

@@ -61,15 +61,28 @@ def test_publishing_follows_the_environment_unless_stated(
     assert get_settings().publisher_enabled is expected
 
 
-def test_a_disabled_loop_says_so(monkeypatch, caplog) -> None:
+@pytest.mark.parametrize(
+    ("env", "override", "reason"),
+    [
+        ("local", None, "PUBLISHER_ENABLED unset and BRANDCORTEX_ENV=local"),
+        ("production", "false", "PUBLISHER_ENABLED=false"),
+    ],
+)
+def test_a_disabled_loop_says_which_setting_stopped_it(
+    monkeypatch, caplog, env, override, reason
+) -> None:
     """Silence is what made the missing worker hard to see — posts sat scheduled and no log said
-    why. Off is a state worth announcing, not the absence of one."""
-    monkeypatch.setenv("BRANDCORTEX_ENV", "local")
+    why. Off is a state worth announcing, and announcing the wrong cause sends the reader to the
+    wrong knob: production first ran this with the variable explicitly false while the line read
+    "PUBLISHER_ENABLED unset"."""
+    monkeypatch.setenv("BRANDCORTEX_ENV", env)
+    if override is not None:
+        monkeypatch.setenv("PUBLISHER_ENABLED", override)
     get_settings.cache_clear()
 
     with caplog.at_level("INFO"):
         assert publisher_loop.start() is None
-    assert "publisher loop off" in caplog.text
+    assert f"publisher loop off ({reason})" in caplog.text
 
 
 # --- one publisher at a time ---------------------------------------------------------------------

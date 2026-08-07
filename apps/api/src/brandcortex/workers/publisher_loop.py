@@ -106,10 +106,15 @@ def start() -> asyncio.Task | None:
     """
     settings = get_settings()
     if not settings.publisher_enabled:
+        # Name the setting that actually decided it. "PUBLISHER_ENABLED unset" printed while the
+        # variable was explicitly false sends the reader to the wrong knob.
+        reason = (
+            "PUBLISHER_ENABLED=false"
+            if settings.publisher_enabled_override is not None
+            else f"PUBLISHER_ENABLED unset and BRANDCORTEX_ENV={settings.env}"
+        )
         logger.info(
-            "publisher loop off (PUBLISHER_ENABLED unset and BRANDCORTEX_ENV=%s);"
-            " scheduled posts will not fire in this process",
-            settings.env,
+            "publisher loop off (%s); scheduled posts will not fire in this process", reason
         )
         return None
     interval = settings.publisher_interval_seconds
